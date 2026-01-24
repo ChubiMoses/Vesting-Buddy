@@ -2,6 +2,7 @@ import base64
 import json
 import mimetypes
 import os
+import ssl
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -13,34 +14,13 @@ except Exception:
     opik_track = None
 
 
-DEFAULT_MODEL = "gemini-1.5-flash"
-
-SCHEMA_FIELDS: Tuple[Tuple[str, str], ...] = (
-    ("employee_name", "string"),
-    ("employer_name", "string"),
-    ("pay_period_start", "string"),
-    ("pay_period_end", "string"),
-    ("pay_date", "string"),
-    ("base_pay", "number"),
-    ("gross_pay", "number"),
-    ("net_pay", "number"),
-    ("pre_tax_401k", "number"),
-    ("roth_401k", "number"),
-    ("employer_match_limit", "number"),
-    ("ytd_gross_pay", "number"),
-    ("ytd_pre_tax_401k", "number"),
-    ("ytd_roth_401k", "number"),
-    ("ytd_employer_match", "number"),
-    ("currency", "string"),
-    ("notes", "string"),
-)
-
-
 @dataclass
 class ExtractorConfig:
     api_key: str
-    model: str = DEFAULT_MODEL
-    timeout_seconds: int = 60
+    model: str
+    timeout_seconds: int
+    api_version: str
+    base_url: str
 
 
 # Return Opik track decorator or a no-op decorator
@@ -81,16 +61,64 @@ def get_tracer() -> Tracer:
     return OpikTracer()
 
 
+def build_ssl_context() -> ssl.SSLContext | None:
+    cafile = os.getenv("SSL_CERT_FILE") or os.getenv("REQUESTS_CA_BUNDLE")
+    try:
+        import certifi
+
+        cafile = certifi.where()
+    except Exception:
+        pass
+    if cafile:
+        return ssl.create_default_context(cafile=cafile)
+    return None
+
+
 class GeminiClient:
     def __init__(self, config: ExtractorConfig) -> None:
         self.config = config
 
     # Send the request to Gemini
+    @get_track_decorator()
     def generate_content(self, payload: Dict[str, Any]) -> str:
-        url = (
-            "https://generativelanguage.googleapis.com/v1beta/models/"
-            f"{self.config.model}:generateContent?key={self.config.api_key}"
+        context = build_ssl_context()
+        try:
+            return self._send_request(
+                self._build_url(self.config.api_version, self.config.model),
+                payload,
+                context,
+            )
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404 and self.config.api_version == "v1beta":
+                try:
+                    return self._send_request(
+                        self._build_url("v1", self.config.model),
+                        payload,
+                        context,
+                    )
+                except urllib.error.HTTPError as fallback_exc:
+                    return self._attempt_with_fallback_model(
+                        "v1", payload, context, fallback_exc
+                    )
+            if exc.code == 404:
+                return self._attempt_with_fallback_model(
+                    self.config.api_version, payload, context, exc
+                )
+            body = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"Extractor request failed: {exc.code} {body}") from exc
+
+    def _build_url(self, version: str, model: str) -> str:
+        return (
+            f"{self.config.base_url}/{version}/models/"
+            f"{model}:generateContent?key={self.config.api_key}"
         )
+
+    def _send_request(
+        self,
+        url: str,
+        payload: Dict[str, Any],
+        context: ssl.SSLContext | None,
+    ) -> str:
         data = json.dumps(payload).encode("utf-8")
         request = urllib.request.Request(
             url,
@@ -98,12 +126,74 @@ class GeminiClient:
             headers={"Content-Type": "application/json"},
             method="POST",
         )
+        if context is None:
+            response = urllib.request.urlopen(
+                request, timeout=self.config.timeout_seconds
+            )
+        else:
+            response = urllib.request.urlopen(
+                request, timeout=self.config.timeout_seconds, context=context
+            )
+        with response as resp:
+            return resp.read().decode("utf-8")
+
+    def _attempt_with_fallback_model(
+        self,
+        version: str,
+        payload: Dict[str, Any],
+        context: ssl.SSLContext | None,
+        original_exc: urllib.error.HTTPError,
+    ) -> str:
+        fallback_model = self._select_fallback_model(version, context)
+        if not fallback_model:
+            body = original_exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(
+                f"Extractor request failed: {original_exc.code} {body}"
+            ) from original_exc
         try:
-            with urllib.request.urlopen(request, timeout=self.config.timeout_seconds) as resp:
-                return resp.read().decode("utf-8")
+            return self._send_request(
+                self._build_url(version, fallback_model),
+                payload,
+                context,
+            )
         except urllib.error.HTTPError as exc:
             body = exc.read().decode("utf-8", errors="replace")
             raise RuntimeError(f"Extractor request failed: {exc.code} {body}") from exc
+
+    def _select_fallback_model(
+        self, version: str, context: ssl.SSLContext | None
+    ) -> str | None:
+        models = self._list_models(version, context)
+        for model in models:
+            methods = (
+                model.get("supportedGenerationMethods")
+                or model.get("supportedMethods")
+                or []
+            )
+            if "generateContent" in methods:
+                name = model.get("name") or ""
+                return name.split("/", 1)[-1] if "/" in name else name
+        return None
+
+    def _list_models(
+        self, version: str, context: ssl.SSLContext | None
+    ) -> list[Dict[str, Any]]:
+        url = (
+            f"{self.config.base_url}/{version}/models"
+            f"?key={self.config.api_key}"
+        )
+        request = urllib.request.Request(url, method="GET")
+        if context is None:
+            response = urllib.request.urlopen(
+                request, timeout=self.config.timeout_seconds
+            )
+        else:
+            response = urllib.request.urlopen(
+                request, timeout=self.config.timeout_seconds, context=context
+            )
+        with response as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        return payload.get("models") or []
 
 
 class ExtractorAgent:
@@ -120,7 +210,9 @@ class ExtractorAgent:
         data = read_file_base64(file_path)
         self.tracer.log_step("file_loaded", {"base64_length": len(data)})
         request_body = build_request(mime_type, data)
-        self.tracer.log_step("request_built", {"schema_fields": len(SCHEMA_FIELDS)})
+        self.tracer.log_step(
+            "request_built", {"schema_fields": len(get_schema_fields())}
+        )
         response_text = self.client.generate_content(request_body)
         self.tracer.log_step("response_received", {"response_length": len(response_text)})
         result = parse_response(response_text)
@@ -129,8 +221,9 @@ class ExtractorAgent:
 
 
 # Build the Gemini request payload
+@get_track_decorator()
 def build_request(mime_type: str, base64_data: str) -> Dict[str, Any]:
-    prompt = {"text": build_prompt_text(SCHEMA_FIELDS)}
+    prompt = {"text": build_prompt_text(get_schema_fields())}
     return {
         "contents": [
             {
@@ -146,10 +239,7 @@ def build_request(mime_type: str, base64_data: str) -> Dict[str, Any]:
                 ],
             }
         ],
-        "generationConfig": {
-            "temperature": 0,
-            "responseMimeType": "application/json",
-        },
+        "generationConfig": {"temperature": 0},
     }
 
 
@@ -158,14 +248,13 @@ def build_prompt_text(schema_fields: Iterable[Tuple[str, str]]) -> str:
     schema_items = ", ".join(
         f"\"{name}\": {field_type}|null" for name, field_type in schema_fields
     )
-    return (
-        "You are an extraction agent. Convert the document into JSON only, "
-        "matching this schema and using null when unavailable: "
-        "{" + schema_items + "}"
-    )
+    prompt_prefix = get_env_value("EXTRACT_PROMPT_PREFIX", required=True)
+    prompt_suffix = get_env_value("EXTRACT_PROMPT_SUFFIX", default="")
+    return f"{prompt_prefix} " + "{" + schema_items + "}" + prompt_suffix
 
 
 # Parse Gemini response into JSON
+@get_track_decorator()
 def parse_response(response_text: str) -> Dict[str, Any]:
     payload = json.loads(response_text)
     candidates = payload.get("candidates") or []
@@ -203,10 +292,29 @@ def read_file_base64(file_path: str) -> str:
 
 # Build an extractor agent using env configuration
 def load_extractor_from_env() -> ExtractorAgent:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is required")
-    model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
-    timeout = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "60"))
-    config = ExtractorConfig(api_key=api_key, model=model, timeout_seconds=timeout)
+    api_key = get_env_value("GEMINI_API_KEY", required=True)
+    model = get_env_value("GEMINI_MODEL", required=True)
+    timeout = int(get_env_value("GEMINI_TIMEOUT_SECONDS", required=True))
+    api_version = get_env_value("GEMINI_API_VERSION", required=True)
+    base_url = get_env_value("GEMINI_BASE_URL", required=True)
+    config = ExtractorConfig(
+        api_key=api_key,
+        model=model,
+        timeout_seconds=timeout,
+        api_version=api_version,
+        base_url=base_url,
+    )
     return ExtractorAgent(GeminiClient(config), get_tracer())
+
+
+def get_env_value(name: str, required: bool = False, default: str | None = None) -> str:
+    value = os.getenv(name, default)
+    if required and not value:
+        raise RuntimeError(f"{name} is required")
+    return value or ""
+
+
+def get_schema_fields() -> Tuple[Tuple[str, str], ...]:
+    raw = get_env_value("SCHEMA_FIELDS_JSON", required=True)
+    data = json.loads(raw)
+    return tuple((item[0], item[1]) for item in data)
