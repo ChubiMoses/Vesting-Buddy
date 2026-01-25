@@ -12,7 +12,7 @@ export function CTASection() {
 
   return (
     <section ref={ref} className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-pink-500/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-purple-500/10" />
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
       
       <div className="container px-4 mx-auto max-w-4xl relative z-10">
@@ -35,7 +35,7 @@ export function CTASection() {
             
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
               Start Capturing{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-pink-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">
                 Every Dollar
               </span>
             </h2>
@@ -52,7 +52,7 @@ export function CTASection() {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Link href="/signup" className="group">
-              <Button size="lg" className="w-full sm:w-auto text-lg px-10 py-7 h-auto rounded-2xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all duration-300">
+                <Button size="lg" className="w-full sm:w-auto text-lg px-10 py-7 h-auto rounded-2xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90">
                 <span className="flex items-center gap-3">
                   Get Started Free
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />

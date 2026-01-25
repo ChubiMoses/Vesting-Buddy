@@ -8,12 +8,11 @@ import Link from "next/link";
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-pink-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]" />
       
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[128px]" />
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[128px]" />
-      <div className="absolute top-1/2 left-0 w-[600px] h-[600px] bg-pink-500/20 rounded-full blur-[128px]" />
       
       <div className="container px-4 py-20 mx-auto max-w-7xl relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -28,7 +27,7 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 border border-primary/20 backdrop-blur-sm mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 backdrop-blur-sm mb-6">
                 <Zap className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-primary">AI-Powered Financial Optimization</span>
               </div>
@@ -41,7 +40,7 @@ export function Hero() {
               className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]"
             >
               Stop Leaving{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-pink-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">
                 Free Money
               </span>{" "}
               on the Table
@@ -63,7 +62,7 @@ export function Hero() {
               className="flex flex-col sm:flex-row gap-4"
             >
               <Link href="/signup" className="group">
-                <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-7 h-auto rounded-2xl shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300">
+                <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-4 h-auto rounded-2xl shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300">
                   <span className="flex items-center gap-3">
                     Get Your Free Analysis
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -72,7 +71,7 @@ export function Hero() {
               </Link>
               
               <Link href="/login">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 py-7 h-auto rounded-2xl border-2">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 py-4 h-auto rounded-2xl border-2">
                   Sign In
                 </Button>
               </Link>

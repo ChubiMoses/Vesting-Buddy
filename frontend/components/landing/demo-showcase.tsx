@@ -39,7 +39,7 @@ export function DemoShowcase() {
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
             Your Money,{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-pink-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">
               Optimized
             </span>
           </h2>
@@ -54,7 +54,7 @@ export function DemoShowcase() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="relative"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 blur-3xl -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 blur-3xl -z-10" />
           
           <div className="relative rounded-2xl border bg-card/50 backdrop-blur-sm p-8 shadow-2xl">
             <div className="aspect-video rounded-lg bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden border border-slate-700/50">
