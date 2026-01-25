@@ -2,3 +2,4 @@
 .cursor
 .vscode
 .env
+backend/.env
