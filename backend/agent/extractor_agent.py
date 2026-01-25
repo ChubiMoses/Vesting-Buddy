@@ -5,10 +5,16 @@ import os
 import ssl
 import urllib.error
 import urllib.request
+import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Tuple
 
 try:
+    warnings.filterwarnings(
+        "ignore",
+        message="Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.",
+        module="opik\\.rest_api\\.core\\.pydantic_utilities",
+    )
     from opik import track as opik_track
 except Exception:
     opik_track = None
@@ -25,6 +31,10 @@ class ExtractorConfig:
 
 # Return Opik track decorator or a no-op decorator
 def get_track_decorator():
+    if os.getenv("OPIK_TRACK_DISABLE", "").lower() in {"1", "true", "yes"}:
+        def decorator(func):
+            return func
+        return decorator
     if opik_track is None:
         def decorator(func):
             return func
@@ -79,7 +89,6 @@ class GeminiClient:
         self.config = config
 
     # Send the request to Gemini
-    @get_track_decorator()
     def generate_content(self, payload: Dict[str, Any]) -> str:
         context = build_ssl_context()
         try:
@@ -202,8 +211,11 @@ class ExtractorAgent:
         self.tracer = tracer
 
     # Run the extraction pipeline for a file
-    @get_track_decorator()
     def extract_from_file(self, file_path: str) -> Dict[str, Any]:
+        mock_payload = os.getenv("EXTRACT_MOCK_JSON")
+        if mock_payload:
+            self.tracer.log_step("extract_mock_used", {"file_path": file_path})
+            return json.loads(mock_payload)
         self.tracer.log_step("guess_mime_type", {"file_path": file_path})
         mime_type = guess_mime_type(file_path)
         self.tracer.log_step("mime_type_resolved", {"mime_type": mime_type})
@@ -221,7 +233,6 @@ class ExtractorAgent:
 
 
 # Build the Gemini request payload
-@get_track_decorator()
 def build_request(mime_type: str, base64_data: str) -> Dict[str, Any]:
     prompt = {"text": build_prompt_text(get_schema_fields())}
     return {
@@ -254,7 +265,6 @@ def build_prompt_text(schema_fields: Iterable[Tuple[str, str]]) -> str:
 
 
 # Parse Gemini response into JSON
-@get_track_decorator()
 def parse_response(response_text: str) -> Dict[str, Any]:
     payload = json.loads(response_text)
     candidates = payload.get("candidates") or []
