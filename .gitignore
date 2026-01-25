@@ -1,2 +1,5 @@
+.history
+.cursor
+.vscode
 .env
 backend/.env
