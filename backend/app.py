@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import warnings
 
 from agent.extractor_agent import load_extractor_from_env
 
@@ -18,11 +19,37 @@ def load_env(path: str) -> None:
                 os.environ[key] = value
 
 
+_OPIK_CONFIGURED = False
+
+
 def configure_opik() -> None:
+    global _OPIK_CONFIGURED
+    if os.getenv("OPIK_TRACK_DISABLE", "").lower() in {"1", "true", "yes"}:
+        return
+    if _OPIK_CONFIGURED:
+        return
+    if os.getenv("OPIK_FORCE_CONFIGURE", "").lower() not in {"1", "true", "yes"}:
+        config_path = os.path.expanduser("~/.opik.config")
+        if os.path.isfile(config_path):
+            _OPIK_CONFIGURED = True
+            return
     try:
+        warnings.filterwarnings(
+            "ignore",
+            message="Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.",
+            module="opik\\.rest_api\\.core\\.pydantic_utilities",
+        )
         import opik
     except Exception:
         return
+    try:
+        from opik import tracing_runtime_config
+
+        if tracing_runtime_config.is_tracing_active():
+            _OPIK_CONFIGURED = True
+            return
+    except Exception:
+        pass
     api_key = os.getenv("OPIK_API_KEY")
     workspace = os.getenv("OPIK_WORKSPACE")
     url = os.getenv("OPIK_URL_OVERRIDE")
@@ -35,6 +62,7 @@ def configure_opik() -> None:
             use_local=use_local,
             automatic_approvals=True,
         )
+        _OPIK_CONFIGURED = True
 
 
 # Resolve file path from args or env
@@ -58,4 +86,7 @@ def run() -> dict:
 
 if __name__ == "__main__":
     result = run()
-    print(json.dumps(result))
+    output = json.dumps(result, ensure_ascii=False)
+    print("✨ Vesting Buddy Extractor ✨")
+    print("📄 Paysub parsed. Here’s the loot:")
+    print(output)
