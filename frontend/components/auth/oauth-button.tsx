@@ -5,7 +5,9 @@ import { signInWithGoogle } from "@/actions/auth";
 
 export function GoogleOAuthButton() {
   return (
-    <form action={signInWithGoogle}>
+    <form action={async () => {
+      await signInWithGoogle();
+    }}>
       <Button
         type="submit"
         variant="outline"
