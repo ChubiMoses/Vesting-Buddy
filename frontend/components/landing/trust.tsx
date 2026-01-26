@@ -49,44 +49,41 @@ export function Trust() {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {trustPoints.map((point, index) => (
             <motion.div
               key={point.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
               className="group"
             >
-              <div className="relative p-6 rounded-2xl border-2 border-primary/10 hover:border-primary/30 transition-all duration-300 bg-card/30 backdrop-blur-sm text-center space-y-4 hover:shadow-xl">
-                <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 mx-auto group-hover:scale-110 transition-transform duration-300">
-                  <point.icon className="h-8 w-8 text-primary" />
+              <div className="h-full p-6 rounded-2xl border-2 border-primary/20 bg-card/80 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 text-center space-y-4 hover:shadow-lg">
+                <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 mx-auto group-hover:bg-primary/20 transition-colors">
+                  <point.icon className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold">{point.title}</h3>
+                <h3 className="text-lg font-bold">{point.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{point.description}</p>
               </div>
             </motion.div>
           ))}
         </div>
 
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-20 text-center"
         >
-          <div className="relative inline-block">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-pink-500 rounded-3xl blur-xl opacity-20" />
-            <div className="relative p-8 rounded-3xl bg-gradient-to-br from-card to-card/50 border-2 border-primary/20 backdrop-blur-sm">
-              <p className="text-2xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-pink-500">
-                Built for Encode AI Agents Hackathon
-              </p>
-              <p className="text-muted-foreground text-lg">
-                Financial Health Track • Powered by Opik for LLM Observability
-              </p>
-            </div>
+          <div className="inline-block p-8 rounded-3xl bg-card/80 backdrop-blur-sm border-2 border-primary/20">
+            <p className="text-2xl font-bold mb-3 text-primary">
+              Built for Encode AI Agents Hackathon
+            </p>
+            <p className="text-muted-foreground text-lg">
+              Financial Health Track • Powered by Opik for LLM Observability
+            </p>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </section>
   );

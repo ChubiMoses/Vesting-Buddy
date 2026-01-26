@@ -32,7 +32,7 @@ export function InsightCards({ cards }: InsightCardsProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             whileHover={{ y: -4 }}
-            className={`bg-gradient-to-br ${colorClasses[card.color]} backdrop-blur-xl rounded-2xl border-2 p-6 shadow-xl cursor-pointer transition-all duration-300`}
+            className={`backdrop-blur-xl rounded-2xl border-2 p-6 shadow-xl cursor-pointer transition-all duration-300`}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">

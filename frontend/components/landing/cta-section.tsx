@@ -27,7 +27,7 @@ export function CTASection() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 border border-primary/20 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 backdrop-blur-sm"
             >
               <Sparkles className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">Ready to optimize?</span>
@@ -52,7 +52,7 @@ export function CTASection() {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Link href="/signup" className="group">
-                <Button size="lg" className="w-full sm:w-auto text-lg px-10 py-7 h-auto rounded-2xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90">
+                <Button size="lg" className="w-full sm:w-auto text-lg px-10 py-3.5 h-auto rounded-2xl shadow-2xl transition-all duration-300 bg-primary hover:bg-primary/90">
                 <span className="flex items-center gap-3">
                   Get Started Free
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />

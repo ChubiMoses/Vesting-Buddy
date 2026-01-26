@@ -24,11 +24,16 @@ export async function signUpWithEmail(formData: FormData) {
 
   const supabase = await createClient();
 
+  const headersList = await headers();
+  const origin = headersList.get("origin") || headersList.get("host");
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    (origin ? (origin.startsWith("http") ? origin : `https://${origin}`) : "http://localhost:3000");
+
   const { error } = await supabase.auth.signUp({
     email: validation.data.email,
     password: validation.data.password,
     options: {
-      emailRedirectTo: `${(await headers()).get("origin")}/auth/callback`,
+      emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   });
 
@@ -58,7 +63,7 @@ export async function signInWithEmail(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: validation.data.email,
     password: validation.data.password,
   });
@@ -69,17 +74,49 @@ export async function signInWithEmail(formData: FormData) {
     };
   }
 
+  if (data.user) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("onboarding_complete")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    if (!profile) {
+      await supabase
+        .from("users")
+        .insert({
+          id: data.user.id,
+          email: data.user.email,
+          onboarding_complete: false,
+        });
+      redirect("/dashboard/onboarding");
+      return;
+    }
+
+    if (!profile.onboarding_complete) {
+      redirect("/dashboard/onboarding");
+      return;
+    }
+  }
+
   redirect("/dashboard");
 }
 
 export async function signInWithGoogle() {
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
+  const headersList = await headers();
+  const origin = headersList.get("origin") || headersList.get("host");
+  
+  // Use environment variable if available, otherwise construct from headers
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    (origin ? (origin.startsWith("http") ? origin : `https://${origin}`) : "http://localhost:3000");
+  
+  const redirectTo = `${siteUrl}/auth/callback`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo,
     },
   });
 

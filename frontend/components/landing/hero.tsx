@@ -62,7 +62,7 @@ export function Hero() {
               className="flex flex-col sm:flex-row gap-4"
             >
               <Link href="/signup" className="group">
-                <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-4 h-auto rounded-2xl shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300">
+                <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-4 h-auto rounded-2xl shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90">
                   <span className="flex items-center gap-3">
                     Get Your Free Analysis
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -110,7 +110,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-pink-500 rounded-3xl blur-3xl opacity-20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary to-purple-500 rounded-3xl blur-3xl opacity-20" />
             
             <div className="relative bg-card/80 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-8 shadow-2xl">
               <div className="space-y-6">
@@ -131,10 +131,10 @@ export function Hero() {
 
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: "401(k) Match", value: "$1,336", color: "from-primary to-cyan-500" },
-                    { label: "HSA Savings", value: "$892", color: "from-purple-500 to-pink-500" },
-                    { label: "Tax Optimization", value: "$1,540", color: "from-pink-500 to-rose-500" },
-                    { label: "Time Saved", value: "12hrs", color: "from-cyan-500 to-primary" }
+                    { label: "401(k) Match", value: "$1,336", color: "from-primary to-primary" },
+                    { label: "HSA Savings", value: "$892", color: "from-purple-500 to-purple-500" },
+                    { label: "Tax Optimization", value: "$1,540", color: "from-primary to-primary" },
+                    { label: "Time Saved", value: "12hrs", color: "from-purple-500 to-purple-500" }
                   ].map((stat, index) => (
                     <motion.div
                       key={stat.label}
@@ -155,7 +155,7 @@ export function Hero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 1.2 }}
-                  className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 rounded-2xl p-4 border border-primary/20"
+                  className="bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-2xl p-4 border border-primary/20"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center">
