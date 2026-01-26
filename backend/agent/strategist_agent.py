@@ -158,6 +158,7 @@ def compute_leaked_value(paystub: Dict[str, Any], policy: Dict[str, Any]) -> Dic
         "gap_rate": round(gap_rate, 4),
         "annual_opportunity_cost": round(annual_opportunity, 2),
         "pay_periods_per_year": periods,
+        "policy_missing_match": policy.get("match_percent") in (None, "") or policy.get("match_up_to_percent") in (None, ""),
     }
 
 
@@ -171,7 +172,9 @@ def build_reasoning(metrics: Dict[str, Any]) -> List[str]:
 
 def build_action_plan(metrics: Dict[str, Any], policy: Dict[str, Any]) -> List[str]:
     actions = []
-    if metrics["gap_rate"] > 0:
+    if metrics["policy_missing_match"]:
+        actions.append("Confirm the employer match formula in the benefits handbook.")
+    elif metrics["gap_rate"] > 0:
         actions.append(
             f"Increase 401k contributions by {metrics['gap_rate'] * 100:.2f}% to reach the full match."
         )
@@ -187,9 +190,29 @@ def build_action_plan(metrics: Dict[str, Any], policy: Dict[str, Any]) -> List[s
 
 
 def format_recommendation(output: Dict[str, Any]) -> str:
+    metrics = output["leaked_value"]
     steps = output["action_plan"]
-    reasoning = " ".join(output["reasoning"])
-    return f"Reasoning Steps: 1) {reasoning} Recommendation: {steps[0]}"
+    if metrics["policy_missing_match"]:
+        catch = "Policy match data not found. Unable to quantify missed employer match."
+        math = (
+            f"Gross per period: {metrics['gross_pay']:.2f}. "
+            f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%. "
+            "Match policy: not found."
+        )
+    else:
+        catch = (
+            f"Estimated annual missed match: ${metrics['annual_opportunity_cost']:.2f} "
+            f"based on a {metrics['gap_rate'] * 100:.2f}% contribution gap."
+        )
+        math = (
+            f"Gross per period: ${metrics['gross_pay']:.2f}; "
+            f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%; "
+            f"Match policy: {metrics['match_rate'] * 100:.2f}% up to {metrics['match_up_to'] * 100:.2f}%; "
+            f"Gap: {metrics['gap_rate'] * 100:.2f}%; "
+            f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}."
+        )
+    plan = "\n".join(f"- {step}" for step in steps[:3])
+    return f"The Catch: {catch}\nThe Math: {math}\nAction Plan:\n{plan}"
 
 
 def load_strategist_from_env() -> StrategistAgent:

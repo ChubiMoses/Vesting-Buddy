@@ -189,7 +189,10 @@ def load_handbook_text(path: str) -> str:
 
 def read_text_file(path: str) -> str:
     with open(path, "r", encoding="utf-8") as file:
-        return file.read()
+        try:
+            return file.read()
+        except UnicodeDecodeError:
+            return ""
 
 
 def read_json_text(path: str) -> str:
@@ -222,8 +225,8 @@ def read_pdf_text(path: str) -> str:
         return "\n".join(text_parts)
 
 
-def load_policy_scout_from_env() -> PolicyScoutAgent:
-    handbook_path = get_env_value("POLICY_HANDBOOK_PATH", required=True)
+def load_policy_scout_from_env(handbook_path: str | None = None) -> PolicyScoutAgent:
+    handbook_path = handbook_path or get_env_value("POLICY_HANDBOOK_PATH", required=True)
     top_k = int(get_env_value("POLICY_TOP_K", required=True))
     chunk_size = int(get_env_value("POLICY_CHUNK_SIZE", required=True))
     chunk_overlap = int(get_env_value("POLICY_CHUNK_OVERLAP", required=True))

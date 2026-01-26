@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Iterable
 
 from agent.extractor_agent import load_extractor_from_env
 from agent.guardrail_agent import load_guardrail_from_env
@@ -8,13 +9,51 @@ from agent.strategist_agent import load_strategist_from_env
 from app import configure_opik, load_env
 
 
-def resolve_file_path(args: list[str]) -> str:
-    if len(args) > 2 and args[2]:
-        return args[2]
-    env_path = os.getenv("EXTRACT_FILE_PATH")
-    if env_path:
-        return env_path
-    raise RuntimeError("Provide a file path argument or EXTRACT_FILE_PATH")
+def list_asset_files(asset_dir: str) -> list[str]:
+    if not os.path.isdir(asset_dir):
+        return []
+    files = []
+    for name in os.listdir(asset_dir):
+        path = os.path.join(asset_dir, name)
+        if os.path.isfile(path):
+            files.append(path)
+    return files
+
+
+def score_filename(path: str, keywords: Iterable[str]) -> int:
+    name = os.path.basename(path).lower()
+    return sum(1 for keyword in keywords if keyword in name)
+
+
+def pick_best_match(files: list[str], keywords: Iterable[str]) -> str | None:
+    if not files:
+        return None
+    ranked = sorted(files, key=lambda path: score_filename(path, keywords), reverse=True)
+    if score_filename(ranked[0], keywords) == 0:
+        return None
+    return ranked[0]
+
+
+def pick_documents(asset_dir: str) -> tuple[str, str]:
+    files = [path for path in list_asset_files(asset_dir) if is_supported_asset(path)]
+    if not files:
+        raise RuntimeError("Assets folder is empty.")
+    paystub_keywords = ("paystub", "paysub", "stub", "pay")
+    handbook_keywords = ("handbook", "benefits", "policy", "employee", "401k")
+    paystub = pick_best_match(files, paystub_keywords)
+    handbook = pick_best_match(files, handbook_keywords)
+    if not paystub:
+        paystub = next(iter(files), None)
+    if not handbook:
+        handbook = next((path for path in files if path != paystub), paystub)
+    if not paystub or not handbook:
+        raise RuntimeError("Unable to select paystub and handbook from assets.")
+    return paystub, handbook
+
+
+def is_supported_asset(path: str) -> bool:
+    name = os.path.basename(path).lower()
+    return name.endswith((".pdf", ".txt", ".md", ".json"))
 
 
 def resolve_question(args: list[str]) -> str:
@@ -30,14 +69,26 @@ def run() -> dict:
     load_env(os.path.join(os.path.dirname(__file__), ".env"))
     configure_opik()
     question = resolve_question(sys.argv)
-    file_path = resolve_file_path(sys.argv)
+    asset_dir = os.path.join(os.path.dirname(__file__), "assets")
+    print("🔎 Scanning assets folder...")
+    try:
+        paystub_path, handbook_path = pick_documents(asset_dir)
+    except RuntimeError as exc:
+        print(f"❌ {exc}")
+        raise
+    print(f"✅ Found paystub: {os.path.basename(paystub_path)}")
+    print(f"✅ Found handbook: {os.path.basename(handbook_path)}")
     extractor = load_extractor_from_env()
-    policy = load_policy_scout_from_env()
+    policy = load_policy_scout_from_env(handbook_path=handbook_path)
     strategist = load_strategist_from_env()
     guardrail = load_guardrail_from_env()
-    paystub = extractor.extract_from_file(file_path)
+    print("📄 Reading paystub...")
+    paystub = extractor.extract_from_file(paystub_path)
+    print("📘 Reading handbook and extracting match policy...")
     policy_answer = policy.answer(question)
+    print("🧮 Computing leaked value...")
     strategist_output = strategist.synthesize(paystub, policy_answer)
+    print("🛡️ Running safety checks...")
     guarded = guardrail.enforce(strategist_output["recommendation"])
     return {
         "question": question,
@@ -64,21 +115,12 @@ def format_percent(value: float | None) -> str:
 
 
 def format_output(result: dict) -> str:
-    metrics = result.get("leaked_value") or {}
-    steps = result.get("action_plan") or []
+    recommendation = result.get("recommendation") or ""
     lines = [
         "🤖 Vesting Buddy Crew Assembled 🤖",
-        "🧮 Calculation Steps",
-        f"1) Gross per period: {format_currency(metrics.get('gross_pay'))}",
-        f"2) Current 401k rate: {format_percent(metrics.get('current_401k_rate'))}",
-        f"3) Match policy: {format_percent(metrics.get('match_rate'))} up to {format_percent(metrics.get('match_up_to'))}",
-        f"4) Gap rate: {format_percent(metrics.get('gap_rate'))}",
-        f"5) Annual opportunity cost: {format_currency(metrics.get('annual_opportunity_cost'))}",
-        "",
-        "🎯 3-Step Action Plan",
+        "📌 Fiduciary Summary",
+        recommendation.strip(),
     ]
-    for index, step in enumerate(steps[:3], start=1):
-        lines.append(f"{index}. {step}")
     return "\n".join(lines)
 
 
