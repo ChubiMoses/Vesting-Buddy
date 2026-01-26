@@ -12,6 +12,10 @@ from agent.extractor_agent import (
     get_env_value,
     get_tracer,
 )
+from constants.app_defaults import (
+    DEFAULT_STRATEGIST_PROMPT_PREFIX,
+    DEFAULT_STRATEGIST_PROMPT_SUFFIX,
+)
 
 
 @dataclass
@@ -300,8 +304,8 @@ def periods_per_year(paystub: Dict[str, Any]) -> int:
 
 
 def load_strategist_from_env() -> StrategistAgent:
-    prompt_prefix = get_env_value("STRATEGIST_PROMPT_PREFIX", required=True)
-    prompt_suffix = get_env_value("STRATEGIST_PROMPT_SUFFIX", default="")
+    prompt_prefix = get_env_value("STRATEGIST_PROMPT_PREFIX", default=DEFAULT_STRATEGIST_PROMPT_PREFIX)
+    prompt_suffix = get_env_value("STRATEGIST_PROMPT_SUFFIX", default=DEFAULT_STRATEGIST_PROMPT_SUFFIX)
     config = StrategistConfig(prompt_prefix=prompt_prefix, prompt_suffix=prompt_suffix)
     client = GeminiClient(load_gemini_config())
     return StrategistAgent(client, get_tracer(), config)

@@ -1,7 +1,8 @@
+"use client";
+
 // import { createClient } from "@/lib/supabase/server";
 // import { redirect } from "next/navigation";
 
-import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { WealthPulseCard } from "@/components/dashboard/wealth-pulse";
 import { DocumentUpload } from "@/components/dashboard/document-upload";
 import { ReasoningTrace } from "@/components/dashboard/reasoning-trace";
@@ -20,15 +21,23 @@ export default function DashboardPage() {
   // const supabase = await createClient();
   // const { data: { user } } = await supabase.auth.getUser();
   // if (!user) { redirect("/login"); }
+  // 
+  // const { data: profile } = await supabase
+  //   .from("users")
+  //   .select("onboarding_complete")
+  //   .eq("id", user.id)
+  //   .single();
+  //
+  // if (!profile || !profile.onboarding_complete) {
+  //   redirect("/dashboard/onboarding");
+  // }
 
   const handleUpload = (files: File[]) => {
     console.log("Uploading files:", files);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1A1A40] via-background to-background">
-      <DashboardSidebar />
-      <main className="ml-64 p-8">
+    <div className="p-8">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
@@ -79,7 +88,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </main>
     </div>
   );
 }

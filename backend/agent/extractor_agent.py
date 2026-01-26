@@ -19,6 +19,12 @@ try:
 except Exception:
     opik_track = None
 
+from constants.app_defaults import (
+    DEFAULT_EXTRACT_PROMPT_PREFIX,
+    DEFAULT_EXTRACT_PROMPT_SUFFIX,
+    DEFAULT_SCHEMA_FIELDS,
+)
+
 
 @dataclass
 class ExtractorConfig:
@@ -259,8 +265,8 @@ def build_prompt_text(schema_fields: Iterable[Tuple[str, str]]) -> str:
     schema_items = ", ".join(
         f"\"{name}\": {field_type}|null" for name, field_type in schema_fields
     )
-    prompt_prefix = get_env_value("EXTRACT_PROMPT_PREFIX", required=True)
-    prompt_suffix = get_env_value("EXTRACT_PROMPT_SUFFIX", default="")
+    prompt_prefix = get_env_value("EXTRACT_PROMPT_PREFIX", default=DEFAULT_EXTRACT_PROMPT_PREFIX)
+    prompt_suffix = get_env_value("EXTRACT_PROMPT_SUFFIX", default=DEFAULT_EXTRACT_PROMPT_SUFFIX)
     return f"{prompt_prefix} " + "{" + schema_items + "}" + prompt_suffix
 
 
@@ -325,6 +331,8 @@ def get_env_value(name: str, required: bool = False, default: str | None = None)
 
 
 def get_schema_fields() -> Tuple[Tuple[str, str], ...]:
-    raw = get_env_value("SCHEMA_FIELDS_JSON", required=True)
-    data = json.loads(raw)
-    return tuple((item[0], item[1]) for item in data)
+    raw = os.getenv("SCHEMA_FIELDS_JSON")
+    if raw:
+        data = json.loads(raw)
+        return tuple((item[0], item[1]) for item in data)
+    return DEFAULT_SCHEMA_FIELDS

@@ -1,94 +1,62 @@
 import os
 import sys
-from typing import Iterable
 
-from agent.extractor_agent import load_extractor_from_env
+from agent.extractor_agent import get_track_decorator, get_tracer, load_extractor_from_env
 from agent.guardrail_agent import load_guardrail_from_env
 from agent.policy_scout_agent import load_policy_scout_from_env
 from agent.strategist_agent import load_strategist_from_env
 from app import configure_opik, load_env
-
-
-def list_asset_files(asset_dir: str) -> list[str]:
-    if not os.path.isdir(asset_dir):
-        return []
-    files = []
-    for name in os.listdir(asset_dir):
-        path = os.path.join(asset_dir, name)
-        if os.path.isfile(path):
-            files.append(path)
-    return files
-
-
-def score_filename(path: str, keywords: Iterable[str]) -> int:
-    name = os.path.basename(path).lower()
-    return sum(1 for keyword in keywords if keyword in name)
-
-
-def pick_best_match(files: list[str], keywords: Iterable[str]) -> str | None:
-    if not files:
-        return None
-    ranked = sorted(files, key=lambda path: score_filename(path, keywords), reverse=True)
-    if score_filename(ranked[0], keywords) == 0:
-        return None
-    return ranked[0]
-
-
-def pick_documents(asset_dir: str) -> tuple[str, str]:
-    files = [path for path in list_asset_files(asset_dir) if is_supported_asset(path)]
-    if not files:
-        raise RuntimeError("Assets folder is empty.")
-    paystub_keywords = ("paystub", "paysub", "stub", "pay")
-    handbook_keywords = ("handbook", "benefits", "policy", "employee", "401k")
-    paystub = pick_best_match(files, paystub_keywords)
-    handbook = pick_best_match(files, handbook_keywords)
-    if not paystub:
-        paystub = next(iter(files), None)
-    if not handbook:
-        handbook = next((path for path in files if path != paystub), paystub)
-    if not paystub or not handbook:
-        raise RuntimeError("Unable to select paystub and handbook from assets.")
-    return paystub, handbook
-
-
-def is_supported_asset(path: str) -> bool:
-    name = os.path.basename(path).lower()
-    return name.endswith((".pdf", ".txt", ".md", ".json"))
+from constants.app_defaults import DEFAULT_POLICY_QUESTION
+from utils.asset_picker import pick_documents
 
 
 def resolve_question(args: list[str]) -> str:
+    # Resolve question from CLI args or defaults
     if len(args) > 1 and args[1]:
         return args[1]
     env_question = os.getenv("POLICY_QUESTION")
     if env_question:
         return env_question
-    raise RuntimeError("Provide a question argument or POLICY_QUESTION")
+    return DEFAULT_POLICY_QUESTION
 
 
+@get_track_decorator()
 def run() -> dict:
+    # Orchestrate the multi-agent workflow
     load_env(os.path.join(os.path.dirname(__file__), ".env"))
     configure_opik()
+    tracer = get_tracer()
     question = resolve_question(sys.argv)
     asset_dir = os.path.join(os.path.dirname(__file__), "assets")
     print("🔎 Scanning assets folder...")
+    tracer.log_step("assets_scan_started", {"asset_dir": asset_dir})
     try:
         paystub_path, handbook_path = pick_documents(asset_dir)
     except RuntimeError as exc:
+        tracer.log_step("assets_scan_failed", {"error": str(exc)})
         print(f"❌ {exc}")
         raise
     print(f"✅ Found paystub: {os.path.basename(paystub_path)}")
     print(f"✅ Found handbook: {os.path.basename(handbook_path)}")
+    tracer.log_step(
+        "assets_selected",
+        {"paystub": os.path.basename(paystub_path), "handbook": os.path.basename(handbook_path)},
+    )
     extractor = load_extractor_from_env()
     policy = load_policy_scout_from_env(handbook_path=handbook_path)
     strategist = load_strategist_from_env()
     guardrail = load_guardrail_from_env()
     print("📄 Reading paystub...")
+    tracer.log_step("paystub_read_started", {"file": paystub_path})
     paystub = extractor.extract_from_file(paystub_path)
     print("📘 Reading handbook and extracting match policy...")
+    tracer.log_step("policy_read_started", {"file": handbook_path})
     policy_answer = policy.answer(question)
     print("🧮 Computing leaked value...")
+    tracer.log_step("strategist_started", {"question": question})
     strategist_output = strategist.synthesize(paystub, policy_answer)
     print("🛡️ Running safety checks...")
+    tracer.log_step("guardrail_started", {})
     guarded = guardrail.enforce(strategist_output["recommendation"])
     return {
         "question": question,
@@ -114,7 +82,9 @@ def format_percent(value: float | None) -> str:
     return f"{value * 100:.2f}%"
 
 
+@get_track_decorator()
 def format_output(result: dict) -> str:
+    # Render the final terminal summary
     recommendation = result.get("recommendation") or ""
     lines = [
         "🤖 Vesting Buddy Crew Assembled 🤖",

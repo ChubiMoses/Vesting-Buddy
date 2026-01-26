@@ -26,7 +26,7 @@ export function AgentNudgeCard({ nudge }: AgentNudgeProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-gradient-to-br ${priorityColors[nudge.priority]} backdrop-blur-xl rounded-2xl border-2 p-6 shadow-xl`}
+      className={`backdrop-blur-xl rounded-2xl border-2 p-6 shadow-xl`}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">

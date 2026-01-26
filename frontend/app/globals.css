@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: light-dark(oklch(100% 0 0), oklch(9% 0.012 285.75));
+  --color-background: light-dark(oklch(100% 0 0), oklch(15% 0.02 280));
   --color-foreground: light-dark(oklch(9.61% 0.006 285.75), oklch(98% 0 0));
   
   --color-card: light-dark(oklch(100% 0 0), oklch(12% 0.012 285.75));
@@ -12,6 +12,12 @@
   
   --color-primary: oklch(57.66% 0.142 191.79);
   --color-primary-foreground: oklch(100% 0 0);
+  
+  --color-purple-500: oklch(55% 0.15 300);
+  --color-purple-600: oklch(45% 0.15 300);
+
+    --default-ring-width: 3px;
+  --default-ring-color: var(--color-blue-500);
   
   --color-secondary: light-dark(oklch(96.1% 0.001 286.38), oklch(20% 0.013 285.89));
   --color-secondary-foreground: light-dark(oklch(16.87% 0.013 285.89), oklch(98% 0 0));
@@ -25,8 +31,8 @@
   --color-destructive: light-dark(oklch(62.8% 0.257 29.23), oklch(52% 0.204 27.33));
   --color-destructive-foreground: oklch(98% 0 0);
   
-  --color-border: light-dark(oklch(89.84% 0.003 286.32), oklch(22% 0.013 285.89));
-  --color-input: light-dark(oklch(89.84% 0.003 286.32), oklch(22% 0.013 285.89));
+  --color-border: light-dark(oklch(89.84% 0.003 286.32), oklch(30% 0.015 285.89));
+  --color-input: light-dark(oklch(89.84% 0.003 286.32), oklch(30% 0.015 285.89));
   --color-ring: oklch(57.66% 0.142 191.79);
   
   --radius: 0.75rem;
@@ -52,8 +58,24 @@
   50% { opacity: 1; }
 }
 
-* {
-  border-color: var(--color-border);
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, currentColor);
+  }
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  dialog {
+    margin: auto;
+  }
 }
 
 body {
@@ -108,4 +130,9 @@ h1, h2, h3, h4, h5, h6 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
 }

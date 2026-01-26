@@ -4,6 +4,7 @@ import sys
 import warnings
 
 from agent.extractor_agent import load_extractor_from_env
+from utils.asset_picker import pick_paystub
 
 
 def load_env(path: str) -> None:
@@ -15,7 +16,7 @@ def load_env(path: str) -> None:
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, value = line.split("=", 1)
-            if key and key not in os.environ:
+            if key and (key not in os.environ or not os.environ.get(key)):
                 os.environ[key] = value
 
 
@@ -28,11 +29,6 @@ def configure_opik() -> None:
         return
     if _OPIK_CONFIGURED:
         return
-    if os.getenv("OPIK_FORCE_CONFIGURE", "").lower() not in {"1", "true", "yes"}:
-        config_path = os.path.expanduser("~/.opik.config")
-        if os.path.isfile(config_path):
-            _OPIK_CONFIGURED = True
-            return
     try:
         warnings.filterwarnings(
             "ignore",
@@ -54,6 +50,8 @@ def configure_opik() -> None:
     workspace = os.getenv("OPIK_WORKSPACE")
     url = os.getenv("OPIK_URL_OVERRIDE")
     use_local = os.getenv("OPIK_USE_LOCAL", "").lower() in {"1", "true", "yes"}
+    if not api_key and not use_local:
+        return
     if api_key or workspace or url or use_local:
         opik.configure(
             api_key=api_key,
@@ -72,7 +70,8 @@ def resolve_file_path(args: list[str]) -> str:
     env_path = os.getenv("EXTRACT_FILE_PATH")
     if env_path:
         return env_path
-    raise RuntimeError("Provide a file path argument or EXTRACT_FILE_PATH")
+    asset_dir = os.path.join(os.path.dirname(__file__), "assets")
+    return pick_paystub(asset_dir)
 
 
 # Run extractor and return JSON

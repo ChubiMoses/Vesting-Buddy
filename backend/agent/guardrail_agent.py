@@ -3,6 +3,10 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 from agent.extractor_agent import Tracer, get_env_value, get_track_decorator, get_tracer
+from constants.app_defaults import (
+    DEFAULT_GUARDRAIL_BLOCKLIST,
+    DEFAULT_GUARDRAIL_REPLACEMENT,
+)
 
 
 @dataclass
@@ -27,8 +31,8 @@ class GuardrailAgent:
 
 
 def load_guardrail_from_env() -> GuardrailAgent:
-    raw = get_env_value("GUARDRAIL_BLOCKLIST", required=True)
+    raw = get_env_value("GUARDRAIL_BLOCKLIST", default=",".join(DEFAULT_GUARDRAIL_BLOCKLIST))
     blocked_terms = [term.strip() for term in re.split(r"[,\n]+", raw) if term.strip()]
-    replacement_text = get_env_value("GUARDRAIL_REPLACEMENT", required=True)
+    replacement_text = get_env_value("GUARDRAIL_REPLACEMENT", default=DEFAULT_GUARDRAIL_REPLACEMENT)
     config = GuardrailConfig(blocked_terms=blocked_terms, replacement_text=replacement_text)
     return GuardrailAgent(get_tracer(), config)

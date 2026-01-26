@@ -4,6 +4,7 @@ import sys
 
 from agent.policy_scout_agent import load_policy_scout_from_env
 from app import configure_opik, load_env
+from constants.app_defaults import DEFAULT_POLICY_QUESTION
 
 
 def resolve_question(args: list[str]) -> str:
@@ -12,7 +13,7 @@ def resolve_question(args: list[str]) -> str:
     env_question = os.getenv("POLICY_QUESTION")
     if env_question:
         return env_question
-    raise RuntimeError("Provide a question argument or POLICY_QUESTION")
+    return DEFAULT_POLICY_QUESTION
 
 
 def run() -> dict:

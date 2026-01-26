@@ -9,10 +9,20 @@ from agent.extractor_agent import (
     GeminiClient,
     Tracer,
     get_env_value,
+    get_track_decorator,
     get_tracer,
     guess_mime_type,
     read_file_base64,
 )
+from constants.app_defaults import (
+    DEFAULT_POLICY_CHUNK_OVERLAP,
+    DEFAULT_POLICY_CHUNK_SIZE,
+    DEFAULT_POLICY_PROMPT_PREFIX,
+    DEFAULT_POLICY_PROMPT_SUFFIX,
+    DEFAULT_POLICY_TOP_K,
+)
+from constants.policy_constants import BOOSTED_QUERY, KEYWORDS
+from utils.asset_picker import pick_handbook
 
 
 @dataclass
@@ -31,7 +41,9 @@ class PolicyScoutAgent:
         self.tracer = tracer
         self.config = config
 
+    @get_track_decorator()
     def answer(self, question: str) -> Dict[str, Any]:
+        # Locate raw policy text for matching and vesting math
         self.tracer.log_step("policy_question_received", {"question": question})
         mock_response = os.getenv("POLICY_MOCK_RESPONSE")
         if mock_response:
@@ -46,6 +58,10 @@ class PolicyScoutAgent:
             text = load_handbook_text(self.config.handbook_path)
             self.tracer.log_step("policy_handbook_loaded", {"characters": len(text)})
             sections, conflicts = find_policy_sections(text)
+            self.tracer.log_step(
+                "policy_sections_found",
+                {"count": len(sections), "conflicts": conflicts},
+            )
             if sections:
                 answer_text = "\n\n---\n\n".join(sections)
                 return {
@@ -54,6 +70,7 @@ class PolicyScoutAgent:
                     "sources": [],
                     "conflicts": conflicts,
                 }
+            self.tracer.log_step("policy_section_fallback", {"reason": "no sections matched"})
             chunks = chunk_text(text, self.config.chunk_size, self.config.chunk_overlap)
             self.tracer.log_step("policy_chunks_created", {"count": len(chunks)})
             matches = retrieve_chunks(BOOSTED_QUERY, chunks, self.config.top_k)
@@ -145,24 +162,8 @@ def normalize_tokens(text: str) -> List[str]:
     return [token for token in re.split(r"[^\w]+", text.lower()) if token]
 
 
-KEYWORDS = (
-    "match",
-    "contribute",
-    "employer contribution",
-    "tiered",
-    "%",
-    "vesting",
-    "cliff",
-    "graded",
-    "401k",
-    "hsa",
-)
 
-BOOSTED_QUERY = (
-    "Find the section describing the specific percentage formula for employer 401k matching contributions."
-)
-
-
+@get_track_decorator()
 def find_policy_sections(text: str) -> Tuple[List[str], bool]:
     normalized = re.sub(r"\s+", " ", text).strip()
     if not normalized:
@@ -334,12 +335,15 @@ def read_pdf_text(path: str) -> str:
 
 
 def load_policy_scout_from_env(handbook_path: str | None = None) -> PolicyScoutAgent:
-    handbook_path = handbook_path or get_env_value("POLICY_HANDBOOK_PATH", required=True)
-    top_k = int(get_env_value("POLICY_TOP_K", required=True))
-    chunk_size = int(get_env_value("POLICY_CHUNK_SIZE", required=True))
-    chunk_overlap = int(get_env_value("POLICY_CHUNK_OVERLAP", required=True))
-    prompt_prefix = get_env_value("POLICY_PROMPT_PREFIX", required=True)
-    prompt_suffix = get_env_value("POLICY_PROMPT_SUFFIX", default="")
+    handbook_path = handbook_path or os.getenv("POLICY_HANDBOOK_PATH")
+    if not handbook_path:
+        asset_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
+        handbook_path = pick_handbook(asset_dir)
+    top_k = int(get_env_value("POLICY_TOP_K", default=str(DEFAULT_POLICY_TOP_K)))
+    chunk_size = int(get_env_value("POLICY_CHUNK_SIZE", default=str(DEFAULT_POLICY_CHUNK_SIZE)))
+    chunk_overlap = int(get_env_value("POLICY_CHUNK_OVERLAP", default=str(DEFAULT_POLICY_CHUNK_OVERLAP)))
+    prompt_prefix = get_env_value("POLICY_PROMPT_PREFIX", default=DEFAULT_POLICY_PROMPT_PREFIX)
+    prompt_suffix = get_env_value("POLICY_PROMPT_SUFFIX", default=DEFAULT_POLICY_PROMPT_SUFFIX)
     config = PolicyScoutConfig(
         handbook_path=handbook_path,
         top_k=top_k,

@@ -4,13 +4,47 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const error = searchParams.get("error");
+
+  if (error) {
+    return NextResponse.redirect(`${origin}/login?error=${error}`);
+  }
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    
+    if (exchangeError) {
+      return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("onboarding_complete")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!profile) {
+        await supabase
+          .from("users")
+          .insert({
+            id: user.id,
+            email: user.email,
+            onboarding_complete: false,
+          });
+        return NextResponse.redirect(`${origin}/dashboard/onboarding`);
+      }
+
+      if (!profile.onboarding_complete) {
+        return NextResponse.redirect(`${origin}/dashboard/onboarding`);
+      }
+
+      return NextResponse.redirect(`${origin}/dashboard`);
     }
   }
 
