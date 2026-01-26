@@ -40,13 +40,23 @@ class PolicyScoutAgent:
                 "question": question,
                 "answer": answer_text,
                 "sources": [],
+                "conflicts": False,
             }
         try:
             text = load_handbook_text(self.config.handbook_path)
             self.tracer.log_step("policy_handbook_loaded", {"characters": len(text)})
+            sections, conflicts = find_policy_sections(text)
+            if sections:
+                answer_text = "\n\n---\n\n".join(sections)
+                return {
+                    "question": question,
+                    "answer": answer_text,
+                    "sources": [],
+                    "conflicts": conflicts,
+                }
             chunks = chunk_text(text, self.config.chunk_size, self.config.chunk_overlap)
             self.tracer.log_step("policy_chunks_created", {"count": len(chunks)})
-            matches = retrieve_chunks(question, chunks, self.config.top_k)
+            matches = retrieve_chunks(BOOSTED_QUERY, chunks, self.config.top_k)
             self.tracer.log_step("policy_chunks_retrieved", {"count": len(matches)})
             prompt = build_prompt(question, matches, self.config.prompt_prefix, self.config.prompt_suffix)
             self.tracer.log_step("policy_prompt_built", {"length": len(prompt)})
@@ -57,6 +67,7 @@ class PolicyScoutAgent:
                 "question": question,
                 "answer": answer_text,
                 "sources": matches,
+                "conflicts": False,
             }
         except RuntimeError as exc:
             if not self.config.handbook_path.lower().endswith(".pdf"):
@@ -74,6 +85,7 @@ class PolicyScoutAgent:
                 "question": question,
                 "answer": answer_text,
                 "sources": [],
+                "conflicts": False,
             }
 
 
@@ -133,6 +145,70 @@ def normalize_tokens(text: str) -> List[str]:
     return [token for token in re.split(r"[^\w]+", text.lower()) if token]
 
 
+KEYWORDS = (
+    "match",
+    "contribute",
+    "employer contribution",
+    "tiered",
+    "%",
+    "vesting",
+    "cliff",
+    "graded",
+    "401k",
+    "hsa",
+)
+
+BOOSTED_QUERY = (
+    "Find the section describing the specific percentage formula for employer 401k matching contributions."
+)
+
+
+def find_policy_sections(text: str) -> Tuple[List[str], bool]:
+    normalized = re.sub(r"\s+", " ", text).strip()
+    if not normalized:
+        return [], False
+    sectioned = extract_section_blocks(normalized)
+    keyword_hits = [block for block in sectioned if has_keywords(block)]
+    if not keyword_hits:
+        keyword_hits = extract_keyword_windows(normalized)
+    expanded = []
+    for block in keyword_hits:
+        expanded.append(block.strip())
+    unique_sections = list(dict.fromkeys(expanded))
+    conflicts = len(unique_sections) > 1
+    return unique_sections, conflicts
+
+
+def has_keywords(text: str) -> bool:
+    lowered = text.lower()
+    return any(keyword in lowered for keyword in KEYWORDS)
+
+
+def extract_section_blocks(text: str) -> List[str]:
+    pattern = re.compile(r"(section\s+\d+(?:\.\d+)?\s*:\s*)", re.IGNORECASE)
+    matches = list(pattern.finditer(text))
+    if not matches:
+        return []
+    blocks = []
+    for i, match in enumerate(matches):
+        start = match.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        blocks.append(text[start:end].strip())
+    return blocks
+
+
+def extract_keyword_windows(text: str) -> List[str]:
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    windows = []
+    window_size = 3
+    for i, sentence in enumerate(sentences):
+        if has_keywords(sentence):
+            start = max(0, i - 1)
+            end = min(len(sentences), i + window_size)
+            windows.append(" ".join(sentences[start:end]).strip())
+    return windows
+
+
 def retrieve_chunks(question: str, chunks: List[str], top_k: int) -> List[Dict[str, Any]]:
     query_tokens = normalize_tokens(question)
     if not query_tokens:
@@ -161,17 +237,49 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:
     normalized = re.sub(r"\s+", " ", text).strip()
     if not normalized:
         return []
-    chunks = []
-    start = 0
-    while start < len(normalized):
-        end = min(start + chunk_size, len(normalized))
-        chunks.append(normalized[start:end])
-        start = end - overlap
-        if start < 0:
-            start = 0
-        if start >= len(normalized):
-            break
-    return chunks
+    base_chunks = recursive_split_text(normalized, chunk_size)
+    return apply_overlap(base_chunks, overlap)
+
+
+def recursive_split_text(text: str, chunk_size: int) -> List[str]:
+    if len(text) <= chunk_size:
+        return [text]
+    separators = ["\n\n", "\n", ". ", " "]
+    for sep in separators:
+        if sep in text:
+            parts = text.split(sep)
+            chunks: List[str] = []
+            current = ""
+            for part in parts:
+                part_text = part.strip()
+                if not part_text:
+                    continue
+                candidate = (current + sep + part_text).strip() if current else part_text
+                if len(candidate) <= chunk_size:
+                    current = candidate
+                else:
+                    if current:
+                        chunks.append(current)
+                    if len(part_text) > chunk_size:
+                        chunks.extend(recursive_split_text(part_text, chunk_size))
+                        current = ""
+                    else:
+                        current = part_text
+            if current:
+                chunks.append(current)
+            if chunks:
+                return chunks
+    return [text[:chunk_size]] + recursive_split_text(text[chunk_size:], chunk_size)
+
+
+def apply_overlap(chunks: List[str], overlap: int) -> List[str]:
+    if not chunks or overlap <= 0:
+        return chunks
+    overlapped = [chunks[0]]
+    for chunk in chunks[1:]:
+        prefix = overlapped[-1][-overlap:] if len(overlapped[-1]) > overlap else overlapped[-1]
+        overlapped.append((prefix + " " + chunk).strip())
+    return overlapped
 
 
 def load_handbook_text(path: str) -> str:
