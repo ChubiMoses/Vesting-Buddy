@@ -16,7 +16,12 @@ def load_env(path: str) -> None:
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, value = line.split("=", 1)
-            if key and (key not in os.environ or not os.environ.get(key)):
+            value = value.strip().strip("\"").strip("'")
+            if not key:
+                continue
+            if value:
+                os.environ[key] = value
+            elif key not in os.environ:
                 os.environ[key] = value
 
 
@@ -46,18 +51,23 @@ def configure_opik() -> None:
             return
     except Exception:
         pass
-    api_key = os.getenv("OPIK_API_KEY")
-    workspace = os.getenv("OPIK_WORKSPACE")
+    api_key = (os.getenv("OPIK_API_KEY") or "").strip()
+    workspace = (os.getenv("OPIK_WORKSPACE") or "").strip()
     url = os.getenv("OPIK_URL_OVERRIDE")
     use_local = os.getenv("OPIK_USE_LOCAL", "").lower() in {"1", "true", "yes"}
     if not api_key and not use_local:
         return
+    if api_key:
+        os.environ["OPIK_API_KEY"] = api_key
+    if workspace:
+        os.environ.setdefault("OPIK_WORKSPACE_NAME", workspace)
     if api_key or workspace or url or use_local:
         opik.configure(
             api_key=api_key,
             workspace=workspace,
             url=url,
             use_local=use_local,
+            force=True,
             automatic_approvals=True,
         )
         _OPIK_CONFIGURED = True
