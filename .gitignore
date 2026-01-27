@@ -4,3 +4,5 @@
 .env
 backend/.env
 .vercel
+backend/venv
+__pycache__/
