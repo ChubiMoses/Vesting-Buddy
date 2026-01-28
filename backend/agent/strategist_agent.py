@@ -42,6 +42,7 @@ class StrategistAgent:
         policy = parse_policy_answer(policy_answer.get("answer"))
         self.tracer.log_step("strategist_policy_parsed", {"policy_keys": sorted(policy.keys())})
         metrics = compute_leaked_value(paystub_data, policy)
+        metrics["employee_name"] = paystub_data.get("employee_name", "Employee")
         self.tracer.log_step("strategist_metrics_computed", metrics)
         steps = build_action_plan(metrics, policy)
         reasoning = build_reasoning(metrics)
@@ -206,6 +207,7 @@ def compute_leaked_value(paystub: Dict[str, Any], policy: Dict[str, Any]) -> Dic
         "pay_periods_per_year": periods,
         "policy_missing_match": (match_rate == 0 or match_up_to == 0) and not tiers_present,
         "tiers_present": tiers_present,
+        "tiers": tiers,
     }
 
 
@@ -246,40 +248,71 @@ def format_recommendation(output: Dict[str, Any]) -> str:
     metrics = output["leaked_value"]
     steps = output["action_plan"]
     conflicts = output.get("policy_conflicts")
+
+    # Extract first name
+    full_name = metrics.get("employee_name", "User")
+    name = full_name.split()[0] if full_name else "User"
+
     if metrics["policy_missing_match"]:
-        catch = "Policy match data not found. Unable to quantify missed employer match."
+        verdict = f"{name}, we couldn't find the match policy in your documents. Unable to quantify missed employer match."
         if conflicts:
-            catch = f"{catch} Conflicting policies detected."
+            verdict += " Conflicting policies were detected."
         math = (
-            f"Gross per period: {metrics['gross_pay']:.2f}. "
-            f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%. "
-            "Match policy: not found."
+            f"Gross per period: ${metrics['gross_pay']:.2f}\n"
+            f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%\n"
+            "Match policy: not found"
         )
     else:
-        catch = (
-            f"Estimated annual missed match: ${metrics['annual_opportunity_cost']:.2f} "
-            f"based on a {metrics['gap_rate'] * 100:.2f}% contribution gap."
-        )
+        monthly_gain = metrics['annual_opportunity_cost'] / 12
+        gap_percent = metrics['gap_rate'] * 100
+        current_percent = metrics['current_401k_rate'] * 100
+        target_percent = current_percent + gap_percent
+
+        # Calculate ROI
+        annual_cost = metrics['gross_pay'] * metrics['gap_rate'] * metrics['pay_periods_per_year']
+        roi = (metrics['annual_opportunity_cost'] / annual_cost * 100) if annual_cost > 0 else 0
+
+        if metrics['gap_rate'] > 0:
+            verdict = (
+                f"{name}, you are currently contributing {current_percent:.1f}%. "
+                f"By increasing your contribution to {target_percent:.1f}%, you unlock an additional "
+                f"${monthly_gain:.0f}/month in employer matching. "
+                f"This is an immediate {roi:.0f}% return on your investment."
+            )
+        else:
+            verdict = (
+                f"{name}, great job! You are contributing {current_percent:.1f}%, which captures the full employer match. "
+                "You are not leaving any free money on the table."
+            )
+
         if conflicts:
-            catch = f"{catch} Conflicting policies detected."
+            verdict += " Note: Conflicting policies detected."
+
         if metrics.get("tiers_present"):
+            tier_lines = []
+            for i, (rate, limit) in enumerate(metrics['tiers']):
+                prefix = "First" if i == 0 else "Next"
+                tier_lines.append(f"  - {rate*100:.0f}% match on {prefix} {limit*100:.1f}% of salary")
+            tier_str = "\n".join(tier_lines)
+
             math = (
-                f"Gross per period: ${metrics['gross_pay']:.2f}; "
-                f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%; "
-                f"Tiered match up to {metrics['match_up_to'] * 100:.2f}%; "
-                f"Gap: {metrics['gap_rate'] * 100:.2f}%; "
-                f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}."
+                f"Gross per period: ${metrics['gross_pay']:.2f}\n"
+                f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%\n"
+                f"Match Tiers:\n{tier_str}\n"
+                f"Gap to max match: {metrics['gap_rate'] * 100:.2f}%\n"
+                f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}"
             )
         else:
             math = (
-                f"Gross per period: ${metrics['gross_pay']:.2f}; "
-                f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%; "
-                f"Match policy: {metrics['match_rate'] * 100:.2f}% up to {metrics['match_up_to'] * 100:.2f}%; "
-                f"Gap: {metrics['gap_rate'] * 100:.2f}%; "
-                f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}."
+                f"Gross per period: ${metrics['gross_pay']:.2f}\n"
+                f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%\n"
+                f"Match policy: {metrics['match_rate'] * 100:.0f}% match up to {metrics['match_up_to'] * 100:.1f}% of salary\n"
+                f"Gap: {metrics['gap_rate'] * 100:.2f}%\n"
+                f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}"
             )
+
     plan = "\n".join(f"- {step}" for step in steps[:3])
-    return f"The Catch: {catch}\nThe Math: {math}\nAction Plan:\n{plan}"
+    return f"The Verdict: {verdict}\n\nThe Math:\n{math}\n\nAction Plan:\n{plan}"
 
 
 def extract_match_from_raw(raw_text: str) -> Dict[str, float]:
