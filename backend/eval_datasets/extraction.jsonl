@@ -1,0 +1,2 @@
+{"doc_id":"stub_1","expected":{"gross_pay":5000,"net_pay":3800,"currency":"USD"}}
+{"doc_id":"stub_2","expected":{"gross_pay":7200,"pre_tax_401k":432}}
