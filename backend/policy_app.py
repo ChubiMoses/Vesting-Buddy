@@ -1,9 +1,10 @@
+import config_loader
 import json
 import os
 import sys
 
 from agent.policy_scout_agent import load_policy_scout_from_env
-from app import configure_opik, load_env
+from app import configure_opik
 from constants.app_defaults import DEFAULT_POLICY_QUESTION
 
 
@@ -17,7 +18,6 @@ def resolve_question(args: list[str]) -> str:
 
 
 def run() -> dict:
-    load_env(os.path.join(os.path.dirname(__file__), ".env"))
     configure_opik()
     question = resolve_question(sys.argv)
     agent = load_policy_scout_from_env()
@@ -26,7 +26,11 @@ def run() -> dict:
 
 if __name__ == "__main__":
     result = run()
-    output = json.dumps(result, ensure_ascii=False)
     print("🧭 Policy Scout Online 🧭")
     print("📘 Handbook checked. Here’s the scoop:")
-    print(output)
+    print(result.get("answer", "No answer found."))
+    try:
+        import opik
+        opik.flush_tracker()
+    except Exception:
+        pass

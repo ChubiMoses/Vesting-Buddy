@@ -10,6 +10,7 @@ from agent.extractor_agent import (
     GeminiClient,
     Tracer,
     get_env_value,
+    get_track_decorator,
     get_tracer,
 )
 from constants.app_defaults import (
@@ -30,6 +31,12 @@ class StrategistAgent:
         self.tracer = tracer
         self.config = config
 
+    def _preview(self, text: str, max_len: int = 400) -> str:
+        if not text:
+            return ""
+        return text[:max_len] + ("…" if len(text) > max_len else "")
+
+    @get_track_decorator()
     def synthesize(self, paystub_data: Dict[str, Any], policy_answer: Dict[str, Any]) -> Dict[str, Any]:
         self.tracer.log_step("strategist_input_received", {"paystub_keys": sorted(paystub_data.keys())})
         policy = parse_policy_answer(policy_answer.get("answer"))
@@ -48,11 +55,20 @@ class StrategistAgent:
         if use_llm:
             prompt = build_prompt(self.config.prompt_prefix, paystub_data, policy_answer, self.config.prompt_suffix)
             self.tracer.log_step("strategist_prompt_built", {"length": len(prompt)})
+            self.tracer.log_step("strategist_prompt_preview", {"preview": self._preview(prompt)})
             response_text = self.client.generate_content(build_request(prompt))
             self.tracer.log_step("strategist_response_received", {"length": len(response_text)})
             output["recommendation"] = extract_text_response(response_text)
+            self.tracer.log_step(
+                "strategist_recommendation_preview",
+                {"preview": self._preview(output["recommendation"])},
+            )
         else:
             output["recommendation"] = format_recommendation(output)
+            self.tracer.log_step(
+                "strategist_recommendation_preview",
+                {"preview": self._preview(output["recommendation"])},
+            )
         return output
 
 
