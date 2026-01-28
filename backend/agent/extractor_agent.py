@@ -223,11 +223,24 @@ class ExtractorAgent:
 
     # Run the extraction pipeline for a file
     @get_track_decorator()
-    def extract_from_file(self, file_path: str) -> Dict[str, Any]:
-        mock_payload = os.getenv("EXTRACT_MOCK_JSON")
+    def extract_from_file(self, file_path: str, schema_fields: Iterable[Tuple[str, str]] | None = None) -> Dict[str, Any]:
+        # Check for specific mocks based on filename
+        fname = os.path.basename(file_path).lower()
+        if "paystub" in fname:
+            mock_payload = os.getenv("EXTRACT_MOCK_PAYSTUB")
+        elif any(k in fname for k in ("rsu", "stock", "grant", "equity")):
+            mock_payload = os.getenv("EXTRACT_MOCK_RSU")
+        else:
+            mock_payload = None
+            
+        # Fallback to generic mock
+        if not mock_payload:
+            mock_payload = os.getenv("EXTRACT_MOCK_JSON")
+            
         if mock_payload:
             self.tracer.log_step("extract_mock_used", {"file_path": file_path})
             return json.loads(mock_payload)
+            
         self.tracer.log_step("guess_mime_type", {"file_path": file_path})
         mime_type = guess_mime_type(file_path)
         self.tracer.log_step("mime_type_resolved", {"mime_type": mime_type})
@@ -237,14 +250,15 @@ class ExtractorAgent:
             "file_loaded",
             {"base64_length": len(data), "approx_size_bytes": approx_bytes, "mime_type": mime_type},
         )
-        prompt_text = build_prompt_text(get_schema_fields())
+        fields = schema_fields or get_schema_fields()
+        prompt_text = build_prompt_text(fields)
         self.tracer.log_step(
             "extract_prompt_preview",
             {"length": len(prompt_text), "preview": self._preview(prompt_text)},
         )
-        request_body = build_request(mime_type, data)
+        request_body = build_request(mime_type, data, fields)
         self.tracer.log_step(
-            "request_built", {"schema_fields": len(get_schema_fields())}
+            "request_built", {"schema_fields": len(fields)}
         )
         response_text = self.client.generate_content(request_body)
         self.tracer.log_step(
@@ -260,8 +274,9 @@ class ExtractorAgent:
 
 
 # Build the Gemini request payload
-def build_request(mime_type: str, base64_data: str) -> Dict[str, Any]:
-    prompt = {"text": build_prompt_text(get_schema_fields())}
+def build_request(mime_type: str, base64_data: str, schema_fields: Iterable[Tuple[str, str]] | None = None) -> Dict[str, Any]:
+    fields = schema_fields or get_schema_fields()
+    prompt = {"text": build_prompt_text(fields)}
     return {
         "contents": [
             {

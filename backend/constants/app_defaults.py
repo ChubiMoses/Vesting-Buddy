@@ -14,7 +14,18 @@ DEFAULT_SCHEMA_FIELDS = (
     ("roth_401k", "number"),
     ("hsa_contribution", "number"),
     ("ytd_gross_pay", "number"),
+    ("total_taxes", "number"),
+    ("total_deductions", "number"),
     ("currency", "string"),
+)
+
+RSU_SCHEMA_FIELDS = (
+    ("participant_name", "string"),
+    ("grant_date", "string"),
+    ("total_shares_granted", "number"),
+    ("vesting_schedule_description", "string"),
+    ("next_vesting_date", "string"),
+    ("next_vesting_shares", "number"),
 )
 
 DEFAULT_POLICY_TOP_K = 4
