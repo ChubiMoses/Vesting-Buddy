@@ -22,14 +22,26 @@ class GuardrailAgent:
 
     @get_track_decorator()
     def enforce(self, content: str) -> Dict[str, str]:
-        lowered = content.lower()
-        blocked = [term for term in self.config.blocked_terms if term.lower() in lowered]
-        self.tracer.log_step("guardrail_scanned", {"blocked_count": len(blocked)})
-        if blocked:
-            self.tracer.log_step("guardrail_blocked", {"blocked_terms": blocked})
-            return {"status": "blocked", "content": self.config.replacement_text}
-        return {"status": "allowed", "content": content}
+        violations = []
 
+        if re.search(r"\b(stock|crypto|bitcoin|ethereum)\b", content, re.I):
+            violations.append("Speculative assets mentioned")
+
+        if re.search(r"\bleverage|options|futures\b", content, re.I):
+            violations.append("High-risk financial instruments")
+        self.tracer.log_step(
+        "guardrail_evaluation",
+        {"violations": violations},
+        )
+
+        if violations:
+            return {
+            "status": "blocked",
+            "content": self.config.replacement_text,
+            "violations": violations,
+        }
+
+        return {"status": "allowed", "content": content}
 
 def load_guardrail_from_env() -> GuardrailAgent:
     raw = get_env_value("GUARDRAIL_BLOCKLIST", default=",".join(DEFAULT_GUARDRAIL_BLOCKLIST))
