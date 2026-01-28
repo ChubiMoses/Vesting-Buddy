@@ -20,6 +20,7 @@ class GuardrailAgent:
         self.tracer = tracer
         self.config = config
 
+    @get_track_decorator()
     def enforce(self, content: str) -> Dict[str, str]:
         lowered = content.lower()
         blocked = [term for term in self.config.blocked_terms if term.lower() in lowered]

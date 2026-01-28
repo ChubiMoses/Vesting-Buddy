@@ -216,7 +216,13 @@ class ExtractorAgent:
         self.client = client
         self.tracer = tracer
 
+    def _preview(self, text: str, max_len: int = 400) -> str:
+        if not text:
+            return ""
+        return text[:max_len] + ("…" if len(text) > max_len else "")
+
     # Run the extraction pipeline for a file
+    @get_track_decorator()
     def extract_from_file(self, file_path: str) -> Dict[str, Any]:
         mock_payload = os.getenv("EXTRACT_MOCK_JSON")
         if mock_payload:
@@ -226,15 +232,30 @@ class ExtractorAgent:
         mime_type = guess_mime_type(file_path)
         self.tracer.log_step("mime_type_resolved", {"mime_type": mime_type})
         data = read_file_base64(file_path)
-        self.tracer.log_step("file_loaded", {"base64_length": len(data)})
+        approx_bytes = (len(data) * 3) // 4
+        self.tracer.log_step(
+            "file_loaded",
+            {"base64_length": len(data), "approx_size_bytes": approx_bytes, "mime_type": mime_type},
+        )
+        prompt_text = build_prompt_text(get_schema_fields())
+        self.tracer.log_step(
+            "extract_prompt_preview",
+            {"length": len(prompt_text), "preview": self._preview(prompt_text)},
+        )
         request_body = build_request(mime_type, data)
         self.tracer.log_step(
             "request_built", {"schema_fields": len(get_schema_fields())}
         )
         response_text = self.client.generate_content(request_body)
-        self.tracer.log_step("response_received", {"response_length": len(response_text)})
+        self.tracer.log_step(
+            "response_received",
+            {"response_length": len(response_text), "preview": self._preview(response_text)},
+        )
         result = parse_response(response_text)
-        self.tracer.log_step("response_parsed", {"result_keys": sorted(result.keys())})
+        self.tracer.log_step(
+            "response_parsed",
+            {"result_keys": sorted(result.keys()), "result_preview": self._preview(json.dumps(result))},
+        )
         return result
 
 
