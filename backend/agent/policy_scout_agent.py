@@ -84,7 +84,8 @@ class PolicyScoutAgent:
                 "question": question,
                 "answer": answer_text,
                 "sources": matches,
-                "conflicts": False,
+                "conflicts": conflicts,
+                "confidence": classify_policy_confidence(sections, conflicts),
             }
         except RuntimeError as exc:
             if not self.config.handbook_path.lower().endswith(".pdf"):
@@ -176,7 +177,7 @@ def find_policy_sections(text: str) -> Tuple[List[str], bool]:
     for block in keyword_hits:
         expanded.append(block.strip())
     unique_sections = list(dict.fromkeys(expanded))
-    conflicts = len(unique_sections) > 1
+    conflicts = detect_semantic_conflict(unique_sections)
     return unique_sections, conflicts
 
 
@@ -364,3 +365,16 @@ def load_gemini_config() -> ExtractorConfig:
         api_version=get_env_value("GEMINI_API_VERSION", required=True),
         base_url=get_env_value("GEMINI_BASE_URL", required=True),
     )
+
+def classify_policy_confidence(sections: list[str], conflicts: bool) -> str:
+    if not sections:
+        return "low"
+    if conflicts:
+        return "medium"
+    if len(sections[0]) < 300:
+        return "medium"
+    return "high"
+
+def detect_semantic_conflict(sections: list[str]) -> bool:
+    percents = set(re.findall(r"\d+(\.\d+)?\s*%", " ".join(sections)))
+    return len(percents) > 1
