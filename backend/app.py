@@ -1,3 +1,5 @@
+import config_loader
+from config_loader import load_env
 import json
 import os
 import sys
@@ -5,19 +7,6 @@ import warnings
 
 from agent.extractor_agent import load_extractor_from_env
 from utils.asset_picker import pick_paystub
-
-
-def load_env(path: str) -> None:
-    if not os.path.isfile(path):
-        return
-    with open(path, "r", encoding="utf-8") as file:
-        for raw_line in file:
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            if key and (key not in os.environ or not os.environ.get(key)):
-                os.environ[key] = value
 
 
 _OPIK_CONFIGURED = False
@@ -46,18 +35,26 @@ def configure_opik() -> None:
             return
     except Exception:
         pass
-    api_key = os.getenv("OPIK_API_KEY")
-    workspace = os.getenv("OPIK_WORKSPACE")
+    api_key = (os.getenv("OPIK_API_KEY") or "").strip()
+    workspace = (os.getenv("OPIK_WORKSPACE") or "").strip()
+    project = (os.getenv("OPIK_PROJECT_NAME") or "").strip()
     url = os.getenv("OPIK_URL_OVERRIDE")
     use_local = os.getenv("OPIK_USE_LOCAL", "").lower() in {"1", "true", "yes"}
     if not api_key and not use_local:
         return
+    if api_key:
+        os.environ["OPIK_API_KEY"] = api_key
+    if workspace:
+        os.environ.setdefault("OPIK_WORKSPACE_NAME", workspace)
+    if project:
+        os.environ.setdefault("OPIK_PROJECT_NAME", project)
     if api_key or workspace or url or use_local:
         opik.configure(
             api_key=api_key,
             workspace=workspace,
             url=url,
             use_local=use_local,
+            force=True,
             automatic_approvals=True,
         )
         _OPIK_CONFIGURED = True

@@ -1,3 +1,4 @@
+import config_loader
 import os
 import sys
 
@@ -5,7 +6,7 @@ from agent.extractor_agent import get_track_decorator, get_tracer, load_extracto
 from agent.guardrail_agent import load_guardrail_from_env
 from agent.policy_scout_agent import load_policy_scout_from_env
 from agent.strategist_agent import load_strategist_from_env
-from app import configure_opik, load_env
+from app import configure_opik
 from constants.app_defaults import DEFAULT_POLICY_QUESTION
 from utils.asset_picker import pick_documents
 
@@ -23,7 +24,6 @@ def resolve_question(args: list[str]) -> str:
 @get_track_decorator()
 def run() -> dict:
     # Orchestrate the multi-agent workflow
-    load_env(os.path.join(os.path.dirname(__file__), ".env"))
     configure_opik()
     tracer = get_tracer()
     question = resolve_question(sys.argv)
@@ -97,3 +97,8 @@ def format_output(result: dict) -> str:
 if __name__ == "__main__":
     result = run()
     print(format_output(result))
+    try:
+        import opik
+        opik.flush_tracker()
+    except Exception:
+        pass
