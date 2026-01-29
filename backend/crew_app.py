@@ -7,8 +7,8 @@ from agent.guardrail_agent import load_guardrail_from_env
 from agent.policy_scout_agent import load_policy_scout_from_env
 from agent.strategist_agent import load_strategist_from_env
 from app import configure_opik
-from constants.app_defaults import DEFAULT_POLICY_QUESTION
-from utils.asset_picker import pick_documents
+from constants.app_defaults import DEFAULT_POLICY_QUESTION, RSU_SCHEMA_FIELDS
+from utils.asset_picker import pick_documents, pick_rsu_document
 
 
 def resolve_question(args: list[str]) -> str:
@@ -38,9 +38,18 @@ def run() -> dict:
         raise
     print(f"✅ Found paystub: {os.path.basename(paystub_path)}")
     print(f"✅ Found handbook: {os.path.basename(handbook_path)}")
+    
+    rsu_path = pick_rsu_document(asset_dir)
+    if rsu_path:
+        print(f"✅ Found RSU grant: {os.path.basename(rsu_path)}")
+    
     tracer.log_step(
         "assets_selected",
-        {"paystub": os.path.basename(paystub_path), "handbook": os.path.basename(handbook_path)},
+        {
+            "paystub": os.path.basename(paystub_path),
+            "handbook": os.path.basename(handbook_path),
+            "rsu_grant": os.path.basename(rsu_path) if rsu_path else None,
+        },
     )
     extractor = load_extractor_from_env()
     policy = load_policy_scout_from_env(handbook_path=handbook_path)
@@ -49,12 +58,19 @@ def run() -> dict:
     print("📄 Reading paystub...")
     tracer.log_step("paystub_read_started", {"file": paystub_path})
     paystub = extractor.extract_from_file(paystub_path)
+    
+    rsu_data = None
+    if rsu_path:
+        print("📜 Reading RSU grant...")
+        tracer.log_step("rsu_read_started", {"file": rsu_path})
+        rsu_data = extractor.extract_from_file(rsu_path, schema_fields=RSU_SCHEMA_FIELDS)
+
     print("📘 Reading handbook and extracting match policy...")
     tracer.log_step("policy_read_started", {"file": handbook_path})
     policy_answer = policy.answer(question)
     print("🧮 Computing leaked value...")
     tracer.log_step("strategist_started", {"question": question})
-    strategist_output = strategist.synthesize(paystub, policy_answer)
+    strategist_output = strategist.synthesize(paystub, policy_answer, rsu_data=rsu_data)
     print("🛡️ Running safety checks...")
     tracer.log_step("guardrail_started", {})
     guarded = guardrail.enforce(strategist_output["recommendation"])

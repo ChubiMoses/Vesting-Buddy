@@ -37,11 +37,20 @@ class StrategistAgent:
         return text[:max_len] + ("…" if len(text) > max_len else "")
 
     @get_track_decorator()
-    def synthesize(self, paystub_data: Dict[str, Any], policy_answer: Dict[str, Any]) -> Dict[str, Any]:
+    def synthesize(self, paystub_data: Dict[str, Any], policy_answer: Dict[str, Any], rsu_data: Dict[str, Any] | None = None) -> Dict[str, Any]:
         self.tracer.log_step("strategist_input_received", {"paystub_keys": sorted(paystub_data.keys())})
         policy = parse_policy_answer(policy_answer.get("answer"))
         self.tracer.log_step("strategist_policy_parsed", {"policy_keys": sorted(policy.keys())})
         metrics = compute_leaked_value(paystub_data, policy)
+        metrics["employee_name"] = paystub_data.get("employee_name", "Employee")
+        
+        # Paystub Verification
+        paystub_verification = verify_paystub_math(paystub_data)
+        metrics["paystub_verification"] = paystub_verification
+        
+        # RSU Analysis
+        rsu_analysis = analyze_rsu(rsu_data) if rsu_data else None
+
         self.tracer.log_step("strategist_metrics_computed", metrics)
         steps = build_action_plan(metrics, policy)
         reasoning = build_reasoning(metrics)
@@ -50,10 +59,13 @@ class StrategistAgent:
             "reasoning": reasoning,
             "action_plan": steps,
             "policy_conflicts": policy_answer.get("conflicts"),
+            "rsu_analysis": rsu_analysis,
         }
         use_llm = os.getenv("STRATEGIST_USE_LLM", "").lower() in {"1", "true", "yes"}
         if use_llm:
             prompt = build_prompt(self.config.prompt_prefix, paystub_data, policy_answer, self.config.prompt_suffix)
+            if rsu_data:
+                prompt += f"\n\nRSU Data:\n{json.dumps(rsu_data, ensure_ascii=False)}"
             self.tracer.log_step("strategist_prompt_built", {"length": len(prompt)})
             self.tracer.log_step("strategist_prompt_preview", {"preview": self._preview(prompt)})
             response_text = self.client.generate_content(build_request(prompt))
@@ -206,6 +218,7 @@ def compute_leaked_value(paystub: Dict[str, Any], policy: Dict[str, Any]) -> Dic
         "pay_periods_per_year": periods,
         "policy_missing_match": (match_rate == 0 or match_up_to == 0) and not tiers_present,
         "tiers_present": tiers_present,
+        "tiers": tiers,
     }
 
 
@@ -246,40 +259,150 @@ def format_recommendation(output: Dict[str, Any]) -> str:
     metrics = output["leaked_value"]
     steps = output["action_plan"]
     conflicts = output.get("policy_conflicts")
+    rsu_analysis = output.get("rsu_analysis")
+    paystub_verification = metrics.get("paystub_verification")
+
+    # Extract first name
+    full_name = metrics.get("employee_name", "User")
+    name = full_name.split()[0] if full_name else "User"
+
+    sections = []
+
+    # 1. RSU Section (Urgent)
+    if rsu_analysis and rsu_analysis.get("days_remaining", 0) <= 90:
+        vest_date = rsu_analysis["next_vesting_date"]
+        days = rsu_analysis["days_remaining"]
+        shares = rsu_analysis["shares"]
+        # Assuming a placeholder value or if we had a price
+        # value_msg = f"${rsu_analysis['value_estimate']:,.2f}" if rsu_analysis.get('value_estimate') else "$X"
+        value_msg = "$X"
+        
+        rsu_msg = (
+            f"Urgent: You have a {shares:.0f}-share vesting cliff approaching on {vest_date}. "
+            f"If you stay with the company for {days} more days, you will secure shares valued at approximately {value_msg}."
+        )
+        sections.append(f"The Alert:\n{rsu_msg}")
+
+    # 2. Paystub Verification
+    if paystub_verification:
+        status = paystub_verification["status"]
+        if status == "incorrect":
+            sections.append(f"Paystub Audit: ⚠️ {paystub_verification['message']}")
+        elif status == "correct":
+            sections.append("Paystub Audit: ✅ Calculations verified.")
+
+    # 3. Match Verdict
     if metrics["policy_missing_match"]:
-        catch = "Policy match data not found. Unable to quantify missed employer match."
+        verdict = f"{name}, we couldn't find the match policy in your documents. Unable to quantify missed employer match."
         if conflicts:
-            catch = f"{catch} Conflicting policies detected."
+            verdict += " Conflicting policies were detected."
         math = (
-            f"Gross per period: {metrics['gross_pay']:.2f}. "
-            f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%. "
-            "Match policy: not found."
+            f"Gross per period: ${metrics['gross_pay']:.2f}\n"
+            f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%\n"
+            "Match policy: not found"
         )
     else:
-        catch = (
-            f"Estimated annual missed match: ${metrics['annual_opportunity_cost']:.2f} "
-            f"based on a {metrics['gap_rate'] * 100:.2f}% contribution gap."
-        )
+        monthly_gain = metrics['annual_opportunity_cost'] / 12
+        gap_percent = metrics['gap_rate'] * 100
+        current_percent = metrics['current_401k_rate'] * 100
+        target_percent = current_percent + gap_percent
+
+        # Calculate ROI
+        annual_cost = metrics['gross_pay'] * metrics['gap_rate'] * metrics['pay_periods_per_year']
+        roi = (metrics['annual_opportunity_cost'] / annual_cost * 100) if annual_cost > 0 else 0
+
+        if metrics['gap_rate'] > 0:
+            verdict = (
+                f"{name}, you are currently contributing {current_percent:.1f}%. "
+                f"By increasing your contribution to {target_percent:.1f}%, you unlock an additional "
+                f"${monthly_gain:.0f}/month in employer matching. "
+                f"This is an immediate {roi:.0f}% return on your investment."
+            )
+        else:
+            verdict = (
+                f"{name}, great job! You are contributing {current_percent:.1f}%, which captures the full employer match. "
+                "You are not leaving any free money on the table."
+            )
+
         if conflicts:
-            catch = f"{catch} Conflicting policies detected."
+            verdict += " Note: Conflicting policies detected."
+
         if metrics.get("tiers_present"):
+            tier_lines = []
+            for i, (rate, limit) in enumerate(metrics['tiers']):
+                prefix = "First" if i == 0 else "Next"
+                tier_lines.append(f"  - {rate*100:.0f}% match on {prefix} {limit*100:.1f}% of salary")
+            tier_str = "\n".join(tier_lines)
+
             math = (
-                f"Gross per period: ${metrics['gross_pay']:.2f}; "
-                f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%; "
-                f"Tiered match up to {metrics['match_up_to'] * 100:.2f}%; "
-                f"Gap: {metrics['gap_rate'] * 100:.2f}%; "
-                f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}."
+                f"Gross per period: ${metrics['gross_pay']:.2f}\n"
+                f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%\n"
+                f"Match Tiers:\n{tier_str}\n"
+                f"Gap to max match: {metrics['gap_rate'] * 100:.2f}%\n"
+                f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}"
             )
         else:
             math = (
-                f"Gross per period: ${metrics['gross_pay']:.2f}; "
-                f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%; "
-                f"Match policy: {metrics['match_rate'] * 100:.2f}% up to {metrics['match_up_to'] * 100:.2f}%; "
-                f"Gap: {metrics['gap_rate'] * 100:.2f}%; "
-                f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}."
+                f"Gross per period: ${metrics['gross_pay']:.2f}\n"
+                f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%\n"
+                f"Match policy: {metrics['match_rate'] * 100:.0f}% match up to {metrics['match_up_to'] * 100:.1f}% of salary\n"
+                f"Gap: {metrics['gap_rate'] * 100:.2f}%\n"
+                f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}"
             )
+
+    sections.append(f"The Verdict: {verdict}")
+    sections.append(f"The Math:\n{math}")
+
     plan = "\n".join(f"- {step}" for step in steps[:3])
-    return f"The Catch: {catch}\nThe Math: {math}\nAction Plan:\n{plan}"
+    sections.append(f"Action Plan:\n{plan}")
+    
+    return "\n\n".join(sections)
+
+
+def verify_paystub_math(paystub: Dict[str, Any]) -> Dict[str, Any]:
+    gross = to_float(paystub.get("gross_pay") or paystub.get("base_pay"))
+    net = to_float(paystub.get("net_pay"))
+    taxes = to_float(paystub.get("total_taxes"))
+    deductions = to_float(paystub.get("total_deductions"))
+    
+    if taxes == 0 and deductions == 0:
+        return {"status": "unknown", "message": "Missing tax/deduction data for verification"}
+        
+    calculated_net = gross - taxes - deductions
+    diff = abs(calculated_net - net)
+    
+    # Allow small rounding differences
+    if diff < 1.0:
+        return {"status": "correct", "message": "Calculations verified"}
+    else:
+        return {
+            "status": "incorrect", 
+            "message": f"Gross (${gross:.2f}) - Taxes (${taxes:.2f}) - Deductions (${deductions:.2f}) = ${calculated_net:.2f}, but Net is ${net:.2f}."
+        }
+
+
+def analyze_rsu(rsu_data: Dict[str, Any]) -> Dict[str, Any] | None:
+    if not rsu_data:
+        return None
+    
+    date_str = rsu_data.get("next_vesting_date")
+    shares = to_float(rsu_data.get("next_vesting_shares"))
+    
+    if not date_str or not shares:
+        return None
+        
+    vest_date = parse_date(date_str)
+    if not vest_date:
+        return None
+        
+    now = datetime.now()
+    days = (vest_date - now).days
+    
+    return {
+        "next_vesting_date": vest_date.strftime("%B %d, %Y"),
+        "days_remaining": days,
+        "shares": shares
+    }
 
 
 def extract_match_from_raw(raw_text: str) -> Dict[str, float]:

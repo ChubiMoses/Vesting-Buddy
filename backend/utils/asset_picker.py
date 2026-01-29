@@ -1,6 +1,6 @@
 import os
 
-from constants.asset_constants import HANDBOOK_KEYWORDS, PAYSTUB_KEYWORDS
+from constants.asset_constants import HANDBOOK_KEYWORDS, PAYSTUB_KEYWORDS, RSU_KEYWORDS
 
 
 def list_asset_files(asset_dir: str) -> list[str]:
@@ -66,3 +66,8 @@ def pick_handbook(asset_dir: str) -> str:
     if files:
         return files[0]
     raise RuntimeError("No handbook found in assets.")
+
+
+def pick_rsu_document(asset_dir: str) -> str | None:
+    files = [path for path in list_asset_files(asset_dir) if is_supported_asset(path)]
+    return pick_best_match(files, RSU_KEYWORDS)
