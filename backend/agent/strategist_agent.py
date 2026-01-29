@@ -154,7 +154,7 @@ def to_percent(value: Any) -> float:
 def parse_date(value: Any) -> datetime | None:
     if not value:
         return None
-    for fmt in ("%m/%d/%Y", "%m/%d/%y", "%Y-%m-%d"):
+    for fmt in ("%m/%d/%Y", "%m/%d/%y", "%Y-%m-%d", "%B %d, %Y", "%b %d, %Y"):
         try:
             return datetime.strptime(str(value), fmt)
         except Exception:
@@ -274,12 +274,14 @@ def format_recommendation(output: Dict[str, Any]) -> str:
         days = rsu_analysis["days_remaining"]
         shares = rsu_analysis["shares"]
         # Assuming a placeholder value or if we had a price
-        # value_msg = f"${rsu_analysis['value_estimate']:,.2f}" if rsu_analysis.get('value_estimate') else "$X"
-        value_msg = "$X"
+        value_estimate = rsu_analysis.get('value_estimate', 0.0)
+        stock_price = rsu_analysis.get('stock_price', 0.0)
+        value_msg = f"${value_estimate:,.2f}" if value_estimate > 0 else "Y$"
+        price_note = f" (estimated at ${stock_price:.2f}/share)" if stock_price > 0 else ""
         
         rsu_msg = (
             f"Urgent: You have a {shares:.0f}-share vesting cliff approaching on {vest_date}. "
-            f"If you stay with the company for {days} more days, you will secure shares valued at approximately {value_msg}."
+            f"If you stay with the company for {days} more days, you will secure shares valued at approximately {value_msg}{price_note}."
         )
         sections.append(f"The Alert:\n{rsu_msg}")
 
@@ -375,6 +377,19 @@ def verify_paystub_math(paystub: Dict[str, Any]) -> Dict[str, Any]:
     if diff < 1.0:
         return {"status": "correct", "message": "Calculations verified"}
     else:
+        # Check if Taxes are already included in Total Deductions
+        # Scenario: Deductions = Taxes + Other Deductions
+        # If Deductions ~= Taxes + (Gross - Net - Taxes) ... wait, simpler:
+        # If Gross - Deductions = Net, then Taxes are likely inside Deductions
+        alt_net = gross - deductions
+        alt_diff = abs(alt_net - net)
+        
+        if alt_diff < 1.0:
+            return {
+                "status": "correct",
+                "message": "Calculations verified (Note: Total Deductions appears to include Taxes)"
+            }
+            
         return {
             "status": "incorrect", 
             "message": f"Gross (${gross:.2f}) - Taxes (${taxes:.2f}) - Deductions (${deductions:.2f}) = ${calculated_net:.2f}, but Net is ${net:.2f}."
@@ -395,14 +410,33 @@ def analyze_rsu(rsu_data: Dict[str, Any]) -> Dict[str, Any] | None:
     if not vest_date:
         return None
         
-    now = datetime.now()
-    days = (vest_date - now).days
+    now = datetime.now().date()
+    days = (vest_date.date() - now).days
     
+    # Attempt to get stock price
+    employer = rsu_data.get("employer_name")
+    price = to_float(rsu_data.get("current_stock_price"))
+    if price == 0:
+        price = get_stock_price(employer)
+        
+    value_estimate = shares * price
+
     return {
         "next_vesting_date": vest_date.strftime("%B %d, %Y"),
         "days_remaining": days,
-        "shares": shares
+        "shares": shares,
+        "stock_price": price,
+        "value_estimate": value_estimate
     }
+
+
+def get_stock_price(company_name: str | None = None) -> float:
+    # In a real app, this would query a stock API.
+    # For this demo/MVP, we mock "Apex Tech Solutions" or provide a default.
+    if company_name and "apex" in company_name.lower():
+        return 150.00
+    # No assumption if unknown
+    return 0.0
 
 
 def extract_match_from_raw(raw_text: str) -> Dict[str, float]:
