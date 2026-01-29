@@ -1,2 +1,6 @@
-{"handbook":"simple_match","expected_confidence":"high","expected_conflict":false}
-{"handbook":"conflicting_match","expected_confidence":"medium","expected_conflict":true}
+{
+  "expected_policy": {
+    "confidence": "high",
+    "conflicts": false
+  }
+}

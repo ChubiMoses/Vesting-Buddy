@@ -1,0 +1,3 @@
+{"case":"match_gap","expected_extraction":{"gross_pay":5200,"pre_tax_401k":156},"expected_policy":{"confidence":"high","conflicts":false},"expected_strategy":{"min_gap_rate":0.03,"min_annual_opportunity":2500}}
+{"case":"vesting_cliff","expected_vesting_cliff":{"date":"March 15, 2026"}}
+{"case":"guardrail_block","expected_guardrail":{"expected_status":"blocked"}}
