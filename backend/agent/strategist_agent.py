@@ -268,6 +268,17 @@ def format_recommendation(output: Dict[str, Any]) -> str:
 
     sections = []
 
+    # Calculate Total Value Identified
+    match_value = metrics.get('annual_opportunity_cost', 0.0)
+    rsu_value = 0.0
+    if rsu_analysis and rsu_analysis.get("days_remaining", 0) <= 90:
+        rsu_value = rsu_analysis.get('value_estimate', 0.0)
+    
+    total_saved = match_value + rsu_value
+    
+    if total_saved > 0:
+        sections.append(f"💰 Amount Saved: ${total_saved:,.2f} (Total value identified)")
+
     # 1. RSU Section (Urgent)
     if rsu_analysis and rsu_analysis.get("days_remaining", 0) <= 90:
         vest_date = rsu_analysis["next_vesting_date"]
@@ -280,28 +291,28 @@ def format_recommendation(output: Dict[str, Any]) -> str:
         price_note = f" (estimated at ${stock_price:.2f}/share)" if stock_price > 0 else ""
         
         rsu_msg = (
-            f"Urgent: You have a {shares:.0f}-share vesting cliff approaching on {vest_date}. "
-            f"If you stay with the company for {days} more days, you will secure shares valued at approximately {value_msg}{price_note}."
+            f"You have a {shares:.0f}-share vesting cliff approaching on {vest_date}. "
+            f"By remaining with the company for {days} additional days, you will secure equity valued at approximately {value_msg}{price_note}."
         )
-        sections.append(f"The Alert:\n{rsu_msg}")
+        sections.append(f"🚨 Urgent Strategic Alert:\n{rsu_msg}")
 
     # 2. Paystub Verification
     if paystub_verification:
         status = paystub_verification["status"]
         if status == "incorrect":
-            sections.append(f"Paystub Audit: ⚠️ {paystub_verification['message']}")
+            sections.append(f"⚠️ Payroll Integrity Check: {paystub_verification['message']}")
         elif status == "correct":
-            sections.append("Paystub Audit: ✅ Calculations verified.")
+            sections.append("✅ Payroll Integrity Check: Verified. Net pay accurately reflects gross income less taxes and deductions.")
 
     # 3. Match Verdict
     if metrics["policy_missing_match"]:
-        verdict = f"{name}, we couldn't find the match policy in your documents. Unable to quantify missed employer match."
+        verdict = f"{name}, we could not verify your employer match policy in the provided documents. To ensure you are not leaving capital on the table, we must locate this information."
         if conflicts:
-            verdict += " Conflicting policies were detected."
+            verdict += " Note: Conflicting policy data was detected."
         math = (
             f"Gross per period: ${metrics['gross_pay']:.2f}\n"
             f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%\n"
-            "Match policy: not found"
+            "Match policy: Not found in documents"
         )
     else:
         monthly_gain = metrics['annual_opportunity_cost'] / 12
@@ -316,14 +327,14 @@ def format_recommendation(output: Dict[str, Any]) -> str:
         if metrics['gap_rate'] > 0:
             verdict = (
                 f"{name}, you are currently contributing {current_percent:.1f}%. "
-                f"By increasing your contribution to {target_percent:.1f}%, you unlock an additional "
+                f"By increasing your contribution to {target_percent:.1f}%, you will unlock an additional "
                 f"${monthly_gain:.0f}/month in employer matching. "
-                f"This is an immediate {roi:.0f}% return on your investment."
+                f"This represents an immediate {roi:.0f}% return on your investment."
             )
         else:
             verdict = (
-                f"{name}, great job! You are contributing {current_percent:.1f}%, which captures the full employer match. "
-                "You are not leaving any free money on the table."
+                f"{name}, excellent work. You are contributing {current_percent:.1f}%, which captures the full employer match. "
+                "You are maximizing this risk-free return on capital."
             )
 
         if conflicts:
@@ -339,7 +350,7 @@ def format_recommendation(output: Dict[str, Any]) -> str:
             math = (
                 f"Gross per period: ${metrics['gross_pay']:.2f}\n"
                 f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%\n"
-                f"Match Tiers:\n{tier_str}\n"
+                f"Match Structure:\n{tier_str}\n"
                 f"Gap to max match: {metrics['gap_rate'] * 100:.2f}%\n"
                 f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}"
             )
@@ -352,11 +363,11 @@ def format_recommendation(output: Dict[str, Any]) -> str:
                 f"Annual opportunity cost: ${metrics['annual_opportunity_cost']:.2f}"
             )
 
-    sections.append(f"The Verdict: {verdict}")
-    sections.append(f"The Math:\n{math}")
+    sections.append(f"💼 Executive Summary: {verdict}")
+    sections.append(f"📊 Financial Impact Analysis:\n{math}")
 
     plan = "\n".join(f"- {step}" for step in steps[:3])
-    sections.append(f"Action Plan:\n{plan}")
+    sections.append(f"🚀 Strategic Roadmap:\n{plan}")
     
     return "\n\n".join(sections)
 
