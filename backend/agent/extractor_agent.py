@@ -1,4 +1,5 @@
 import base64
+from email import errors
 import json
 import mimetypes
 import os
@@ -19,6 +20,7 @@ try:
 except Exception:
     opik_track = None
 
+from agent.extraction_validator import validate_extraction
 from constants.app_defaults import (
     DEFAULT_EXTRACT_PROMPT_PREFIX,
     DEFAULT_EXTRACT_PROMPT_SUFFIX,
@@ -210,6 +212,7 @@ class GeminiClient:
             payload = json.loads(resp.read().decode("utf-8"))
         return payload.get("models") or []
 
+MAX_EXTRACTION_RETRIES = 2
 
 class ExtractorAgent:
     def __init__(self, client: GeminiClient, tracer: Tracer) -> None:
@@ -261,17 +264,24 @@ class ExtractorAgent:
             "request_built", {"schema_fields": len(fields)}
         )
         response_text = self.client.generate_content(request_body)
-        self.tracer.log_step(
-            "response_received",
-            {"response_length": len(response_text), "preview": self._preview(response_text)},
-        )
-        result = parse_response(response_text)
-        self.tracer.log_step(
-            "response_parsed",
-            {"result_keys": sorted(result.keys()), "result_preview": self._preview(json.dumps(result))},
-        )
-        return result
+        self.tracer.log_step("response_received", {"response_length": len(response_text)})
+        for attempt in range(MAX_EXTRACTION_RETRIES + 1):
+            result = parse_response(response_text)
+            valid, errors = validate_extraction(result, fields)
 
+            self.tracer.log_step(
+            "extraction_validation",
+            {"valid": valid, "errors": errors, "attempt": attempt},
+            )
+
+            if valid:
+                result["_extraction_confidence"] = 1.0 if attempt == 0 else 0.7
+                return result
+
+            if attempt < MAX_EXTRACTION_RETRIES:
+                response_text = self.client.generate_content(request_body)
+
+        raise RuntimeError(f"Extraction failed after retries: {errors}")
 
 # Build the Gemini request payload
 def build_request(mime_type: str, base64_data: str, schema_fields: Iterable[Tuple[str, str]] | None = None) -> Dict[str, Any]:
