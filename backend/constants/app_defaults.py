@@ -21,11 +21,13 @@ DEFAULT_SCHEMA_FIELDS = (
 
 RSU_SCHEMA_FIELDS = (
     ("participant_name", "string"),
+    ("employer_name", "string"),
     ("grant_date", "string"),
     ("total_shares_granted", "number"),
     ("vesting_schedule_description", "string"),
     ("next_vesting_date", "string"),
     ("next_vesting_shares", "number"),
+    ("current_stock_price", "number"),
 )
 
 DEFAULT_POLICY_TOP_K = 4
