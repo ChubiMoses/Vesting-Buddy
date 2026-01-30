@@ -1,0 +1,6 @@
+{
+  "expected_strategy": {
+    "min_gap_rate": 0.03,
+    "min_annual_opportunity": 2500
+  }
+}

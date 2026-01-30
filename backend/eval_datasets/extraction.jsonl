@@ -1,0 +1,7 @@
+{
+  "expected_extraction": {
+    "gross_pay": 5200,
+    "pre_tax_401k": 156,
+    "net_pay": 4360
+  }
+}

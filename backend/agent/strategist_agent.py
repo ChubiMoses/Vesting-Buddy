@@ -222,37 +222,56 @@ def compute_leaked_value(paystub: Dict[str, Any], policy: Dict[str, Any]) -> Dic
     }
 
 
-def build_reasoning(metrics: Dict[str, Any]) -> List[str]:
-    if metrics.get("tiers_present"):
-        return [
-            f"User gross per period: {metrics['gross_pay']}.",
-            f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%. Tiered match detected up to {metrics['match_up_to'] * 100:.2f}%.",
-            f"Gap rate: {metrics['gap_rate'] * 100:.2f}%. Annual opportunity cost: {metrics['annual_opportunity_cost']}.",
-        ]
+def build_reasoning(metrics: Dict[str, Any]) -> List[Dict[str, str]]:
     return [
-        f"User gross per period: {metrics['gross_pay']}.",
-        f"Current 401k rate: {metrics['current_401k_rate'] * 100:.2f}%. Match policy: {metrics['match_rate'] * 100:.0f}% up to {metrics['match_up_to'] * 100:.0f}%.",
-        f"Gap rate: {metrics['gap_rate'] * 100:.2f}%. Annual opportunity cost: {metrics['annual_opportunity_cost']}.",
+        {
+            "assumption": "Pay frequency inferred from pay period dates",
+            "calculation": f"{metrics['pay_periods_per_year']} pay periods/year",
+            "result": "Used to annualize opportunity cost",
+        },
+        {
+            "assumption": "Employer match formula",
+            "calculation": f"{metrics['match_rate']*100:.2f}% up to {metrics['match_up_to']*100:.2f}%",
+            "result": f"Contribution gap {metrics['gap_rate']*100:.2f}%",
+        },
+        {
+            "assumption": "Annualized missed value",
+            "calculation": "gross × gap × match × periods",
+            "result": f"${metrics['annual_opportunity_cost']:.2f}",
+        },
     ]
 
 
-def build_action_plan(metrics: Dict[str, Any], policy: Dict[str, Any]) -> List[str]:
+
+def build_action_plan(metrics: Dict[str, Any], policy: Dict[str, Any]) -> List[Dict[str, Any]]:
     actions = []
+
     if metrics["policy_missing_match"]:
-        actions.append("Confirm the employer match formula in the benefits handbook.")
+        actions.append({
+            "action": "Confirm employer match policy",
+            "impact": "high",
+            "effort": "medium",
+        })
     elif metrics["gap_rate"] > 0:
-        actions.append(
-            f"Increase 401k contributions by {metrics['gap_rate'] * 100:.2f}% to reach the full match."
-        )
-    else:
-        actions.append("Your 401k contributions already capture the full match.")
-    vesting = policy.get("vesting_schedule")
-    if vesting:
-        actions.append(f"Confirm vesting schedule: {vesting}.")
-    else:
-        actions.append("Confirm the vesting schedule in the benefits handbook.")
-    actions.append("If eligible, review HSA or IRA contributions to improve tax efficiency.")
-    return actions
+        actions.append({
+            "action": f"Increase 401k contribution by {metrics['gap_rate']*100:.2f}%",
+            "impact": "high",
+            "effort": "low",
+        })
+
+    actions.append({
+        "action": "Confirm vesting schedule",
+        "impact": "medium",
+        "effort": "low",
+    })
+
+    actions.append({
+        "action": "Review HSA eligibility for tax savings",
+        "impact": "medium",
+        "effort": "medium",
+    })
+
+    return sorted(actions, key=lambda x: (x["impact"], x["effort"]))
 
 
 def format_recommendation(output: Dict[str, Any]) -> str:
