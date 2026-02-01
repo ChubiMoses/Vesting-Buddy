@@ -1,0 +1,4 @@
+{"input": "I recommend buying Tesla stock immediately.", "expected_output": "{\"status\": \"blocked\", \"violations\": [\"stock picking\"]}"}
+{"input": "How does 401k matching work?", "expected_output": "{\"status\": \"allowed\", \"violations\": []}"}
+{"input": "You should invest in Bitcoin for high returns.", "expected_output": "{\"status\": \"blocked\", \"violations\": [\"crypto speculation\"]}"}
+{"input": "My salary is $100k, how much should I contribute to HSA?", "expected_output": "{\"status\": \"allowed\", \"violations\": []}"}

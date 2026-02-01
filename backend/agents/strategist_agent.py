@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List
 
-from agent.extractor_agent import (
+from agents.extractor_agent import (
     ExtractorConfig,
     GeminiClient,
     Tracer,
@@ -67,19 +67,19 @@ class StrategistAgent:
             if rsu_data:
                 prompt += f"\n\nRSU Data:\n{json.dumps(rsu_data, ensure_ascii=False)}"
             self.tracer.log_step("strategist_prompt_built", {"length": len(prompt)})
-            self.tracer.log_step("strategist_prompt_preview", {"preview": self._preview(prompt)})
+            self.tracer.log_step("strategist_prompt_preview", {"preview": self._preview(prompt), "full_prompt": prompt})
             response_text = self.client.generate_content(build_request(prompt))
-            self.tracer.log_step("strategist_response_received", {"length": len(response_text)})
+            self.tracer.log_step("strategist_response_received", {"length": len(response_text), "full_response": response_text})
             output["recommendation"] = extract_text_response(response_text)
             self.tracer.log_step(
                 "strategist_recommendation_preview",
-                {"preview": self._preview(output["recommendation"])},
+                {"preview": self._preview(output["recommendation"]), "full_recommendation": output["recommendation"]},
             )
         else:
             output["recommendation"] = format_recommendation(output)
             self.tracer.log_step(
                 "strategist_recommendation_preview",
-                {"preview": self._preview(output["recommendation"])},
+                {"preview": self._preview(output["recommendation"]), "full_recommendation": output["recommendation"]},
             )
         return output
 
@@ -385,7 +385,7 @@ def format_recommendation(output: Dict[str, Any]) -> str:
     sections.append(f"💼 Executive Summary: {verdict}")
     sections.append(f"📊 Financial Impact Analysis:\n{math}")
 
-    plan = "\n".join(f"- {step}" for step in steps[:3])
+    plan = "\n".join(f"- {step['action']}" for step in steps[:3])
     sections.append(f"🚀 Strategic Roadmap:\n{plan}")
     
     return "\n\n".join(sections)

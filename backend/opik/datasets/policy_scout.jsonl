@@ -1,0 +1,2 @@
+{"input": "What is the 401k match?", "context": "[Chunk 1] The company matches 100% of the first 3% of contributions and 50% of the next 2%.", "expected_output": "100% of the first 3% and 50% of the next 2%"}
+{"input": "Is there a vesting schedule?", "context": "[Chunk 1] All employer contributions are subject to a 3-year cliff vesting schedule. [Chunk 2] Employees are always 100% vested in their own contributions.", "expected_output": "3-year cliff vesting"}

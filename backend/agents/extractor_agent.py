@@ -1,5 +1,4 @@
 import base64
-from email import errors
 import json
 import mimetypes
 import os
@@ -20,7 +19,7 @@ try:
 except Exception:
     opik_track = None
 
-from agent.extraction_validator import validate_extraction
+from agents.extraction_validator import validate_extraction
 from constants.app_defaults import (
     DEFAULT_EXTRACT_PROMPT_PREFIX,
     DEFAULT_EXTRACT_PROMPT_SUFFIX,
@@ -257,14 +256,14 @@ class ExtractorAgent:
         prompt_text = build_prompt_text(fields)
         self.tracer.log_step(
             "extract_prompt_preview",
-            {"length": len(prompt_text), "preview": self._preview(prompt_text)},
+            {"length": len(prompt_text), "preview": self._preview(prompt_text), "full_prompt": prompt_text},
         )
         request_body = build_request(mime_type, data, fields)
         self.tracer.log_step(
             "request_built", {"schema_fields": len(fields)}
         )
         response_text = self.client.generate_content(request_body)
-        self.tracer.log_step("response_received", {"response_length": len(response_text)})
+        self.tracer.log_step("response_received", {"response_length": len(response_text), "full_response": response_text})
         for attempt in range(MAX_EXTRACTION_RETRIES + 1):
             result = parse_response(response_text)
             valid, errors = validate_extraction(result, fields)
@@ -280,6 +279,7 @@ class ExtractorAgent:
 
             if attempt < MAX_EXTRACTION_RETRIES:
                 response_text = self.client.generate_content(request_body)
+                self.tracer.log_step("response_received_retry", {"response_length": len(response_text), "full_response": response_text})
 
         raise RuntimeError(f"Extraction failed after retries: {errors}")
 
