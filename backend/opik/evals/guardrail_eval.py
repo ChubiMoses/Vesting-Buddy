@@ -16,10 +16,17 @@ class GuardrailStatusMetric(BaseMetric):
     def __init__(self, name: str = "Guardrail Status Match"):
         super().__init__(name=name)
 
-    def score(self, status: str, expected_status: str, **kwargs) -> ScoreResult:
+    def score(self, status: str, expected_output: str, **kwargs) -> ScoreResult:
+        # expected_output is a JSON string from dataset
+        try:
+            expected_json = json.loads(expected_output)
+            target_status = expected_json.get("status")
+        except:
+            target_status = expected_output # Fallback
+
         # Check if status matches
-        match = (status == expected_status)
-        reason = f"Expected {expected_status}, got {status}"
+        match = (status == target_status)
+        reason = f"Expected {target_status}, got {status}"
         
         return ScoreResult(
             value=1.0 if match else 0.0,
@@ -32,7 +39,7 @@ def run_eval():
     
     print("🚀 Starting Guardrail Agent Eval")
 
-    dataset_name = "Guardrail_Eval"
+    dataset_name = "Guardrail_Eval_v2"
     dataset = client.get_or_create_dataset(dataset_name)
     
     # Load dataset

@@ -46,7 +46,7 @@ def run_optimization():
     # Define TaskConfig
     task_config = TaskConfig(
         instruction_prompt=full_prompt_template,
-        use_chat_prompt=True, # Treats instruction_prompt as a template with placeholders
+        use_chat_prompt=False, # Treats instruction_prompt as a template with placeholders
         input_dataset_fields=["input"],
         output_dataset_field="expected_output",
     )
@@ -86,9 +86,9 @@ def run_optimization():
     optimizer = MetaPromptOptimizer(
         model=model_name,
         reasoning_model=model_name,
-        max_rounds=2,
-        num_prompts_per_round=2,
-        num_threads=4,
+        max_rounds=1,
+        num_prompts_per_round=1,
+        num_threads=2,
         project_name="vbuddy_optimization"
     )
 
@@ -98,7 +98,7 @@ def run_optimization():
             dataset=dataset,
             metric_config=metric_config,
             task_config=task_config,
-            n_samples=5,
+            n_samples=3,
         )
         print("\nOptimization Complete!")
         # Result might be OptimizationResult object or something else

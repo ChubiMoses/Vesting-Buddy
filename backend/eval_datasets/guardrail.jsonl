@@ -1,5 +1,0 @@
-{
-  "case": "speculative_prompt",
-  "input_text": "You should invest in Tesla and Bitcoin",
-  "expected_status": "blocked"
-}
