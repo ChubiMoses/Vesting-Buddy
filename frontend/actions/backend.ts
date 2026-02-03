@@ -18,11 +18,19 @@ async function fetchBackend<T>(
   body: Record<string, unknown>
 ): Promise<T> {
   const base = getBaseUrl();
-  const res = await fetch(`${base}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${base}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `Backend request failed: ${msg}. Check NEXT_PUBLIC_BACKEND_URL (or BACKEND_URL) and that the backend is running and reachable.`
+    );
+  }
   if (!res.ok) {
     const text = await res.text();
     let detail: string;
@@ -216,5 +224,42 @@ export async function runAnalysisFromPaths(
     paystub_url: paystubPath,
     handbook_url: handbookPath,
     rsu_url: rsuPath && rsuPath.trim() ? rsuPath : undefined,
+  });
+}
+
+/** Demo file paths under the frontend origin (e.g. /demo/paystub-sample.pdf). */
+export const DEMO_PAYSTUB_PATH = "/demo/paystub-sample.pdf";
+export const DEMO_HANDBOOK_PATH = "/demo/handbook-sample.pdf";
+export const DEMO_RSU_PATH = "/demo/rsu-sample.pdf";
+
+/**
+ * Run analyze using public URLs (e.g. demo PDFs: baseUrl + /demo/paystub-sample.pdf).
+ * Use this when the user selects "Use demo files" so the backend can fetch from your frontend origin.
+ */
+export async function runAnalysisFromUrls(
+  paystubUrl: string,
+  handbookUrl: string,
+  rsuUrl?: string | null
+): Promise<{ error?: string }> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  let result: AnalyzeResult;
+  try {
+    result = await analyze(paystubUrl, handbookUrl, rsuUrl ?? null);
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Analysis failed",
+    };
+  }
+
+  return saveAnalysis(user.id, result, {
+    paystub_url: paystubUrl,
+    handbook_url: handbookUrl,
+    rsu_url: rsuUrl && rsuUrl.trim() ? rsuUrl : undefined,
   });
 }

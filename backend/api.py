@@ -36,15 +36,19 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Vesting Buddy API", lifespan=lifespan)
 
+# CORS: use BACKEND_CORS_ORIGINS (e.g. https://your-app.vercel.app) for credentials.
+# With "*", credentials are disabled so browser requests from any origin work.
 origins = os.getenv("BACKEND_CORS_ORIGINS", "*").strip()
 if origins == "*":
     allow_origins = ["*"]
+    allow_credentials = False
 else:
     allow_origins = [o.strip() for o in origins.split(",") if o.strip()]
+    allow_credentials = True
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )

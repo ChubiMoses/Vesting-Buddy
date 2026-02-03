@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { runAnalysisFromPaths } from "@/actions/backend";
+import {
+  runAnalysisFromPaths,
+  runAnalysisFromUrls,
+  DEMO_PAYSTUB_PATH,
+  DEMO_HANDBOOK_PATH,
+  DEMO_RSU_PATH,
+} from "@/actions/backend";
 import { listUserDocuments, type StoredDocument } from "@/actions/storage";
 import { createClient } from "@/lib/supabase/client";
 import { exampleFiles } from "@/lib/data/dashboard";
@@ -24,6 +30,7 @@ export default function UploadPage() {
     handbook: null,
     rsu: null,
   });
+  const [useDemo, setUseDemo] = useState(false);
   const [uploading, setUploading] = useState<Slot | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,20 +60,37 @@ export default function UploadPage() {
       return;
     }
     setPaths((prev) => ({ ...prev, [slot]: path }));
+    setUseDemo(false);
     listUserDocuments().then(setRecentDocs);
   };
 
-  const canRunAnalysis = paths.paystub && paths.handbook;
+  const canRunAnalysis = useDemo || (paths.paystub && paths.handbook);
 
   const handleRunAnalysis = async () => {
     if (!canRunAnalysis) return;
     setError(null);
     setIsAnalyzing(true);
-    const result = await runAnalysisFromPaths(
-      paths.paystub!,
-      paths.handbook!,
-      paths.rsu ?? null
-    );
+    let result: { error?: string };
+    if (useDemo) {
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+      if (!origin) {
+        setError("Could not determine site URL. Try uploading files instead.");
+        setIsAnalyzing(false);
+        return;
+      }
+      result = await runAnalysisFromUrls(
+        origin + DEMO_PAYSTUB_PATH,
+        origin + DEMO_HANDBOOK_PATH,
+        origin + DEMO_RSU_PATH
+      );
+    } else {
+      result = await runAnalysisFromPaths(
+        paths.paystub!,
+        paths.handbook!,
+        paths.rsu ?? null
+      );
+    }
     setIsAnalyzing(false);
     if (result.error) {
       setError(result.error);
@@ -87,6 +111,25 @@ export default function UploadPage() {
         </div>
 
         <div className="bg-card/50 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-8 shadow-xl space-y-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant={useDemo ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setUseDemo(true);
+                setPaths({ paystub: null, handbook: null, rsu: null });
+              }}
+              className={useDemo ? "bg-primary" : ""}
+            >
+              Use demo PDFs (try the platform)
+            </Button>
+            {useDemo && (
+              <span className="text-sm text-muted-foreground">
+                Demo files selected — click &quot;Run analysis&quot; below
+              </span>
+            )}
+          </div>
           {(["paystub", "handbook", "rsu"] as Slot[]).map((slot) => (
             <div key={slot} className="space-y-2">
               <p className="text-sm font-medium">{SLOT_LABELS[slot]}</p>
@@ -96,10 +139,13 @@ export default function UploadPage() {
                   id={`file-${slot}`}
                   accept=".pdf"
                   className="hidden"
-                  disabled={!!uploading}
+                  disabled={!!uploading || useDemo}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (f) uploadFile(slot, f);
+                    if (f) {
+                      setUseDemo(false);
+                      uploadFile(slot, f);
+                    }
                   }}
                 />
                 <label

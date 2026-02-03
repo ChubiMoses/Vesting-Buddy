@@ -1,11 +1,13 @@
 "use client";
 
-import { Upload, LayoutDashboard, FileText, User, Moon, Sun, Menu, ArrowLeft, GitBranch, MessageCircle } from "lucide-react";
+import { Upload, LayoutDashboard, FileText, User, Moon, Sun, Menu, ArrowLeft, GitBranch, MessageCircle, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { signOut } from "@/actions/auth";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -19,6 +21,13 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [user, setUser] = useState<{ email?: string; full_name?: string } | null>(null);
+
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data: { user: u } }) => setUser(u ? { email: u.email ?? undefined, full_name: u.user_metadata?.full_name as string | undefined } : null));
+  }, []);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
@@ -105,6 +114,29 @@ export function DashboardSidebar() {
         </nav>
 
         <div className="p-4 border-t border-primary/10 space-y-2">
+          {user && (
+            <div
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/10",
+                isCollapsed ? "justify-center px-3" : "justify-start"
+              )}
+              title={isCollapsed ? user.email ?? "Profile" : undefined}
+            >
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center flex-shrink-0">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              {!isCollapsed && (
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">
+                    {user.full_name || "Profile"}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user.email ?? ""}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
           <Button
             variant="ghost"
             onClick={toggleTheme}
@@ -121,17 +153,20 @@ export function DashboardSidebar() {
             )}
             {!isCollapsed && <span>Toggle Theme</span>}
           </Button>
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-full gap-3 text-muted-foreground hover:text-foreground",
-              isCollapsed ? "justify-center" : "justify-start"
-            )}
-            title={isCollapsed ? "Profile" : undefined}
-          >
-            <User className="w-5 h-5 flex-shrink-0" />
-            {!isCollapsed && <span>Profile</span>}
-          </Button>
+          <form action={signOut} className="w-full">
+            <Button
+              type="submit"
+              variant="ghost"
+              className={cn(
+                "w-full gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+                isCollapsed ? "justify-center" : "justify-start"
+              )}
+              title={isCollapsed ? "Log out" : undefined}
+            >
+              <LogOut className="w-5 h-5 flex-shrink-0" />
+              {!isCollapsed && <span>Log out</span>}
+            </Button>
+          </form>
         </div>
       </aside>
       <div

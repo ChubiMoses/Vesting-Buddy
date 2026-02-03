@@ -6,7 +6,13 @@ import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { runAnalysisFromPaths } from "@/actions/backend";
+import {
+  runAnalysisFromPaths,
+  runAnalysisFromUrls,
+  DEMO_PAYSTUB_PATH,
+  DEMO_HANDBOOK_PATH,
+  DEMO_RSU_PATH,
+} from "@/actions/backend";
 
 type Slot = "paystub" | "handbook" | "rsu";
 
@@ -23,6 +29,7 @@ export default function OnboardingPage() {
     handbook: null,
     rsu: null,
   });
+  const [useDemo, setUseDemo] = useState(false);
   const [uploading, setUploading] = useState<Slot | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,20 +54,37 @@ export default function OnboardingPage() {
       return;
     }
     setPaths((prev) => ({ ...prev, [slot]: path }));
+    setUseDemo(false);
   };
 
-  const canAnalyze = paths.paystub && paths.handbook;
-  const canContinue = paths.paystub && paths.handbook;
+  const canAnalyze = useDemo || (paths.paystub && paths.handbook);
+  const canContinue = useDemo || (paths.paystub && paths.handbook);
 
   const handleAnalyzeAndContinue = async () => {
     if (!canAnalyze) return;
     setError(null);
     setIsAnalyzing(true);
-    const result = await runAnalysisFromPaths(
-      paths.paystub!,
-      paths.handbook!,
-      paths.rsu ?? null
-    );
+    let result: { error?: string };
+    if (useDemo) {
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+      if (!origin) {
+        setError("Could not determine site URL. Try uploading files instead.");
+        setIsAnalyzing(false);
+        return;
+      }
+      result = await runAnalysisFromUrls(
+        origin + DEMO_PAYSTUB_PATH,
+        origin + DEMO_HANDBOOK_PATH,
+        origin + DEMO_RSU_PATH
+      );
+    } else {
+      result = await runAnalysisFromPaths(
+        paths.paystub!,
+        paths.handbook!,
+        paths.rsu ?? null
+      );
+    }
     if (result.error) {
       setError(result.error);
       setIsAnalyzing(false);
@@ -93,6 +117,7 @@ export default function OnboardingPage() {
 
   const handleContinueWithoutAnalysis = async () => {
     if (!canContinue) return;
+    setError(null);
     await markOnboardingComplete();
     router.push("/dashboard");
     router.refresh();
@@ -133,6 +158,25 @@ export default function OnboardingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant={useDemo ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setUseDemo(true);
+                setPaths({ paystub: null, handbook: null, rsu: null });
+              }}
+              className={useDemo ? "bg-primary" : ""}
+            >
+              Use demo PDFs (try the platform)
+            </Button>
+            {useDemo && (
+              <span className="text-sm text-muted-foreground">
+                Demo files selected — click &quot;Analyze and continue&quot; below
+              </span>
+            )}
+          </div>
           {(["paystub", "handbook", "rsu"] as Slot[]).map((slot) => (
             <div key={slot} className="space-y-2">
               <p className="text-sm font-medium">{SLOT_LABELS[slot]}</p>
@@ -142,10 +186,13 @@ export default function OnboardingPage() {
                   id={`file-${slot}`}
                   accept=".pdf"
                   className="hidden"
-                  disabled={!!uploading}
+                  disabled={!!uploading || useDemo}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (f) uploadFile(slot, f);
+                    if (f) {
+                      setUseDemo(false);
+                      uploadFile(slot, f);
+                    }
                   }}
                 />
                 <label
