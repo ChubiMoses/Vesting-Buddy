@@ -5,7 +5,7 @@ import os
 import sys
 import warnings
 
-from agent.extractor_agent import load_extractor_from_env
+from agents.extractor_agent import load_extractor_from_env
 from utils.asset_picker import pick_paystub
 
 

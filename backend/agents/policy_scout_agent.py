@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
-from agent.extractor_agent import (
+from agents.extractor_agent import (
     ExtractorConfig,
     GeminiClient,
     Tracer,
@@ -82,11 +82,11 @@ class PolicyScoutAgent:
             self.tracer.log_step("policy_chunks_retrieved", {"count": len(matches)})
             prompt = build_prompt(question, matches, self.config.prompt_prefix, self.config.prompt_suffix)
             self.tracer.log_step("policy_prompt_built", {"length": len(prompt)})
-            self.tracer.log_step("policy_prompt_preview", {"preview": self._preview(prompt)})
+            self.tracer.log_step("policy_prompt_preview", {"preview": self._preview(prompt), "full_prompt": prompt})
             response_text = self.client.generate_content(build_request(prompt))
-            self.tracer.log_step("policy_response_received", {"length": len(response_text)})
+            self.tracer.log_step("policy_response_received", {"length": len(response_text), "full_response": response_text})
             answer_text = extract_text_response(response_text)
-            self.tracer.log_step("policy_answer_preview", {"preview": self._preview(answer_text)})
+            self.tracer.log_step("policy_answer_preview", {"preview": self._preview(answer_text), "full_answer": answer_text})
             return {
                 "question": question,
                 "answer": answer_text,
@@ -104,9 +104,9 @@ class PolicyScoutAgent:
             mime_type = guess_mime_type(self.config.handbook_path)
             prompt = build_direct_prompt(question, self.config.prompt_prefix, self.config.prompt_suffix)
             response_text = self.client.generate_content(build_file_request(prompt, mime_type, data))
-            self.tracer.log_step("policy_response_received", {"length": len(response_text)})
+            self.tracer.log_step("policy_response_received", {"length": len(response_text), "full_response": response_text})
             answer_text = extract_text_response(response_text)
-            self.tracer.log_step("policy_answer_preview", {"preview": self._preview(answer_text)})
+            self.tracer.log_step("policy_answer_preview", {"preview": self._preview(answer_text), "full_answer": answer_text})
             return {
                 "question": question,
                 "answer": answer_text,

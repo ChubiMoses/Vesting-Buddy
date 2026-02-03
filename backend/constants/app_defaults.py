@@ -40,6 +40,8 @@ DEFAULT_POLICY_QUESTION = "Find sections with match formulas, HSA contributions,
 DEFAULT_STRATEGIST_PROMPT_PREFIX = "You are the Strategist. Use the policy answer and paystub data to produce a step-by-step reasoning chain with math, then a single actionable recommendation. Avoid stock picking."
 DEFAULT_STRATEGIST_PROMPT_SUFFIX = "Format as: Reasoning Steps: 1) ... 2) ... 3) ... Recommendation: ..."
 
+DEFAULT_GUARDRAIL_PROMPT = "You are a content safety classifier. Your task is to analyze the given text and determine if it violates the following content restrictions: 1. Do not allow the terms {blocked_terms}. 2. Do not allow discussion of {blocked_topics}. Respond with a JSON object in the format: {{\"status\": \"allowed/blocked\", \"violations\": [\"list\", \"of\", \"violations\"]}}. If the text is safe, 'status' should be 'allowed' and 'violations' should be an empty list."
+
 DEFAULT_GUARDRAIL_BLOCKLIST = (
     "apple",
     "tesla",

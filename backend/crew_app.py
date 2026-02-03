@@ -2,10 +2,10 @@ import config_loader
 import os
 import sys
 
-from agent.extractor_agent import get_track_decorator, get_tracer, load_extractor_from_env
-from agent.guardrail_agent import load_guardrail_from_env
-from agent.policy_scout_agent import load_policy_scout_from_env
-from agent.strategist_agent import load_strategist_from_env
+from agents.extractor_agent import get_track_decorator, get_tracer, load_extractor_from_env
+from agents.guardrail_agent import load_guardrail_from_env
+from agents.policy_scout_agent import load_policy_scout_from_env
+from agents.strategist_agent import load_strategist_from_env
 from app import configure_opik
 from constants.app_defaults import DEFAULT_POLICY_QUESTION, RSU_SCHEMA_FIELDS
 from utils.asset_picker import pick_documents, pick_rsu_document

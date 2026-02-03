@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-from agent.policy_scout_agent import load_policy_scout_from_env
+from agents.policy_scout_agent import load_policy_scout_from_env
 from app import configure_opik
 from constants.app_defaults import DEFAULT_POLICY_QUESTION
 

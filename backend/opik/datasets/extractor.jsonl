@@ -1,0 +1,1 @@
+{"input": "GROSS PAY: $5000.00  401k Pre-Tax: $150.00  NET PAY: $3800.00", "expected_output": "{\"gross_pay\": 5000.00, \"pre_tax_401k\": 150.00, \"net_pay\": 3800.00}"}
