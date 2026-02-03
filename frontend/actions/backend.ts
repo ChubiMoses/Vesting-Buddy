@@ -143,3 +143,78 @@ export async function getChatContext(): Promise<string> {
   });
   return "Last analyses:\n" + parts.join("\n\n");
 }
+
+export interface AnalysisRow {
+  id: string;
+  user_id: string;
+  paystub_url: string | null;
+  handbook_url: string | null;
+  rsu_url: string | null;
+  recommendation: string | null;
+  leaked_value: Record<string, unknown> | null;
+  action_plan: unknown[] | null;
+  paystub_data: Record<string, unknown> | null;
+  policy_answer: Record<string, unknown> | null;
+  guardrail_status: string | null;
+  created_at: string;
+}
+
+export async function getAnalyses(limit = 20): Promise<AnalysisRow[]> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data: rows } = await supabase
+    .from("analyses")
+    .select(
+      "id, user_id, paystub_url, handbook_url, rsu_url, recommendation, leaked_value, action_plan, paystub_data, policy_answer, guardrail_status, created_at"
+    )
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (rows ?? []) as AnalysisRow[];
+}
+
+/**
+ * Run analyze using storage paths: creates signed URLs, calls backend /analyze, saves to analyses.
+ * Paths are storage paths (e.g. userId/timestamp_name.pdf). Stores paths in analyses table.
+ */
+export async function runAnalysisFromPaths(
+  paystubPath: string,
+  handbookPath: string,
+  rsuPath?: string | null
+): Promise<{ error?: string }> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const { createSignedUrl } = await import("@/actions/storage");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { url: paystubUrl, error: e1 } = await createSignedUrl(paystubPath, 3600);
+  const { url: handbookUrl, error: e2 } = await createSignedUrl(handbookPath, 3600);
+  if (e1 || !paystubUrl) return { error: e1 ?? "Failed to get paystub URL" };
+  if (e2 || !handbookUrl) return { error: e2 ?? "Failed to get handbook URL" };
+
+  let rsuUrl: string | null = null;
+  if (rsuPath && rsuPath.trim()) {
+    const { url, error: e3 } = await createSignedUrl(rsuPath, 3600);
+    if (!e3 && url) rsuUrl = url;
+  }
+
+  let result: AnalyzeResult;
+  try {
+    result = await analyze(paystubUrl, handbookUrl, rsuUrl);
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Analysis failed" };
+  }
+
+  return saveAnalysis(user.id, result, {
+    paystub_url: paystubPath,
+    handbook_url: handbookPath,
+    rsu_url: rsuPath && rsuPath.trim() ? rsuPath : undefined,
+  });
+}

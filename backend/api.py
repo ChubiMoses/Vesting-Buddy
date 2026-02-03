@@ -116,7 +116,7 @@ def _gemini_chat(message: str, system_prompt: str, context: ssl.SSLContext | Non
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok works"}
+    return {"status": "ok"}
 
 
 @app.post("/extract/paystub")

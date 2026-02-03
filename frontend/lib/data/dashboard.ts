@@ -189,7 +189,7 @@ export const mockSavedAnalyses: SavedAnalysis[] = [
 ];
 
 export const exampleFiles = [
-  { name: "Paystub_Jan_2025.pdf", type: "paystub" },
-  { name: "Benefits_Handbook.pdf", type: "benefits" },
-  { name: "Paystub_Feb_2025.pdf", type: "paystub" },
+  { name: "Paystub sample", type: "paystub", href: "/demo/paystub-sample.pdf" },
+  { name: "Handbook sample", type: "benefits", href: "/demo/handbook-sample.pdf" },
+  { name: "RSU sample", type: "other", href: "/demo/rsu-sample.pdf" },
 ];
