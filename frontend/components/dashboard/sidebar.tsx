@@ -1,6 +1,6 @@
 "use client";
 
-import { Upload, LayoutDashboard, FileText, User, Moon, Sun, Menu, X, GitBranch, ArrowLeft } from "lucide-react";
+import { Upload, LayoutDashboard, FileText, User, Moon, Sun, Menu, ArrowLeft, GitBranch, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: Upload, label: "Upload Docs", href: "/dashboard/upload" },
   { icon: GitBranch, label: "Traces", href: "/dashboard/traces" },
+  { icon: MessageCircle, label: "Chat", href: "/dashboard/chat" },
   { icon: FileText, label: "Manage", href: "/dashboard/manage" },
 ];
 

@@ -73,3 +73,33 @@ CREATE POLICY "Users can delete own documents"
     bucket_id = 'documents' AND
     auth.uid()::text = (storage.foldername(name))[1]
   );
+
+-- Analyses table for agent pipeline results
+CREATE TABLE IF NOT EXISTS analyses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  paystub_url TEXT,
+  handbook_url TEXT,
+  rsu_url TEXT,
+  recommendation TEXT,
+  leaked_value JSONB,
+  action_plan JSONB,
+  paystub_data JSONB,
+  policy_answer JSONB,
+  guardrail_status TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own analyses"
+  ON analyses FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own analyses"
+  ON analyses FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own analyses"
+  ON analyses FOR UPDATE
+  USING (auth.uid() = user_id);
