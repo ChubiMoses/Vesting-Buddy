@@ -61,6 +61,23 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
     <div className="space-y-6">
       <div className="bg-card/50 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-8 shadow-xl">
         <h3 className="text-xl font-bold mb-6">Document Vault</h3>
+
+        {documents.length > 0 && (
+          <div className="mb-6">
+            <p className="text-sm font-medium text-muted-foreground mb-2">Your documents</p>
+            <ul className="flex flex-wrap gap-2">
+              {documents.slice(0, 8).map((doc) => (
+                <li
+                  key={doc.id}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-sm"
+                >
+                  <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="truncate max-w-[180px]">{doc.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         
         {uploadProgress !== null && (
           <motion.div
@@ -123,20 +140,30 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
         </div>
 
         <div className="mt-6">
-          <p className="text-sm font-medium text-muted-foreground mb-3">Example Files:</p>
+          <p className="text-sm font-medium text-muted-foreground mb-3">Example files (download samples):</p>
           <div className="flex flex-wrap gap-3">
-            {exampleFiles.map((file, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20"
-              >
-                <FileText className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">{file.name}</span>
-              </motion.div>
-            ))}
+            {exampleFiles.map((file, index) => {
+              const href = "href" in file ? (file as { href?: string }).href : undefined;
+              const Wrapper = href ? "a" : "div";
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Wrapper
+                    {...(href
+                      ? { href, target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors"
+                  >
+                    <FileText className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm font-medium">{file.name}</span>
+                  </Wrapper>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -1,3 +1,6 @@
-opik>=1.0.0
-opik-optimizer>=0.1.0
-python-dotenv>=1.0.0
+fastapi
+uvicorn
+pydantic
+PyPDF2
+pdfplumber
+opik
