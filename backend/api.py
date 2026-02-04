@@ -118,7 +118,7 @@ def health() -> dict[str, str]:
 
 @app.post("/extract/paystub")
 def extract_paystub(body: FileUrlRequest) -> dict[str, Any]:
-    from agent.extractor_agent import load_extractor_from_env
+    from agents.extractor_agent import load_extractor_from_env
 
     path = None
     try:
@@ -135,7 +135,7 @@ def extract_paystub(body: FileUrlRequest) -> dict[str, Any]:
 
 @app.post("/extract/rsu")
 def extract_rsu(body: FileUrlRequest) -> dict[str, Any]:
-    from agent.extractor_agent import load_extractor_from_env
+    from agents.extractor_agent import load_extractor_from_env
     from constants.app_defaults import RSU_SCHEMA_FIELDS
 
     path = None
@@ -153,7 +153,7 @@ def extract_rsu(body: FileUrlRequest) -> dict[str, Any]:
 
 @app.post("/policy/answer")
 def policy_answer(body: PolicyAnswerRequest) -> dict[str, Any]:
-    from agent.policy_scout_agent import load_policy_scout_from_env
+    from agents.policy_scout_agent import load_policy_scout_from_env
 
     path = None
     try:
@@ -170,10 +170,10 @@ def policy_answer(body: PolicyAnswerRequest) -> dict[str, Any]:
 
 @app.post("/analyze")
 def analyze(body: AnalyzeRequest) -> dict[str, Any]:
-    from agent.extractor_agent import load_extractor_from_env
-    from agent.guardrail_agent import load_guardrail_from_env
-    from agent.policy_scout_agent import load_policy_scout_from_env
-    from agent.strategist_agent import load_strategist_from_env
+    from agents.extractor_agent import load_extractor_from_env
+    from agents.guardrail_agent import load_guardrail_from_env
+    from agents.policy_scout_agent import load_policy_scout_from_env
+    from agents.strategist_agent import load_strategist_from_env
     from constants.app_defaults import DEFAULT_POLICY_QUESTION, RSU_SCHEMA_FIELDS
 
     paystub_path = None
@@ -220,7 +220,7 @@ def analyze(body: AnalyzeRequest) -> dict[str, Any]:
 
 @app.post("/chat")
 def chat(body: ChatRequest) -> dict[str, str]:
-    from agent.extractor_agent import build_ssl_context
+    from agents.extractor_agent import build_ssl_context
 
     system_prompt = VESTING_BUDDY_CHAT_SYSTEM_PROMPT
     if body.context and body.context.strip():
