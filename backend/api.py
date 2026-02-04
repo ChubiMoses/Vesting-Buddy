@@ -22,7 +22,6 @@ from constants.app_defaults import DEFAULT_POLICY_QUESTION
 from constants.chat_prompt import VESTING_BUDDY_CHAT_SYSTEM_PROMPT
 from utils.url_download import download_url_to_temp
 
-
 def _ensure_env() -> None:
     load_env(os.path.join(os.path.dirname(__file__), ".env"))
     configure_opik()
@@ -32,7 +31,6 @@ def _ensure_env() -> None:
 async def lifespan(app: FastAPI):
     _ensure_env()
     yield
-
 
 app = FastAPI(title="Vesting Buddy API", lifespan=lifespan)
 
@@ -53,11 +51,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.exception_handler(RuntimeError)
 def runtime_error_handler(request, exc: RuntimeError):
     raise HTTPException(status_code=502, detail=str(exc))
-
 
 class FileUrlRequest(BaseModel):
     file_url: HttpUrl
@@ -67,18 +63,15 @@ class PolicyAnswerRequest(BaseModel):
     handbook_url: HttpUrl
     question: str = DEFAULT_POLICY_QUESTION
 
-
 class AnalyzeRequest(BaseModel):
     paystub_url: HttpUrl
     handbook_url: HttpUrl
     rsu_url: HttpUrl | None = None
     policy_question: str | None = None
 
-
 class ChatRequest(BaseModel):
     message: str
     context: str | None = None
-
 
 def _gemini_chat(message: str, system_prompt: str, context: ssl.SSLContext | None) -> str:
     api_key = os.getenv("GEMINI_API_KEY") or ""
