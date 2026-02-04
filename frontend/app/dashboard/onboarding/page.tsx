@@ -6,13 +6,8 @@ import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import {
-  runAnalysisFromPaths,
-  runAnalysisFromUrls,
-  DEMO_PAYSTUB_PATH,
-  DEMO_HANDBOOK_PATH,
-  DEMO_RSU_PATH,
-} from "@/actions/backend";
+import { runAnalysisFromPaths, runAnalysisFromUrls } from "@/actions/backend";
+import { DEMO_PAYSTUB_PATH, DEMO_HANDBOOK_PATH, DEMO_RSU_PATH } from "@/lib/demo-paths";
 
 type Slot = "paystub" | "handbook" | "rsu";
 

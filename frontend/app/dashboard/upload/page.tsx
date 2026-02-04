@@ -4,13 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  runAnalysisFromPaths,
-  runAnalysisFromUrls,
-  DEMO_PAYSTUB_PATH,
-  DEMO_HANDBOOK_PATH,
-  DEMO_RSU_PATH,
-} from "@/actions/backend";
+import { runAnalysisFromPaths, runAnalysisFromUrls } from "@/actions/backend";
+import { DEMO_PAYSTUB_PATH, DEMO_HANDBOOK_PATH, DEMO_RSU_PATH } from "@/lib/demo-paths";
 import { listUserDocuments, type StoredDocument } from "@/actions/storage";
 import { createClient } from "@/lib/supabase/client";
 import { exampleFiles } from "@/lib/data/dashboard";

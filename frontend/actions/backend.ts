@@ -227,11 +227,6 @@ export async function runAnalysisFromPaths(
   });
 }
 
-/** Demo file paths under the frontend origin (e.g. /demo/paystub-sample.pdf). */
-export const DEMO_PAYSTUB_PATH = "/demo/paystub-sample.pdf";
-export const DEMO_HANDBOOK_PATH = "/demo/handbook-sample.pdf";
-export const DEMO_RSU_PATH = "/demo/rsu-sample.pdf";
-
 /**
  * Run analyze using public URLs (e.g. demo PDFs: baseUrl + /demo/paystub-sample.pdf).
  * Use this when the user selects "Use demo files" so the backend can fetch from your frontend origin.
