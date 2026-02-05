@@ -50,37 +50,41 @@ const tabs: {
 // Convert traces to reasoning steps format
 function convertTracesToReasoningSteps(traces: AnalysisTrace[]): any[] {
   const steps: any[] = [];
-  
+
   // Group traces by agent/task name
   const groupedTraces = new Map<string, AnalysisTrace[]>();
-  
+
   traces.forEach((trace) => {
     if (!groupedTraces.has(trace.step_name)) {
       groupedTraces.set(trace.step_name, []);
     }
     groupedTraces.get(trace.step_name)!.push(trace);
   });
-  
+
   // Convert each group to a reasoning step
   groupedTraces.forEach((traceGroup, name) => {
-    const processingTrace = traceGroup.find(t => t.step_status === 'processing');
-    const completedTrace = traceGroup.find(t => t.step_status === 'completed');
-    
+    const processingTrace = traceGroup.find(
+      (t) => t.step_status === "processing",
+    );
+    const completedTrace = traceGroup.find(
+      (t) => t.step_status === "completed",
+    );
+
     if (completedTrace) {
-      const payloadInfo = completedTrace.payload 
+      const payloadInfo = completedTrace.payload
         ? Object.entries(completedTrace.payload)
             .map(([key, value]) => `${key}: ${value}`)
-            .join(', ')
-        : 'No additional data';
-      
+            .join(", ")
+        : "No additional data";
+
       steps.push({
-        assumption: `Agent: ${name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
+        assumption: `Agent: ${name.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}`,
         calculation: `Status: ${completedTrace.step_status}`,
         result: payloadInfo,
       });
     }
   });
-  
+
   return steps;
 }
 
@@ -244,7 +248,9 @@ export function AnalysisSidebar({
                   )}
 
                   {activeTab === "policy" && (
-                    <PolicySection data={(analysis.policy_answer ?? {}) as any} />
+                    <PolicySection
+                      data={(analysis.policy_answer ?? {}) as any}
+                    />
                   )}
 
                   {activeTab === "financial" && (
@@ -254,8 +260,8 @@ export function AnalysisSidebar({
                   )}
 
                   {activeTab === "reasoning" && (
-                    <ReasoningSection 
-                      data={reasoningSteps} 
+                    <ReasoningSection
+                      data={reasoningSteps}
                       analysisId={analysis.id}
                     />
                   )}

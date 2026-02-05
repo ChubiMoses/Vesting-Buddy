@@ -26,8 +26,13 @@ export function ReasoningSection({ data, analysisId }: ReasoningSectionProps) {
   useEffect(() => {
     if (analysisId) {
       getAnalysisTraces(analysisId).then((result) => {
-        if (result.data) {
-          setTraces(result.data);
+        if (result) {
+          setTraces(result.map((trace) => ({
+            step: trace.step_number,
+            name: trace.step_name,
+            status: trace.step_status as "processing" | "completed" | "failed",
+            timestamp: trace.created_at,
+          })));
         }
       });
     }

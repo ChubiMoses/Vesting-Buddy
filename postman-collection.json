@@ -1,0 +1,196 @@
+{
+  "info": {
+    "name": "Vesting Buddy API",
+    "description": "Complete testing collection for Vesting Buddy backend routes. Update {{baseUrl}} variable with your backend URL (https://vesting-buddy-backend.vercel.app or http://localhost:8000)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "frontendUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Liveness check. Expected: 200 OK with {\"status\": \"ok\"}"
+      },
+      "response": []
+    },
+    {
+      "name": "Extract Paystub",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"file_url\": \"{{frontendUrl}}/demo/paystub-sample.pdf\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/extract/paystub",
+          "host": ["{{baseUrl}}"],
+          "path": ["extract", "paystub"]
+        },
+        "description": "Extract paystub data. Expected: 200 OK with fields: employee_name, gross_pay, net_pay, pre_tax_401k, roth_401k, pay_period_start, pay_period_end, etc. Error: 502 if URL unreachable or PDF invalid; 422 if body invalid."
+      },
+      "response": []
+    },
+    {
+      "name": "Extract RSU",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"file_url\": \"{{frontendUrl}}/demo/rsu-sample.pdf\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/extract/rsu",
+          "host": ["{{baseUrl}}"],
+          "path": ["extract", "rsu"]
+        },
+        "description": "Extract RSU grant data. Expected: 200 OK with fields: participant_name, employer_name, grant_date, total_shares_granted, vesting_schedule_description, next_vesting_date, next_vesting_shares, current_stock_price. Error: same as paystub extraction."
+      },
+      "response": []
+    },
+    {
+      "name": "Policy Answer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"handbook_url\": \"{{frontendUrl}}/demo/handbook-sample.pdf\",\n  \"question\": \"Find sections with match formulas, HSA contributions, and vesting schedules.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/policy/answer",
+          "host": ["{{baseUrl}}"],
+          "path": ["policy", "answer"]
+        },
+        "description": "Get policy answer from handbook. Expected: 200 OK with: question, answer (text with match formulas), sources (chunks), conflicts (bool), confidence. Error: 502 if handbook unreachable or parsing fails."
+      },
+      "response": []
+    },
+    {
+      "name": "Full Analysis",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"paystub_url\": \"{{frontendUrl}}/demo/paystub-sample.pdf\",\n  \"handbook_url\": \"{{frontendUrl}}/demo/handbook-sample.pdf\",\n  \"rsu_url\": \"{{frontendUrl}}/demo/rsu-sample.pdf\",\n  \"policy_question\": \"Find sections with match formulas, HSA contributions, and vesting schedules.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/analyze",
+          "host": ["{{baseUrl}}"],
+          "path": ["analyze"]
+        },
+        "description": "Complete agent pipeline: extract paystub + RSU, find policy, compute leaked value, generate recommendation, run guardrail. Takes 30-60 seconds. Expected: 200 OK with: question, paystub (extracted), policy (answer), leaked_value (metrics including annual_opportunity_cost, gap_rate, etc.), reasoning (steps), action_plan (array of actions with impact/effort), recommendation (text), guardrail_status. Error: 502 if any agent fails."
+      },
+      "response": []
+    },
+    {
+      "name": "Full Analysis (without RSU)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"paystub_url\": \"{{frontendUrl}}/demo/paystub-sample.pdf\",\n  \"handbook_url\": \"{{frontendUrl}}/demo/handbook-sample.pdf\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/analyze",
+          "host": ["{{baseUrl}}"],
+          "path": ["analyze"]
+        },
+        "description": "Analysis without RSU. rsu_url and policy_question are optional. Same expected response as full analysis."
+      },
+      "response": []
+    },
+    {
+      "name": "Chat",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"How can I maximize my 401k match?\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/chat",
+          "host": ["{{baseUrl}}"],
+          "path": ["chat"]
+        },
+        "description": "Chatbot endpoint. Expected: 200 OK with {\"reply\": \"...\"}. Error: 502 if GEMINI_API_KEY/GEMINI_BASE_URL missing or Gemini API error."
+      },
+      "response": []
+    },
+    {
+      "name": "Chat with Context",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"What should I do about my HSA?\",\n  \"context\": \"User has 3% current 401k contribution. Employer matches 50% up to 6%. Missed opportunity: $1,336/year.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/chat",
+          "host": ["{{baseUrl}}"],
+          "path": ["chat"]
+        },
+        "description": "Chat with user context from previous analyses. Context is appended to system prompt so Gemini has personalized data."
+      },
+      "response": []
+    }
+  ]
+}
