@@ -118,7 +118,8 @@ export const mockAgentNudges: AgentNudge[] = [
     id: "1",
     priority: "high",
     title: "Maximize Your Match",
-    message: "Found a 3% match gap in your 401k. Click to generate an HR update email.",
+    message:
+      "Found a 3% match gap in your 401k. Click to generate an HR update email.",
     action: "Generate Email",
     value: "+$160/month",
     icon: "trending-up",
@@ -127,7 +128,8 @@ export const mockAgentNudges: AgentNudge[] = [
     id: "2",
     priority: "medium",
     title: "HSA Optimization",
-    message: "You're missing $892 in tax savings. Increase contributions by $75/month.",
+    message:
+      "You're missing $892 in tax savings. Increase contributions by $75/month.",
     action: "Update Contribution",
     value: "$892/year",
     icon: "piggy-bank",
@@ -158,7 +160,8 @@ export const mockInsightCards: InsightCard[] = [
     title: "Unlock Benefits",
     value: "$1,540/year",
     change: "18%",
-    description: "Hidden HSA/FSA funds, RSU vesting schedule, Tax advantaged accounts",
+    description:
+      "Hidden HSA/FSA funds, RSU vesting schedule, Tax advantaged accounts",
     color: "primary",
     icon: "unlock",
   },
@@ -190,6 +193,10 @@ export const mockSavedAnalyses: SavedAnalysis[] = [
 
 export const exampleFiles = [
   { name: "Paystub sample", type: "paystub", href: "/demo/paystub-sample.pdf" },
-  { name: "Handbook sample", type: "benefits", href: "/demo/handbook-sample.pdf" },
+  {
+    name: "Handbook sample",
+    type: "benefits",
+    href: "/demo/handbook-sample.pdf",
+  },
   { name: "RSU sample", type: "other", href: "/demo/rsu-sample.pdf" },
 ];

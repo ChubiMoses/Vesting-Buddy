@@ -14,7 +14,7 @@ export function CTASection() {
     <section ref={ref} className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-purple-500/10" />
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
-      
+
       <div className="container px-4 mx-auto max-w-4xl relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -25,23 +25,28 @@ export function CTASection() {
           <div className="space-y-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+              animate={
+                isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }
+              }
               transition={{ duration: 0.5, delay: 0.2 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-primary/10 to-purple-500/10 border border-border backdrop-blur-xs"
             >
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Ready to optimize?</span>
+              <span className="text-sm font-medium text-primary">
+                Ready to optimize?
+              </span>
             </motion.div>
-            
+
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
               Start Capturing{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-500">
                 Every Dollar
               </span>
             </h2>
-            
+
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Join thousands of employees who've discovered hidden money in their benefits. Takes 2 minutes.
+              Join thousands of employees who've discovered hidden money in
+              their benefits. Takes 2 minutes.
             </p>
           </div>
 
@@ -52,7 +57,10 @@ export function CTASection() {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Link href="/signup" className="group">
-                <Button size="lg" className="w-full sm:w-auto text-lg px-10 py-3.5 h-auto rounded-2xl shadow-2xl transition-all duration-300 bg-primary hover:bg-primary/90">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto text-lg px-10 py-3.5 h-auto rounded-2xl shadow-2xl transition-all duration-300 bg-primary hover:bg-primary/90"
+              >
                 <span className="flex items-center gap-3">
                   Get Started Free
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />

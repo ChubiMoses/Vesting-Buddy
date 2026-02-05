@@ -16,12 +16,9 @@ const iconMap = {
 };
 
 const priorityStyles = {
-  high:
-    "border-l-4 border-l-primary",
-  medium:
-    "border-l-4 border-l-primary",
-  low:
-    "border-l-4 border-l-muted-foreground/30 bg-muted/20",
+  high: "border-l-4 border-l-primary",
+  medium: "border-l-4 border-l-primary",
+  low: "border-l-4 border-l-muted-foreground/30 bg-muted/20",
 };
 
 export function AgentNudgeCard({ nudge, onViewDetails }: AgentNudgeProps) {
@@ -50,9 +47,9 @@ export function AgentNudgeCard({ nudge, onViewDetails }: AgentNudgeProps) {
       <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
         {nudge.message}
       </p>
-      <Button 
-        size="sm" 
-        variant="outline" 
+      <Button
+        size="sm"
+        variant="outline"
         className="w-full group text-sm"
         onClick={onViewDetails}
       >

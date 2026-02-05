@@ -45,7 +45,8 @@ export function Trust() {
             Why Trust Vesting Buddy?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            We're not here to sell you risky investments. We help you claim what's already yours.
+            We're not here to sell you risky investments. We help you claim
+            what's already yours.
           </p>
         </motion.div>
 
@@ -54,7 +55,9 @@ export function Trust() {
             <motion.div
               key={point.title}
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+              animate={
+                isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }
+              }
               transition={{ duration: 0.4, delay: index * 0.1 }}
               className="group"
             >
@@ -63,7 +66,9 @@ export function Trust() {
                   <point.icon className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="text-lg font-bold">{point.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{point.description}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {point.description}
+                </p>
               </div>
             </motion.div>
           ))}

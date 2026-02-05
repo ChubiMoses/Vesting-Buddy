@@ -46,7 +46,10 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+    listRef.current?.scrollTo({
+      top: listRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,7 +135,8 @@ export default function ChatPage() {
                     How can I help you today?
                   </h2>
                   <p className="text-muted-foreground text-center mb-8 max-w-md">
-                    Ask me anything about your savings, investments, benefits, or financial strategy.
+                    Ask me anything about your savings, investments, benefits,
+                    or financial strategy.
                   </p>
 
                   {/* Suggested Questions */}
@@ -145,12 +149,18 @@ export default function ChatPage() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.1 }}
-                          onClick={() => handleSuggestedQuestion(suggestion.text)}
+                          onClick={() =>
+                            handleSuggestedQuestion(suggestion.text)
+                          }
                           className="group relative p-4 rounded-xl border border-border/50 bg-card/50 hover:bg-card/80 text-left transition-all hover:shadow-lg hover:scale-[1.02] overflow-hidden"
                         >
-                          <div className={`absolute inset-0 bg-linear-to-r ${suggestion.gradient} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                          <div
+                            className={`absolute inset-0 bg-linear-to-r ${suggestion.gradient} opacity-0 group-hover:opacity-10 transition-opacity`}
+                          />
                           <div className="relative flex items-start gap-3">
-                            <div className={`w-10 h-10 rounded-lg bg-linear-to-br ${suggestion.gradient} flex items-center justify-center shrink-0 shadow-lg`}>
+                            <div
+                              className={`w-10 h-10 rounded-lg bg-linear-to-br ${suggestion.gradient} flex items-center justify-center shrink-0 shadow-lg`}
+                            >
                               <Icon className="w-5 h-5 text-white" />
                             </div>
                             <p className="text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors">
@@ -172,7 +182,7 @@ export default function ChatPage() {
                       transition={{ duration: 0.3 }}
                       className={cn(
                         "flex gap-3",
-                        m.role === "user" ? "justify-end" : "justify-start"
+                        m.role === "user" ? "justify-end" : "justify-start",
                       )}
                     >
                       {m.role === "assistant" && (
@@ -185,7 +195,7 @@ export default function ChatPage() {
                           "max-w-[80%] rounded-2xl px-5 py-4 shadow-lg",
                           m.role === "user"
                             ? "bg-linear-to-br from-primary to-primary/90 text-primary-foreground"
-                            : "bg-card/80 backdrop-blur-sm border border-border/50 text-foreground"
+                            : "bg-card/80 backdrop-blur-sm border border-border/50 text-foreground",
                         )}
                       >
                         {m.role === "assistant" ? (
@@ -195,7 +205,9 @@ export default function ChatPage() {
                             </ReactMarkdown>
                           </div>
                         ) : (
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {m.content}
+                          </p>
                         )}
                       </div>
                     </motion.div>
@@ -213,17 +225,29 @@ export default function ChatPage() {
                         <div className="flex gap-1.5">
                           <motion.span
                             animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ repeat: Infinity, duration: 1, delay: 0 }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 1,
+                              delay: 0,
+                            }}
                             className="w-2 h-2 rounded-full bg-primary"
                           />
                           <motion.span
                             animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 1,
+                              delay: 0.2,
+                            }}
                             className="w-2 h-2 rounded-full bg-primary"
                           />
                           <motion.span
                             animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 1,
+                              delay: 0.4,
+                            }}
                             className="w-2 h-2 rounded-full bg-primary"
                           />
                         </div>
@@ -263,7 +287,8 @@ export default function ChatPage() {
             </div>
             <p className="text-xs text-muted-foreground text-center mt-3">
               <Sparkles className="w-3 h-3 inline mr-1" />
-              AI responses are based on your uploaded documents and analysis history
+              AI responses are based on your uploaded documents and analysis
+              history
             </p>
           </motion.form>
         </div>

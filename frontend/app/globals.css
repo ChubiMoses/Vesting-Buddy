@@ -2,67 +2,113 @@
 
 @theme {
   /* Typography - Professional Financial App */
-  --font-family-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-family-mono: var(--font-dm-sans), 'Monaco', 'Courier New', monospace;
+  --font-family-sans:
+    var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-mono: var(--font-dm-sans), "Monaco", "Courier New", monospace;
   --color-background: light-dark(oklch(100% 0 0), oklch(15% 0.02 280));
   --color-foreground: light-dark(oklch(9.61% 0.006 285.75), oklch(98% 0 0));
-  
+
   --color-card: light-dark(oklch(100% 0 0), oklch(12% 0.012 285.75));
   --color-card-foreground: light-dark(oklch(9.61% 0.006 285.75), oklch(98% 0 0));
-  
+
   --color-popover: light-dark(oklch(100% 0 0), oklch(12% 0.012 285.75));
-  --color-popover-foreground: light-dark(oklch(9.61% 0.006 285.75), oklch(98% 0 0));
-  
+  --color-popover-foreground: light-dark(
+    oklch(9.61% 0.006 285.75),
+    oklch(98% 0 0)
+  );
+
   --color-primary: oklch(57.66% 0.142 191.79);
   --color-primary-foreground: oklch(100% 0 0);
-  
+
   --color-purple-500: oklch(55% 0.15 300);
   --color-purple-600: oklch(45% 0.15 300);
 
-  --color-navy-blue: light-dark(oklch(21.6% 0.15 285.75), oklch(21.6% 0.15 285.75));
+  --color-navy-blue: light-dark(
+    oklch(21.6% 0.15 285.75),
+    oklch(21.6% 0.15 285.75)
+  );
   --color-navy-blue-foreground: light-dark(oklch(100% 0 0), oklch(100% 0 0));
-  --color-nav-blue-light: light-dark(oklch(80% 0.15 285.75), oklch(80% 0.15 285.75));
+  --color-nav-blue-light: light-dark(
+    oklch(80% 0.15 285.75),
+    oklch(80% 0.15 285.75)
+  );
 
-    --default-ring-3-width: 3px;
-  --default-ring-3-color: light-dark(var(--color-blue-500), var(--color-blue-500));
-  
-  --color-secondary: light-dark(oklch(96.1% 0.001 286.38), oklch(20% 0.013 285.89));
-  --color-secondary-foreground: light-dark(oklch(16.87% 0.013 285.89), oklch(98% 0 0));
-  
+  --default-ring-3-width: 3px;
+  --default-ring-3-color: light-dark(
+    var(--color-blue-500),
+    var(--color-blue-500)
+  );
+
+  --color-secondary: light-dark(
+    oklch(96.1% 0.001 286.38),
+    oklch(20% 0.013 285.89)
+  );
+  --color-secondary-foreground: light-dark(
+    oklch(16.87% 0.013 285.89),
+    oklch(98% 0 0)
+  );
+
   --color-muted: light-dark(oklch(96.1% 0.001 286.38), oklch(20% 0.013 285.89));
-  --color-muted-foreground: light-dark(oklch(55.35% 0.013 286.04), oklch(65% 0.009 286.32));
-  
+  --color-muted-foreground: light-dark(
+    oklch(55.35% 0.013 286.04),
+    oklch(65% 0.009 286.32)
+  );
+
   --color-accent: light-dark(oklch(96.1% 0.001 286.38), oklch(20% 0.013 285.89));
-  --color-accent-foreground: light-dark(oklch(16.87% 0.013 285.89), oklch(98% 0 0));
-  
-  --color-destructive: light-dark(oklch(62.8% 0.257 29.23), oklch(52% 0.204 27.33));
+  --color-accent-foreground: light-dark(
+    oklch(16.87% 0.013 285.89),
+    oklch(98% 0 0)
+  );
+
+  --color-destructive: light-dark(
+    oklch(62.8% 0.257 29.23),
+    oklch(52% 0.204 27.33)
+  );
   --color-destructive-foreground: oklch(98% 0 0);
-  
-  --color-border: light-dark(oklch(89.84% 0.003 286.32), oklch(30% 0.015 285.89));
+
+  --color-border: light-dark(
+    oklch(89.84% 0.003 286.32),
+    oklch(30% 0.015 285.89)
+  );
   --color-input: light-dark(oklch(89.84% 0.003 286.32), oklch(30% 0.015 285.89));
   --color-ring-3: oklch(57.66% 0.142 191.79);
-  
+
   --radius: 0.75rem;
-  
+
   --font-sans: var(--font-inter);
   --font-heading: var(--font-dm-sans);
-  
+
   --animate-gradient: gradient 8s ease infinite;
 }
 
 @keyframes gradient {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @layer base {
@@ -91,14 +137,27 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading), sans-serif;
 }
 
 .bg-grid-pattern {
-  background-image: 
-    linear-gradient(to right, light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03)) 1px, transparent 1px),
-    linear-gradient(to bottom, light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03)) 1px, transparent 1px);
+  background-image:
+    linear-gradient(
+      to right,
+      light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03)) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03)) 1px,
+      transparent 1px
+    );
   background-size: 40px 40px;
 }
 
@@ -123,7 +182,7 @@ h1, h2, h3, h4, h5, h6 {
   html {
     color-scheme: light;
   }
-  
+
   html.dark {
     color-scheme: dark;
   }
@@ -173,8 +232,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Professional card elevation */
 @keyframes card-hover {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-2px) scale(1.005); }
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-2px) scale(1.005);
+  }
 }
 
 .card-hover:hover {

@@ -61,7 +61,7 @@ export function SignupForm() {
             {error}
           </div>
         )}
-        
+
         {success && (
           <div className="rounded-md bg-primary/10 p-3 text-sm text-primary">
             {success}

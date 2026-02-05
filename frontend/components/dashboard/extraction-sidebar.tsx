@@ -18,7 +18,12 @@ const typeLabels = {
   policy: "Policy Extraction",
 };
 
-export function ExtractionSidebar({ data, type, isOpen, onClose }: ExtractionSidebarProps) {
+export function ExtractionSidebar({
+  data,
+  type,
+  isOpen,
+  onClose,
+}: ExtractionSidebarProps) {
   const [copied, setCopied] = useState(false);
 
   if (!data || !type) return null;
@@ -30,7 +35,9 @@ export function ExtractionSidebar({ data, type, isOpen, onClose }: ExtractionSid
   };
 
   const handleDownload = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -76,7 +83,9 @@ export function ExtractionSidebar({ data, type, isOpen, onClose }: ExtractionSid
             <div className="flex-none p-6 border-b border-border bg-card/50">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold mb-1">{typeLabels[type]}</h2>
+                  <h2 className="text-2xl font-bold mb-1">
+                    {typeLabels[type]}
+                  </h2>
                   <p className="text-sm text-muted-foreground">
                     AI-extracted structured data
                   </p>
@@ -128,10 +137,17 @@ export function ExtractionSidebar({ data, type, isOpen, onClose }: ExtractionSid
                         <h4 className="text-sm font-semibold text-muted-foreground mb-1 uppercase tracking-wide">
                           {key.replace(/_/g, " ")}
                         </h4>
-                        {typeof value === "object" && value !== null && !Array.isArray(value) ? (
+                        {typeof value === "object" &&
+                        value !== null &&
+                        !Array.isArray(value) ? (
                           <div className="space-y-2 mt-2">
-                            {Object.entries(value as Record<string, unknown>).map(([subKey, subValue]) => (
-                              <div key={subKey} className="flex items-center justify-between py-1">
+                            {Object.entries(
+                              value as Record<string, unknown>,
+                            ).map(([subKey, subValue]) => (
+                              <div
+                                key={subKey}
+                                className="flex items-center justify-between py-1"
+                              >
                                 <span className="text-xs text-muted-foreground">
                                   {subKey.replace(/_/g, " ")}
                                 </span>
@@ -144,7 +160,10 @@ export function ExtractionSidebar({ data, type, isOpen, onClose }: ExtractionSid
                         ) : Array.isArray(value) ? (
                           <div className="space-y-1 mt-2">
                             {value.map((item, i) => (
-                              <div key={i} className="text-sm p-2 rounded bg-muted/50">
+                              <div
+                                key={i}
+                                className="text-sm p-2 rounded bg-muted/50"
+                              >
                                 {renderValue(item)}
                               </div>
                             ))}
@@ -164,9 +183,14 @@ export function ExtractionSidebar({ data, type, isOpen, onClose }: ExtractionSid
               {data._extraction_confidence !== undefined && (
                 <div className="mt-6 p-4 rounded-xl bg-primary/10 border border-primary/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">Extraction Confidence</span>
+                    <span className="text-sm font-semibold">
+                      Extraction Confidence
+                    </span>
                     <span className="text-lg font-bold text-primary font-mono">
-                      {((data._extraction_confidence as number) * 100).toFixed(0)}%
+                      {((data._extraction_confidence as number) * 100).toFixed(
+                        0,
+                      )}
+                      %
                     </span>
                   </div>
                 </div>

@@ -26,9 +26,17 @@ interface PaystubSectionProps {
   data: PaystubData;
 }
 
-const DataRow = ({ label, value, icon: Icon }: { label: string; value: string | number | null | undefined; icon?: React.ComponentType<{ className?: string }> }) => {
+const DataRow = ({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: string | number | null | undefined;
+  icon?: React.ComponentType<{ className?: string }>;
+}) => {
   if (value === null || value === undefined || value === "") return null;
-  
+
   return (
     <div className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -36,7 +44,7 @@ const DataRow = ({ label, value, icon: Icon }: { label: string; value: string | 
         <span>{label}</span>
       </div>
       <span className="font-semibold font-mono text-foreground">
-        {typeof value === 'number' ? `$${value.toLocaleString()}` : value}
+        {typeof value === "number" ? `$${value.toLocaleString()}` : value}
       </span>
     </div>
   );
@@ -56,7 +64,9 @@ export function PaystubSection({ data }: PaystubSectionProps) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold">Paystub Details</h3>
-          <p className="text-sm text-muted-foreground">Extracted compensation data</p>
+          <p className="text-sm text-muted-foreground">
+            Extracted compensation data
+          </p>
         </div>
         {confidence < 1 && (
           <div className="px-3 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
@@ -70,8 +80,16 @@ export function PaystubSection({ data }: PaystubSectionProps) {
       {/* Employee Info */}
       {(data.employee_name || data.employer_name) && (
         <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
-          <DataRow label="Employee Name" value={data.employee_name} icon={User} />
-          <DataRow label="Employer Name" value={data.employer_name} icon={User} />
+          <DataRow
+            label="Employee Name"
+            value={data.employee_name}
+            icon={User}
+          />
+          <DataRow
+            label="Employer Name"
+            value={data.employer_name}
+            icon={User}
+          />
         </div>
       )}
 
@@ -81,8 +99,16 @@ export function PaystubSection({ data }: PaystubSectionProps) {
           <h4 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Pay Period
           </h4>
-          <DataRow label="Period Start" value={data.pay_period_start} icon={Calendar} />
-          <DataRow label="Period End" value={data.pay_period_end} icon={Calendar} />
+          <DataRow
+            label="Period Start"
+            value={data.pay_period_start}
+            icon={Calendar}
+          />
+          <DataRow
+            label="Period End"
+            value={data.pay_period_end}
+            icon={Calendar}
+          />
           <DataRow label="Pay Date" value={data.pay_date} icon={Calendar} />
         </div>
       )}

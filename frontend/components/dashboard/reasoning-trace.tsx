@@ -13,7 +13,9 @@ export function ReasoningTrace({ steps }: ReasoningTraceProps) {
     <div className="bg-card/50 backdrop-blur-xl rounded-3xl border border-border p-6 ">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold">Reasoning Trace</h3>
-        <button className="text-sm text-primary hover:underline">View Full Trace</button>
+        <button className="text-sm text-primary hover:underline">
+          View Full Trace
+        </button>
       </div>
 
       <div className="space-y-4">
@@ -50,11 +52,15 @@ export function ReasoningTrace({ steps }: ReasoningTraceProps) {
                 <span className="text-sm font-medium">{step.action}</span>
               </div>
               {step.file && (
-                <p className="text-xs text-muted-foreground pl-6">{step.file}</p>
+                <p className="text-xs text-muted-foreground pl-6">
+                  {step.file}
+                </p>
               )}
               {step.calculation && (
                 <div className="pl-6 mt-2 p-3 rounded-lg bg-primary/10 border border-border">
-                  <p className="text-xs font-mono text-primary">{step.calculation}</p>
+                  <p className="text-xs font-mono text-primary">
+                    {step.calculation}
+                  </p>
                 </div>
               )}
             </div>

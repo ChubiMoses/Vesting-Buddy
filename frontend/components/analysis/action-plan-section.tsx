@@ -37,13 +37,16 @@ export function ActionPlanSection({ data }: ActionPlanSectionProps) {
       {/* Header */}
       <div>
         <h3 className="text-lg font-bold">Action Plan</h3>
-        <p className="text-sm text-muted-foreground">Recommended next steps to maximize your benefits</p>
+        <p className="text-sm text-muted-foreground">
+          Recommended next steps to maximize your benefits
+        </p>
       </div>
 
       {/* Action Cards */}
       <div className="space-y-4">
         {data.map((item, index) => {
-          const impact = (item.impact?.toLowerCase() || "medium") as keyof typeof impactColors;
+          const impact = (item.impact?.toLowerCase() ||
+            "medium") as keyof typeof impactColors;
           const Icon = impactIcons[impact] || Target;
           const gradientClass = impactColors[impact] || impactColors.medium;
 
@@ -57,7 +60,9 @@ export function ActionPlanSection({ data }: ActionPlanSectionProps) {
             >
               <div className="flex items-start gap-4">
                 {/* Priority Indicator */}
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientClass} flex items-center justify-center shrink-0`}>
+                <div
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientClass} flex items-center justify-center shrink-0`}
+                >
                   <Icon className="w-6 h-6 text-white" />
                 </div>
 
@@ -70,13 +75,15 @@ export function ActionPlanSection({ data }: ActionPlanSectionProps) {
                   {/* Metadata */}
                   <div className="flex flex-wrap gap-2">
                     {item.impact && (
-                      <div className={`px-3 py-1 rounded-lg text-xs font-semibold ${
-                        impact === 'high' 
-                          ? 'bg-primary/10 text-primary border border-primary/20' 
-                          : impact === 'medium'
-                          ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
-                          : 'bg-muted text-muted-foreground border border-border'
-                      }`}>
+                      <div
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold ${
+                          impact === "high"
+                            ? "bg-primary/10 text-primary border border-primary/20"
+                            : impact === "medium"
+                              ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
+                              : "bg-muted text-muted-foreground border border-border"
+                        }`}
+                      >
                         {item.impact.toUpperCase()} IMPACT
                       </div>
                     )}
@@ -90,7 +97,7 @@ export function ActionPlanSection({ data }: ActionPlanSectionProps) {
 
                 {/* Step Number */}
                 <div className="text-3xl font-bold text-muted-foreground/20 font-mono shrink-0">
-                  {String(index + 1).padStart(2, '0')}
+                  {String(index + 1).padStart(2, "0")}
                 </div>
               </div>
             </motion.div>
@@ -103,7 +110,8 @@ export function ActionPlanSection({ data }: ActionPlanSectionProps) {
         <div className="flex items-center gap-3">
           <Target className="w-5 h-5 text-primary" />
           <p className="text-sm font-medium">
-            <span className="font-bold">{data.length}</span> action{data.length !== 1 ? 's' : ''} to optimize your benefits
+            <span className="font-bold">{data.length}</span> action
+            {data.length !== 1 ? "s" : ""} to optimize your benefits
           </p>
         </div>
       </div>

@@ -14,11 +14,11 @@ export async function consumeAnalysisStream(
   paystubUrl: string,
   handbookUrl: string,
   rsuUrl: string | null,
-  onTrace: (event: TraceEvent) => void
+  onTrace: (event: TraceEvent) => void,
 ): Promise<StreamResult> {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   console.log("[SSE] Starting analysis stream to:", backendUrl);
-  
+
   if (!backendUrl) {
     console.error("[SSE] NEXT_PUBLIC_BACKEND_URL is not configured");
     return {
@@ -61,7 +61,12 @@ export async function consumeAnalysisStream(
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-        console.log("[SSE] Stream ended. Total traces:", traceCount, "Result:", result ? "✓" : "✗");
+        console.log(
+          "[SSE] Stream ended. Total traces:",
+          traceCount,
+          "Result:",
+          result ? "✓" : "✗",
+        );
         break;
       }
 
@@ -83,7 +88,10 @@ export async function consumeAnalysisStream(
               onTrace(data as TraceEvent);
             } else if (data.type === "complete") {
               result = data.result as AnalyzeResult;
-              console.log("[SSE] Analysis complete! Result keys:", Object.keys(result || {}));
+              console.log(
+                "[SSE] Analysis complete! Result keys:",
+                Object.keys(result || {}),
+              );
             } else if (data.type === "error") {
               console.error("[SSE] Analysis error:", data.error);
               return { analysisId, error: data.error };
@@ -96,7 +104,11 @@ export async function consumeAnalysisStream(
     }
 
     if (!result) {
-      console.error("[SSE] Stream ended without complete event! Collected", traceCount, "traces");
+      console.error(
+        "[SSE] Stream ended without complete event! Collected",
+        traceCount,
+        "traces",
+      );
       return {
         analysisId,
         error: "Analysis completed but result was not received from server",

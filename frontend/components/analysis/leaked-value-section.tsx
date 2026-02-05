@@ -1,6 +1,12 @@
 "use client";
 
-import { TrendingUp, AlertTriangle, CheckCircle2, Percent, DollarSign } from "lucide-react";
+import {
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+  Percent,
+  DollarSign,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 interface LeakedValueData {
@@ -42,14 +48,18 @@ export function LeakedValueSection({ data }: LeakedValueSectionProps) {
       {/* Header */}
       <div>
         <h3 className="text-lg font-bold">Financial Breakdown</h3>
-        <p className="text-sm text-muted-foreground">Opportunity cost analysis</p>
+        <p className="text-sm text-muted-foreground">
+          Opportunity cost analysis
+        </p>
       </div>
 
       {/* Opportunity Cost Highlight */}
       {oppCost > 0 && (
         <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-purple-500/10 border-2 border-primary/30">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">Annual Opportunity Cost</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              Annual Opportunity Cost
+            </span>
             <AlertTriangle className="w-5 h-5 text-primary" />
           </div>
           <div className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent font-mono">
@@ -70,7 +80,9 @@ export function LeakedValueSection({ data }: LeakedValueSectionProps) {
               Current Rate
             </span>
           </div>
-          <div className="text-2xl font-bold font-mono">{currentRate.toFixed(1)}%</div>
+          <div className="text-2xl font-bold font-mono">
+            {currentRate.toFixed(1)}%
+          </div>
         </div>
         <div className="p-4 rounded-xl bg-card border border-border">
           <div className="flex items-center gap-2 mb-2">
@@ -79,7 +91,9 @@ export function LeakedValueSection({ data }: LeakedValueSectionProps) {
               Match Up To
             </span>
           </div>
-          <div className="text-2xl font-bold font-mono text-primary">{matchUpTo.toFixed(1)}%</div>
+          <div className="text-2xl font-bold font-mono text-primary">
+            {matchUpTo.toFixed(1)}%
+          </div>
         </div>
       </div>
 
@@ -88,7 +102,9 @@ export function LeakedValueSection({ data }: LeakedValueSectionProps) {
         <div className="p-4 rounded-xl bg-card border border-border">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold">Contribution Gap</span>
-            <span className="text-sm font-bold text-primary font-mono">{gapRate.toFixed(1)}%</span>
+            <span className="text-sm font-bold text-primary font-mono">
+              {gapRate.toFixed(1)}%
+            </span>
           </div>
           <div className="relative h-8 bg-muted rounded-full overflow-hidden">
             <motion.div
@@ -112,7 +128,10 @@ export function LeakedValueSection({ data }: LeakedValueSectionProps) {
           </h4>
           <div className="space-y-2">
             {data.tiers.map(([matchPercent, upToPercent], i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 rounded-lg bg-primary/5"
+              >
                 <span className="text-sm font-medium">
                   {(matchPercent * 100).toFixed(0)}% match
                 </span>
@@ -152,19 +171,23 @@ export function LeakedValueSection({ data }: LeakedValueSectionProps) {
 
       {/* Verification Status */}
       {data.paystub_verification && (
-        <div className={`p-4 rounded-xl border ${
-          verification === 'correct' 
-            ? 'bg-green-500/10 border-green-500/20' 
-            : 'bg-yellow-500/10 border-yellow-500/20'
-        }`}>
+        <div
+          className={`p-4 rounded-xl border ${
+            verification === "correct"
+              ? "bg-green-500/10 border-green-500/20"
+              : "bg-yellow-500/10 border-yellow-500/20"
+          }`}
+        >
           <div className="flex items-start gap-3">
-            {verification === 'correct' ? (
+            {verification === "correct" ? (
               <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
             ) : (
               <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
             )}
             <div>
-              <h4 className="text-sm font-semibold mb-1">Verification Status</h4>
+              <h4 className="text-sm font-semibold mb-1">
+                Verification Status
+              </h4>
               <p className="text-sm text-muted-foreground">
                 {data.paystub_verification.message || verification}
               </p>

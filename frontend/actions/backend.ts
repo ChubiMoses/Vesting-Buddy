@@ -15,7 +15,7 @@ const getBaseUrl = (): string => {
 
 async function fetchBackend<T>(
   path: string,
-  body: Record<string, unknown>
+  body: Record<string, unknown>,
 ): Promise<T> {
   const base = getBaseUrl();
   let res: Response;
@@ -28,7 +28,7 @@ async function fetchBackend<T>(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(
-      `Backend request failed: ${msg}. Check NEXT_PUBLIC_BACKEND_URL (or BACKEND_URL) and that the backend is running and reachable.`
+      `Backend request failed: ${msg}. Check NEXT_PUBLIC_BACKEND_URL (or BACKEND_URL) and that the backend is running and reachable.`,
     );
   }
   if (!res.ok) {
@@ -57,13 +57,13 @@ export interface AnalyzeResult {
 }
 
 export async function extractPaystub(
-  fileUrl: string
+  fileUrl: string,
 ): Promise<Record<string, unknown>> {
   return fetchBackend("/extract/paystub", { file_url: fileUrl });
 }
 
 export async function extractRsu(
-  fileUrl: string
+  fileUrl: string,
 ): Promise<Record<string, unknown>> {
   return fetchBackend("/extract/rsu", { file_url: fileUrl });
 }
@@ -72,7 +72,7 @@ export async function extractRsu(
  * Extract paystub data from a Supabase storage path
  */
 export async function extractPaystubFromPath(
-  storagePath: string
+  storagePath: string,
 ): Promise<{ data?: Record<string, unknown>; error?: string }> {
   try {
     const { createSignedUrl } = await import("@/actions/storage");
@@ -92,7 +92,7 @@ export async function extractPaystubFromPath(
  * Extract RSU data from a Supabase storage path
  */
 export async function extractRsuFromPath(
-  storagePath: string
+  storagePath: string,
 ): Promise<{ data?: Record<string, unknown>; error?: string }> {
   try {
     const { createSignedUrl } = await import("@/actions/storage");
@@ -113,7 +113,7 @@ export async function extractRsuFromPath(
  */
 export async function extractPolicyFromPath(
   storagePath: string,
-  question?: string
+  question?: string,
 ): Promise<{ data?: Record<string, unknown>; error?: string }> {
   try {
     const { createSignedUrl } = await import("@/actions/storage");
@@ -134,7 +134,7 @@ const DEFAULT_POLICY_QUESTION =
 
 export async function policyAnswer(
   handbookUrl: string,
-  question?: string
+  question?: string,
 ): Promise<Record<string, unknown>> {
   return fetchBackend("/policy/answer", {
     handbook_url: handbookUrl,
@@ -146,7 +146,7 @@ export async function analyze(
   paystubUrl: string,
   handbookUrl: string,
   rsuUrl?: string | null,
-  policyQuestion?: string | null
+  policyQuestion?: string | null,
 ): Promise<AnalyzeResult> {
   const body: Record<string, unknown> = {
     paystub_url: paystubUrl,
@@ -160,7 +160,7 @@ export async function analyze(
 
 export async function sendChatMessage(
   message: string,
-  context?: string | null
+  context?: string | null,
 ): Promise<{ reply: string }> {
   const body: Record<string, unknown> = { message };
   if (context != null && context !== "") body.context = context;
@@ -171,11 +171,11 @@ export async function saveAnalysis(
   userId: string,
   result: AnalyzeResult,
   urls?: { paystub_url?: string; handbook_url?: string; rsu_url?: string },
-  analysisId?: string
+  analysisId?: string,
 ): Promise<{ error?: string; id?: string }> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
-  
+
   const row = {
     ...(analysisId && { id: analysisId }), // Use stream's ID if provided
     user_id: userId,
@@ -190,13 +190,13 @@ export async function saveAnalysis(
     guardrail_status: result.guardrail_status,
     status: "completed",
   };
-  
+
   const { data, error } = await supabase
     .from("analyses")
     .insert(row)
     .select("id")
     .single();
-    
+
   if (error) return { error: error.message };
   return { id: data?.id };
 }
@@ -249,7 +249,7 @@ export async function getAnalyses(limit = 20): Promise<AnalysisRow[]> {
   const { data: rows } = await supabase
     .from("analyses")
     .select(
-      "id, user_id, paystub_url, handbook_url, rsu_url, recommendation, leaked_value, action_plan, paystub_data, policy_answer, guardrail_status, created_at"
+      "id, user_id, paystub_url, handbook_url, rsu_url, recommendation, leaked_value, action_plan, paystub_data, policy_answer, guardrail_status, created_at",
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -264,7 +264,7 @@ export async function getAnalyses(limit = 20): Promise<AnalysisRow[]> {
 export async function runAnalysisFromPaths(
   paystubPath: string,
   handbookPath: string,
-  rsuPath?: string | null
+  rsuPath?: string | null,
 ): Promise<{ error?: string }> {
   const { createClient } = await import("@/lib/supabase/server");
   const { createSignedUrl } = await import("@/actions/storage");
@@ -274,8 +274,14 @@ export async function runAnalysisFromPaths(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const { url: paystubUrl, error: e1 } = await createSignedUrl(paystubPath, 3600);
-  const { url: handbookUrl, error: e2 } = await createSignedUrl(handbookPath, 3600);
+  const { url: paystubUrl, error: e1 } = await createSignedUrl(
+    paystubPath,
+    3600,
+  );
+  const { url: handbookUrl, error: e2 } = await createSignedUrl(
+    handbookPath,
+    3600,
+  );
   if (e1 || !paystubUrl) return { error: e1 ?? "Failed to get paystub URL" };
   if (e2 || !handbookUrl) return { error: e2 ?? "Failed to get handbook URL" };
 
@@ -306,7 +312,7 @@ export async function runAnalysisFromPaths(
 export async function runAnalysisFromUrls(
   paystubUrl: string,
   handbookUrl: string,
-  rsuUrl?: string | null
+  rsuUrl?: string | null,
 ): Promise<{ error?: string }> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
@@ -352,7 +358,9 @@ export interface AnalysisTrace {
   created_at: string;
 }
 
-export async function getAnalysisTraces(analysisId: string): Promise<AnalysisTrace[]> {
+export async function getAnalysisTraces(
+  analysisId: string,
+): Promise<AnalysisTrace[]> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const { data: rows } = await supabase
@@ -365,7 +373,7 @@ export async function getAnalysisTraces(analysisId: string): Promise<AnalysisTra
 
 export async function saveTraces(
   analysisId: string,
-  traces: TraceEvent[]
+  traces: TraceEvent[],
 ): Promise<{ error?: string }> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();

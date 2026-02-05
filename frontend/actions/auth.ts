@@ -26,8 +26,13 @@ export async function signUpWithEmail(formData: FormData) {
 
   const headersList = await headers();
   const origin = headersList.get("origin") || headersList.get("host");
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-    (origin ? (origin.startsWith("http") ? origin : `https://${origin}`) : "http://localhost:3000");
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (origin
+      ? origin.startsWith("http")
+        ? origin
+        : `https://${origin}`
+      : "http://localhost:3000");
 
   const { error } = await supabase.auth.signUp({
     email: validation.data.email,
@@ -82,13 +87,11 @@ export async function signInWithEmail(formData: FormData) {
       .maybeSingle();
 
     if (!profile) {
-      await supabase
-        .from("users")
-        .insert({
-          id: data.user.id,
-          email: data.user.email,
-          onboarding_complete: false,
-        });
+      await supabase.from("users").insert({
+        id: data.user.id,
+        email: data.user.email,
+        onboarding_complete: false,
+      });
       redirect("/dashboard/onboarding");
       return;
     }
@@ -106,11 +109,16 @@ export async function signInWithGoogle() {
   const supabase = await createClient();
   const headersList = await headers();
   const origin = headersList.get("origin") || headersList.get("host");
-  
+
   // Use environment variable if available, otherwise construct from headers
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-    (origin ? (origin.startsWith("http") ? origin : `https://${origin}`) : "http://localhost:3000");
-  
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (origin
+      ? origin.startsWith("http")
+        ? origin
+        : `https://${origin}`
+      : "http://localhost:3000");
+
   const redirectTo = `${siteUrl}/auth/callback`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({

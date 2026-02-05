@@ -1,4 +1,8 @@
-import type { WealthPulse, AgentNudge, InsightCard } from "@/lib/data/dashboard";
+import type {
+  WealthPulse,
+  AgentNudge,
+  InsightCard,
+} from "@/lib/data/dashboard";
 import type { AnalysisRow } from "@/actions/backend";
 
 function toNum(v: unknown): number {
@@ -21,32 +25,45 @@ export function analysisToWealthPulse(row: AnalysisRow): WealthPulse {
   };
 }
 
-const impactToPriority = (
-  impact: string
-): "high" | "medium" | "low" =>
+const impactToPriority = (impact: string): "high" | "medium" | "low" =>
   impact === "high" ? "high" : impact === "medium" ? "medium" : "low";
 
 const actionToIcon = (action: string): string => {
   const lower = action.toLowerCase();
-  if (lower.includes("401k") || lower.includes("match") || lower.includes("contribution"))
+  if (
+    lower.includes("401k") ||
+    lower.includes("match") ||
+    lower.includes("contribution")
+  )
     return "trending-up";
-  if (lower.includes("hsa") || lower.includes("tax") || lower.includes("savings"))
+  if (
+    lower.includes("hsa") ||
+    lower.includes("tax") ||
+    lower.includes("savings")
+  )
     return "piggy-bank";
   if (lower.includes("vesting")) return "unlock";
   return "trending-up";
 };
 
 export function analysisToAgentNudges(row: AnalysisRow): AgentNudge[] {
-  const plan = (row.action_plan ?? []) as Array<{ action?: string; impact?: string; effort?: string }>;
+  const plan = (row.action_plan ?? []) as Array<{
+    action?: string;
+    impact?: string;
+    effort?: string;
+  }>;
   const lv = row.leaked_value ?? {};
   const annualCost = toNum(lv.annual_opportunity_cost ?? 0);
-  const valueStr = annualCost > 0 ? `+$${Math.round(annualCost)}/year` : undefined;
+  const valueStr =
+    annualCost > 0 ? `+$${Math.round(annualCost)}/year` : undefined;
 
   return plan.map((item, i) => ({
     id: `nudge-${row.id}-${i}`,
     priority: impactToPriority(item.impact ?? "medium"),
     title: item.action ?? "Review benefit",
-    message: [item.action, item.effort && `Effort: ${item.effort}`].filter(Boolean).join(". "),
+    message: [item.action, item.effort && `Effort: ${item.effort}`]
+      .filter(Boolean)
+      .join(". "),
     action: "Learn more",
     value: i === 0 ? valueStr : undefined,
     icon: actionToIcon(item.action ?? ""),
@@ -57,7 +74,10 @@ const actionToCardColor = (index: number): "primary" | "purple" | "yellow" =>
   index % 3 === 0 ? "purple" : index % 3 === 1 ? "primary" : "yellow";
 
 export function analysisToInsightCards(row: AnalysisRow): InsightCard[] {
-  const plan = (row.action_plan ?? []) as Array<{ action?: string; impact?: string }>;
+  const plan = (row.action_plan ?? []) as Array<{
+    action?: string;
+    impact?: string;
+  }>;
   const lv = row.leaked_value ?? {};
   const gapRate = toNum(lv.gap_rate ?? 0) * 100;
   const annualCost = toNum(lv.annual_opportunity_cost ?? 0);

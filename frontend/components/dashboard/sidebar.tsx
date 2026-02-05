@@ -1,6 +1,19 @@
 "use client";
 
-import { Upload, LayoutDashboard, FileText, User, Moon, Sun, Menu, ArrowLeft, GitBranch, Bot, LogOut, Zap } from "lucide-react";
+import {
+  Upload,
+  LayoutDashboard,
+  FileText,
+  User,
+  Moon,
+  Sun,
+  Menu,
+  ArrowLeft,
+  GitBranch,
+  Bot,
+  LogOut,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -21,18 +34,30 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [user, setUser] = useState<{ email?: string; full_name?: string } | null>(null);
+  const [user, setUser] = useState<{
+    email?: string;
+    full_name?: string;
+  } | null>(null);
 
   useEffect(() => {
     createClient()
       .auth.getUser()
-      .then(({ data: { user: u } }) => setUser(u ? { email: u.email ?? undefined, full_name: u.user_metadata?.full_name as string | undefined } : null));
+      .then(({ data: { user: u } }) =>
+        setUser(
+          u
+            ? {
+                email: u.email ?? undefined,
+                full_name: u.user_metadata?.full_name as string | undefined,
+              }
+            : null,
+        ),
+      );
   }, []);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
     setTheme(isDark ? "dark" : "light");
-    
+
     const saved = localStorage.getItem("sidebar-collapsed");
     if (saved !== null) {
       setIsCollapsed(saved === "true");
@@ -50,7 +75,7 @@ export function DashboardSidebar() {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     localStorage.setItem("sidebar-collapsed", String(newState));
-    
+
     const event = new CustomEvent("sidebar-toggle", { detail: newState });
     window.dispatchEvent(event);
   };
@@ -60,7 +85,7 @@ export function DashboardSidebar() {
       <aside
         className={cn(
           "fixed left-0 top-0 h-screen bg-card/50 backdrop-blur-xl border-r border-border flex flex-col z-40 transition-all duration-300",
-          isCollapsed ? "w-20" : "w-64"
+          isCollapsed ? "w-20" : "w-64",
         )}
       >
         <div className="p-6 border-b border-primary/10 flex items-center justify-between gap-2">
@@ -94,13 +119,15 @@ export function DashboardSidebar() {
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative",
                     isActive
                       ? "bg-linear-to-r from-primary/20 to-purple-500/20 border border-primary/30 text-primary"
-                      : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-primary/10 hover:text-foreground",
                   )}
                   title={isCollapsed ? item.label : undefined}
                 >
                   <Icon className="w-5 h-5 shrink-0" />
                   {!isCollapsed && (
-                    <span className="font-medium whitespace-nowrap">{item.label}</span>
+                    <span className="font-medium whitespace-nowrap">
+                      {item.label}
+                    </span>
                   )}
                   {isCollapsed && (
                     <div className="absolute left-full ml-2 px-2 py-1 bg-card border border-border rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
@@ -118,9 +145,9 @@ export function DashboardSidebar() {
             <div
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/10",
-                isCollapsed ? "justify-center px-3" : "justify-start"
+                isCollapsed ? "justify-center px-3" : "justify-start",
               )}
-              title={isCollapsed ? user.email ?? "Profile" : undefined}
+              title={isCollapsed ? (user.email ?? "Profile") : undefined}
             >
               <div className="w-9 h-9 rounded-full bg-linear-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
                 <User className="w-5 h-5 text-white" />
@@ -142,7 +169,7 @@ export function DashboardSidebar() {
             onClick={toggleTheme}
             className={cn(
               "w-full gap-3 text-muted-foreground hover:text-foreground",
-              isCollapsed ? "justify-center" : "justify-start"
+              isCollapsed ? "justify-center" : "justify-start",
             )}
             title={isCollapsed ? "Toggle Theme" : undefined}
           >
@@ -153,17 +180,20 @@ export function DashboardSidebar() {
             )}
             {!isCollapsed && <span>Toggle Theme</span>}
           </Button>
-          <form action={()=> {
-            if(window.confirm("Are you sure you want to log out?")) {
-              signOut();
-            }
-          }} className="w-full">
+          <form
+            action={() => {
+              if (window.confirm("Are you sure you want to log out?")) {
+                signOut();
+              }
+            }}
+            className="w-full"
+          >
             <Button
               type="submit"
               variant="ghost"
               className={cn(
                 "w-full gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-                isCollapsed ? "justify-center" : "justify-start"
+                isCollapsed ? "justify-center" : "justify-start",
               )}
               title={isCollapsed ? "Log out" : undefined}
             >
@@ -176,7 +206,7 @@ export function DashboardSidebar() {
       <div
         className={cn(
           "fixed left-0 top-0 h-screen transition-all duration-300 pointer-events-none",
-          isCollapsed ? "w-20" : "w-64"
+          isCollapsed ? "w-20" : "w-64",
         )}
       />
     </>

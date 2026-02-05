@@ -13,7 +13,7 @@ export interface StoredDocument {
 
 export async function createSignedUrl(
   path: string,
-  expiresInSeconds: number = 3600
+  expiresInSeconds: number = 3600,
 ): Promise<{ url: string | null; error: string | null }> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
@@ -57,7 +57,9 @@ export async function listUserDocuments(): Promise<StoredDocument[]> {
   return docs;
 }
 
-export async function deleteDocument(path: string): Promise<{ error: string | null }> {
+export async function deleteDocument(
+  path: string,
+): Promise<{ error: string | null }> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const {

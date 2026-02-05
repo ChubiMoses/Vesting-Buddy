@@ -42,7 +42,7 @@ export function DocumentUpload({ documents, onUpload }: DocumentUploadProps) {
   const handleUpload = (files: File[]) => {
     setUploadProgress(0);
     onUpload(files);
-    
+
     const interval = setInterval(() => {
       setUploadProgress((prev) => {
         if (prev === null || prev >= 100) {
@@ -63,7 +63,9 @@ export function DocumentUpload({ documents, onUpload }: DocumentUploadProps) {
 
         {documents.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm font-medium text-muted-foreground mb-2">Your documents</p>
+            <p className="text-sm font-medium text-muted-foreground mb-2">
+              Your documents
+            </p>
             <ul className="flex flex-wrap gap-2">
               {documents.slice(0, 8).map((doc) => (
                 <li
@@ -77,7 +79,7 @@ export function DocumentUpload({ documents, onUpload }: DocumentUploadProps) {
             </ul>
           </div>
         )}
-        
+
         {uploadProgress !== null && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -85,7 +87,9 @@ export function DocumentUpload({ documents, onUpload }: DocumentUploadProps) {
             className="mb-6"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Uploading documents... {uploadProgress}%</span>
+              <span className="text-sm font-medium">
+                Uploading documents... {uploadProgress}%
+              </span>
             </div>
             <div className="h-2 bg-primary/10 rounded-full overflow-hidden">
               <motion.div
@@ -105,7 +109,7 @@ export function DocumentUpload({ documents, onUpload }: DocumentUploadProps) {
             "relative border border-dashed rounded-2xl p-12 text-center transition-all duration-300",
             isDragging
               ? "border-primary bg-primary/10 scale-105 shadow-2xl shadow-primary/20"
-              : "border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10"
+              : "border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10",
           )}
         >
           <input
@@ -131,7 +135,8 @@ export function DocumentUpload({ documents, onUpload }: DocumentUploadProps) {
                   Drag & drop your files & Generate HR here
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  or <span className="text-primary font-medium">browse</span> to upload
+                  or <span className="text-primary font-medium">browse</span> to
+                  upload
                 </p>
               </div>
             </motion.div>
@@ -139,10 +144,13 @@ export function DocumentUpload({ documents, onUpload }: DocumentUploadProps) {
         </div>
 
         <div className="mt-6">
-          <p className="text-sm font-medium text-muted-foreground mb-3">Example files (download samples):</p>
+          <p className="text-sm font-medium text-muted-foreground mb-3">
+            Example files (download samples):
+          </p>
           <div className="flex flex-wrap gap-3">
             {exampleFiles.map((file, index) => {
-              const href = "href" in file ? (file as { href?: string }).href : undefined;
+              const href =
+                "href" in file ? (file as { href?: string }).href : undefined;
               const Wrapper = href ? "a" : "div";
               return (
                 <motion.div

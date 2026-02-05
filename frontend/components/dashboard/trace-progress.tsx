@@ -1,7 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2, FileDown, Bot, FileText, Book, Calculator, Shield, Dot } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  FileDown,
+  Bot,
+  FileText,
+  Book,
+  Calculator,
+  Shield,
+  Dot,
+} from "lucide-react";
 import type { TraceEvent } from "@/actions/backend";
 
 const TRACE_LABELS: Record<string, { label: string; icon: typeof FileDown }> = {
@@ -22,7 +32,10 @@ export function TraceProgress({ traces }: TraceProgressProps) {
   return (
     <div className="space-y-3">
       {traces.map((trace, index) => {
-        const config = TRACE_LABELS[trace.name] || { label: trace.name, icon: Loader2 };
+        const config = TRACE_LABELS[trace.name] || {
+          label: trace.name,
+          icon: Loader2,
+        };
         const Icon = config.icon;
         const isProcessing = trace.status === "processing";
         const isCompleted = trace.status === "completed";

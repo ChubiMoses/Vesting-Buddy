@@ -23,13 +23,11 @@ export default function LoginPage() {
         <CardTitle className="text-2xl font-bold tracking-tight">
           Welcome back
         </CardTitle>
-        <CardDescription>
-          Sign in to your account to continue
-        </CardDescription>
+        <CardDescription>Sign in to your account to continue</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <GoogleOAuthButton />
-        
+
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <Separator />

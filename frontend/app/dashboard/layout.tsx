@@ -17,12 +17,15 @@ export default function DashboardLayout({
     };
 
     updateWidth();
-    
+
     const handleToggle = () => updateWidth();
     window.addEventListener("sidebar-toggle", handleToggle as EventListener);
-    
+
     return () => {
-      window.removeEventListener("sidebar-toggle", handleToggle as EventListener);
+      window.removeEventListener(
+        "sidebar-toggle",
+        handleToggle as EventListener,
+      );
     };
   }, []);
 

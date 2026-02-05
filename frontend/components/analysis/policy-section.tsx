@@ -27,7 +27,8 @@ export function PolicySection({ data }: PolicySectionProps) {
         </div>
         <h3 className="text-lg font-bold mb-2">No Policy Data Available</h3>
         <p className="text-sm text-muted-foreground max-w-md">
-          No benefits handbook was analyzed in this session. Upload a benefits handbook to see policy insights.
+          No benefits handbook was analyzed in this session. Upload a benefits
+          handbook to see policy insights.
         </p>
       </motion.div>
     );
@@ -43,11 +44,17 @@ export function PolicySection({ data }: PolicySectionProps) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold">Policy Insights</h3>
-          <p className="text-sm text-muted-foreground">Extracted from benefits handbook</p>
+          <p className="text-sm text-muted-foreground">
+            Extracted from benefits handbook
+          </p>
         </div>
         {data.conflicts !== undefined && (
-          <div className={`px-3 py-1 rounded-lg ${data.conflicts ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-green-500/10 border-green-500/20'} border`}>
-            <span className={`text-xs font-medium flex items-center gap-1 ${data.conflicts ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}>
+          <div
+            className={`px-3 py-1 rounded-lg ${data.conflicts ? "bg-yellow-500/10 border-yellow-500/20" : "bg-green-500/10 border-green-500/20"} border`}
+          >
+            <span
+              className={`text-xs font-medium flex items-center gap-1 ${data.conflicts ? "text-yellow-600 dark:text-yellow-400" : "text-green-600 dark:text-green-400"}`}
+            >
               {data.conflicts ? (
                 <>
                   <AlertCircle className="w-3 h-3" />
@@ -83,7 +90,9 @@ export function PolicySection({ data }: PolicySectionProps) {
           Policy Answer
         </h4>
         <div className="prose prose-sm max-w-none dark:prose-invert">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">{data.answer}</p>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed">
+            {data.answer}
+          </p>
         </div>
       </div>
 

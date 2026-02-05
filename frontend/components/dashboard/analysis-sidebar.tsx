@@ -1,6 +1,13 @@
 "use client";
 
-import { X, FileText, DollarSign, Brain, Target, TrendingUp } from "lucide-react";
+import {
+  X,
+  FileText,
+  DollarSign,
+  Brain,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -18,9 +25,19 @@ interface AnalysisSidebarProps {
   onClose: () => void;
 }
 
-type TabId = "summary" | "paystub" | "policy" | "financial" | "reasoning" | "actions";
+type TabId =
+  | "summary"
+  | "paystub"
+  | "policy"
+  | "financial"
+  | "reasoning"
+  | "actions";
 
-const tabs: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+const tabs: {
+  id: TabId;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
   { id: "summary", label: "Summary", icon: FileText },
   { id: "paystub", label: "Paystub", icon: DollarSign },
   { id: "policy", label: "Policy", icon: FileText },
@@ -29,7 +46,11 @@ const tabs: { id: TabId; label: string; icon: React.ComponentType<{ className?: 
   { id: "actions", label: "Actions", icon: Target },
 ];
 
-export function AnalysisSidebar({ analysis, isOpen, onClose }: AnalysisSidebarProps) {
+export function AnalysisSidebar({
+  analysis,
+  isOpen,
+  onClose,
+}: AnalysisSidebarProps) {
   const [activeTab, setActiveTab] = useState<TabId>("summary");
 
   if (!analysis) return null;
@@ -124,7 +145,9 @@ export function AnalysisSidebar({ analysis, isOpen, onClose }: AnalysisSidebarPr
                   {activeTab === "summary" && (
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-lg font-bold mb-4">Executive Summary</h3>
+                        <h3 className="text-lg font-bold mb-4">
+                          Executive Summary
+                        </h3>
                         {analysis.recommendation ? (
                           <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-p:text-muted-foreground prose-strong:text-foreground prose-ul:text-muted-foreground">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -132,7 +155,9 @@ export function AnalysisSidebar({ analysis, isOpen, onClose }: AnalysisSidebarPr
                             </ReactMarkdown>
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">No summary available</p>
+                          <p className="text-sm text-muted-foreground">
+                            No summary available
+                          </p>
                         )}
                       </div>
 
@@ -143,7 +168,11 @@ export function AnalysisSidebar({ analysis, isOpen, onClose }: AnalysisSidebarPr
                             Opportunity Cost
                           </span>
                           <p className="text-2xl font-bold font-mono mt-1 bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                            ${((analysis.leaked_value as any)?.annual_opportunity_cost ?? 0).toLocaleString()}
+                            $
+                            {(
+                              (analysis.leaked_value as any)
+                                ?.annual_opportunity_cost ?? 0
+                            ).toLocaleString()}
                           </p>
                         </div>
                         <div className="p-4 rounded-xl bg-card border border-border">
@@ -159,7 +188,9 @@ export function AnalysisSidebar({ analysis, isOpen, onClose }: AnalysisSidebarPr
                   )}
 
                   {activeTab === "paystub" && (
-                    <PaystubSection data={(analysis.paystub_data ?? {}) as any} />
+                    <PaystubSection
+                      data={(analysis.paystub_data ?? {}) as any}
+                    />
                   )}
 
                   {activeTab === "policy" && (
@@ -167,18 +198,22 @@ export function AnalysisSidebar({ analysis, isOpen, onClose }: AnalysisSidebarPr
                   )}
 
                   {activeTab === "financial" && (
-                    <LeakedValueSection data={(analysis.leaked_value ?? {}) as any} />
+                    <LeakedValueSection
+                      data={(analysis.leaked_value ?? {}) as any}
+                    />
                   )}
 
                   {activeTab === "reasoning" && (
-                    <ReasoningSection 
-                      data={((analysis.reasoning ?? []) as any[]) || []} 
+                    <ReasoningSection
+                      data={((analysis.reasoning ?? []) as any[]) || []}
                       analysisId={analysis.id}
                     />
                   )}
 
                   {activeTab === "actions" && (
-                    <ActionPlanSection data={((analysis.action_plan ?? []) as any[]) || []} />
+                    <ActionPlanSection
+                      data={((analysis.action_plan ?? []) as any[]) || []}
+                    />
                   )}
                 </motion.div>
               </AnimatePresence>

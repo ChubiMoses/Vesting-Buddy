@@ -4,16 +4,22 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
 import {
-  saveAnalysis,
-  saveTraces,
-  type TraceEvent,
-} from "@/actions/backend";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/client";
+import { saveAnalysis, saveTraces, type TraceEvent } from "@/actions/backend";
 import { consumeAnalysisStream } from "@/lib/analysis-stream";
 import { createSignedUrl } from "@/actions/storage";
-import { DEMO_PAYSTUB_PATH, DEMO_RSU_PATH, DEMO_HANDBOOK_PATH } from "@/lib/demo-paths";
+import {
+  DEMO_PAYSTUB_PATH,
+  DEMO_RSU_PATH,
+  DEMO_HANDBOOK_PATH,
+} from "@/lib/demo-paths";
 import { TraceProgress } from "@/components/dashboard/trace-progress";
 
 type Slot = "paystub" | "handbook" | "rsu";
@@ -51,7 +57,9 @@ export default function OnboardingPage() {
       return;
     }
     const path = `${user.id}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage.from("documents").upload(path, file);
+    const { error: uploadError } = await supabase.storage
+      .from("documents")
+      .upload(path, file);
     setUploading(null);
     if (uploadError) {
       setError(uploadError.message);
@@ -86,7 +94,8 @@ export default function OnboardingPage() {
     let storagePaths = { paystub_url: "", handbook_url: "", rsu_url: "" };
 
     if (useDemo) {
-      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
       if (!origin) {
         setError("Could not determine site URL. Try uploading files instead.");
         setIsAnalyzing(false);
@@ -95,10 +104,20 @@ export default function OnboardingPage() {
       paystubUrl = origin + DEMO_PAYSTUB_PATH;
       handbookUrl = origin + DEMO_HANDBOOK_PATH;
       rsuUrl = origin + DEMO_RSU_PATH;
-      storagePaths = { paystub_url: paystubUrl, handbook_url: handbookUrl, rsu_url: rsuUrl };
+      storagePaths = {
+        paystub_url: paystubUrl,
+        handbook_url: handbookUrl,
+        rsu_url: rsuUrl,
+      };
     } else {
-      const { url: pUrl, error: e1 } = await createSignedUrl(paths.paystub!, 3600);
-      const { url: hUrl, error: e2 } = await createSignedUrl(paths.handbook!, 3600);
+      const { url: pUrl, error: e1 } = await createSignedUrl(
+        paths.paystub!,
+        3600,
+      );
+      const { url: hUrl, error: e2 } = await createSignedUrl(
+        paths.handbook!,
+        3600,
+      );
       if (e1 || !pUrl || e2 || !hUrl) {
         setError(e1 || e2 || "Failed to get signed URLs");
         setIsAnalyzing(false);
@@ -106,7 +125,11 @@ export default function OnboardingPage() {
       }
       paystubUrl = pUrl;
       handbookUrl = hUrl;
-      storagePaths = { paystub_url: paths.paystub!, handbook_url: paths.handbook!, rsu_url: paths.rsu || "" };
+      storagePaths = {
+        paystub_url: paths.paystub!,
+        handbook_url: paths.handbook!,
+        rsu_url: paths.rsu || "",
+      };
 
       if (paths.rsu) {
         const { url, error: e3 } = await createSignedUrl(paths.rsu, 3600);
@@ -116,13 +139,18 @@ export default function OnboardingPage() {
 
     const collectedTraces: TraceEvent[] = [];
     console.log("[Onboarding] Starting analysis stream...");
-    const result = await consumeAnalysisStream(paystubUrl, handbookUrl, rsuUrl, (trace) => {
-      collectedTraces.push(trace);
-      setTraces((prev) => [...prev, trace]);
-    });
+    const result = await consumeAnalysisStream(
+      paystubUrl,
+      handbookUrl,
+      rsuUrl,
+      (trace) => {
+        collectedTraces.push(trace);
+        setTraces((prev) => [...prev, trace]);
+      },
+    );
 
     console.log("[Onboarding] Stream finished. Result:", result);
-    
+
     if (result.error) {
       console.error("[Onboarding] Analysis error:", result.error);
       setError(result.error);
@@ -138,20 +166,48 @@ export default function OnboardingPage() {
     }
 
     if (result.analysisId) {
-      console.log("[Onboarding] Saving analysis with stream ID:", result.analysisId, "with", collectedTraces.length, "traces");
-      
-      const saveResult = await saveAnalysis(user.id, result.result, storagePaths, result.analysisId);
+      console.log(
+        "[Onboarding] Saving analysis with stream ID:",
+        result.analysisId,
+        "with",
+        collectedTraces.length,
+        "traces",
+      );
+
+      const saveResult = await saveAnalysis(
+        user.id,
+        result.result,
+        storagePaths,
+        result.analysisId,
+      );
       if (saveResult.error) {
-        console.error("[Onboarding] Failed to save analysis:", saveResult.error);
+        console.error(
+          "[Onboarding] Failed to save analysis:",
+          saveResult.error,
+        );
       } else {
-        console.log("[Onboarding] Analysis saved successfully with ID:", saveResult.id);
+        console.log(
+          "[Onboarding] Analysis saved successfully with ID:",
+          saveResult.id,
+        );
       }
-      
+
       if (collectedTraces.length > 0) {
-        console.log("[Onboarding] Saving", collectedTraces.length, "traces for analysis ID:", result.analysisId);
-        const traceResult = await saveTraces(result.analysisId, collectedTraces);
+        console.log(
+          "[Onboarding] Saving",
+          collectedTraces.length,
+          "traces for analysis ID:",
+          result.analysisId,
+        );
+        const traceResult = await saveTraces(
+          result.analysisId,
+          collectedTraces,
+        );
         if (traceResult.error) {
-          console.error("[Onboarding] Failed to save traces:", traceResult.error);
+          console.error(
+            "[Onboarding] Failed to save traces:",
+            traceResult.error,
+          );
         } else {
           console.log("[Onboarding] Traces saved successfully!");
         }
@@ -172,17 +228,15 @@ export default function OnboardingPage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase
-      .from("users")
-      .upsert(
-        {
-          id: user.id,
-          email: user.email,
-          onboarding_complete: true,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" }
-      );
+    await supabase.from("users").upsert(
+      {
+        id: user.id,
+        email: user.email,
+        onboarding_complete: true,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
   };
 
   const handleContinueWithoutAnalysis = async () => {
@@ -199,17 +253,15 @@ export default function OnboardingPage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      await supabase
-        .from("users")
-        .upsert(
-          {
-            id: user.id,
-            email: user.email,
-            onboarding_complete: true,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "id" }
-        );
+      await supabase.from("users").upsert(
+        {
+          id: user.id,
+          email: user.email,
+          onboarding_complete: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" },
+      );
     }
     router.push("/dashboard");
     router.refresh();
@@ -222,9 +274,12 @@ export default function OnboardingPage() {
           <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary to-purple-500 flex items-center justify-center mx-auto">
             <Upload className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-3xl font-bold">Welcome to Vesting Buddy</CardTitle>
+          <CardTitle className="text-3xl font-bold">
+            Welcome to Vesting Buddy
+          </CardTitle>
           <CardDescription className="text-lg">
-            Upload your paystub and benefits handbook to get started. Add RSU docs optionally.
+            Upload your paystub and benefits handbook to get started. Add RSU
+            docs optionally.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -243,7 +298,8 @@ export default function OnboardingPage() {
             </Button>
             {useDemo && (
               <span className="text-sm text-muted-foreground">
-                Demo files selected — click &quot;Analyze and continue&quot; below
+                Demo files selected — click &quot;Analyze and continue&quot;
+                below
               </span>
             )}
           </div>
@@ -280,12 +336,16 @@ export default function OnboardingPage() {
                   ) : uploading === slot ? (
                     <>
                       <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
-                      <span className="text-sm text-muted-foreground">Uploading...</span>
+                      <span className="text-sm text-muted-foreground">
+                        Uploading...
+                      </span>
                     </>
                   ) : (
                     <>
                       <Upload className="w-5 h-5 text-primary shrink-0" />
-                      <span className="text-sm text-muted-foreground">Choose PDF</span>
+                      <span className="text-sm text-muted-foreground">
+                        Choose PDF
+                      </span>
                     </>
                   )}
                 </label>
@@ -294,7 +354,9 @@ export default function OnboardingPage() {
           ))}
 
           {error && (
-            <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">{error}</p>
+            <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+              {error}
+            </p>
           )}
 
           {showTraces && traces.length > 0 && (

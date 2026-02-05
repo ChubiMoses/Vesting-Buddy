@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, CheckCircle2, Loader2, TrendingUp, Clock, DollarSign, ChevronRight, Sparkles } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  CheckCircle2,
+  Loader2,
+  TrendingUp,
+  Clock,
+  DollarSign,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -13,8 +23,16 @@ import {
   type AnalysisRow,
 } from "@/actions/backend";
 import { consumeAnalysisStream } from "@/lib/analysis-stream";
-import { DEMO_PAYSTUB_PATH, DEMO_HANDBOOK_PATH, DEMO_RSU_PATH } from "@/lib/demo-paths";
-import { listUserDocuments, createSignedUrl, type StoredDocument } from "@/actions/storage";
+import {
+  DEMO_PAYSTUB_PATH,
+  DEMO_HANDBOOK_PATH,
+  DEMO_RSU_PATH,
+} from "@/lib/demo-paths";
+import {
+  listUserDocuments,
+  createSignedUrl,
+  type StoredDocument,
+} from "@/actions/storage";
 import { createClient } from "@/lib/supabase/client";
 import { TraceProgress } from "@/components/dashboard/trace-progress";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,7 +92,9 @@ export default function AnalysePage() {
       return;
     }
     const path = `${user.id}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage.from("documents").upload(path, file);
+    const { error: uploadError } = await supabase.storage
+      .from("documents")
+      .upload(path, file);
     setUploading(null);
     if (uploadError) {
       setError(uploadError.message);
@@ -115,7 +135,8 @@ export default function AnalysePage() {
     let storagePaths = { paystub_url: "", handbook_url: "", rsu_url: "" };
 
     if (useDemo) {
-      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
       if (!origin) {
         setError("Could not determine site URL. Try uploading files instead.");
         setIsAnalyzing(false);
@@ -124,10 +145,20 @@ export default function AnalysePage() {
       paystubUrl = origin + DEMO_PAYSTUB_PATH;
       handbookUrl = origin + DEMO_HANDBOOK_PATH;
       rsuUrl = origin + DEMO_RSU_PATH;
-      storagePaths = { paystub_url: paystubUrl, handbook_url: handbookUrl, rsu_url: rsuUrl };
+      storagePaths = {
+        paystub_url: paystubUrl,
+        handbook_url: handbookUrl,
+        rsu_url: rsuUrl,
+      };
     } else {
-      const { url: pUrl, error: e1 } = await createSignedUrl(paths.paystub!, 3600);
-      const { url: hUrl, error: e2 } = await createSignedUrl(paths.handbook!, 3600);
+      const { url: pUrl, error: e1 } = await createSignedUrl(
+        paths.paystub!,
+        3600,
+      );
+      const { url: hUrl, error: e2 } = await createSignedUrl(
+        paths.handbook!,
+        3600,
+      );
       if (e1 || !pUrl || e2 || !hUrl) {
         setError(e1 || e2 || "Failed to get signed URLs");
         setIsAnalyzing(false);
@@ -135,7 +166,11 @@ export default function AnalysePage() {
       }
       paystubUrl = pUrl;
       handbookUrl = hUrl;
-      storagePaths = { paystub_url: paths.paystub!, handbook_url: paths.handbook!, rsu_url: paths.rsu || "" };
+      storagePaths = {
+        paystub_url: paths.paystub!,
+        handbook_url: paths.handbook!,
+        rsu_url: paths.rsu || "",
+      };
 
       if (paths.rsu) {
         const { url, error: e3 } = await createSignedUrl(paths.rsu, 3600);
@@ -145,14 +180,19 @@ export default function AnalysePage() {
 
     const collectedTraces: TraceEvent[] = [];
     console.log("[Upload] Starting analysis stream...");
-    const result = await consumeAnalysisStream(paystubUrl, handbookUrl, rsuUrl, (trace) => {
-      collectedTraces.push(trace);
-      setTraces((prev) => [...prev, trace]);
-    });
+    const result = await consumeAnalysisStream(
+      paystubUrl,
+      handbookUrl,
+      rsuUrl,
+      (trace) => {
+        collectedTraces.push(trace);
+        setTraces((prev) => [...prev, trace]);
+      },
+    );
 
     setIsAnalyzing(false);
     console.log("[Upload] Stream finished. Result:", result);
-    
+
     if (result.error) {
       console.error("[Upload] Analysis error:", result.error);
       setError(result.error);
@@ -166,19 +206,41 @@ export default function AnalysePage() {
     }
 
     if (result.analysisId) {
-      console.log("[Upload] Saving analysis with stream ID:", result.analysisId, "with", collectedTraces.length, "traces");
-      
-      const saveResult = await saveAnalysis(user.id, result.result, storagePaths, result.analysisId);
+      console.log(
+        "[Upload] Saving analysis with stream ID:",
+        result.analysisId,
+        "with",
+        collectedTraces.length,
+        "traces",
+      );
+
+      const saveResult = await saveAnalysis(
+        user.id,
+        result.result,
+        storagePaths,
+        result.analysisId,
+      );
       if (saveResult.error) {
         console.error("[Upload] Failed to save analysis:", saveResult.error);
         setError(`Analysis completed but failed to save: ${saveResult.error}`);
         return;
       }
-      console.log("[Upload] Analysis saved successfully with ID:", saveResult.id);
-      
+      console.log(
+        "[Upload] Analysis saved successfully with ID:",
+        saveResult.id,
+      );
+
       if (collectedTraces.length > 0) {
-        console.log("[Upload] Saving", collectedTraces.length, "traces for analysis ID:", result.analysisId);
-        const traceResult = await saveTraces(result.analysisId, collectedTraces);
+        console.log(
+          "[Upload] Saving",
+          collectedTraces.length,
+          "traces for analysis ID:",
+          result.analysisId,
+        );
+        const traceResult = await saveTraces(
+          result.analysisId,
+          collectedTraces,
+        );
         if (traceResult.error) {
           console.error("[Upload] Failed to save traces:", traceResult.error);
           setError(`Analysis saved but traces failed: ${traceResult.error}`);
@@ -188,7 +250,7 @@ export default function AnalysePage() {
       } else {
         console.warn("[Upload] No traces to save!");
       }
-      
+
       // Refresh analyses list
       getAnalyses(5).then(setPreviousAnalyses);
     }
@@ -263,7 +325,11 @@ export default function AnalysePage() {
                     variant={useDemo ? "default" : "outline"}
                     size="sm"
                     onClick={toggleDemo}
-                    className={useDemo ? "bg-navy-blue text-white hover:opacity-90" : "border-border"}
+                    className={
+                      useDemo
+                        ? "bg-navy-blue text-white hover:opacity-90"
+                        : "border-border"
+                    }
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {useDemo ? "Switch to upload" : "Try Demo"}
@@ -295,116 +361,137 @@ export default function AnalysePage() {
                       aria-hidden
                     />
                   )}
-                  <div className={`space-y-4 transition-opacity duration-200 ${useDemo ? "pointer-events-none" : ""}`}>
-                  {(["paystub", "handbook", "rsu"] as Slot[]).map((slot) => (
-                    <div key={slot} className="space-y-3">
-                      <div className="flex items-baseline justify-between">
-                        <div>
-                          <h3 className="font-semibold text-gray-500 text-lg">{SLOT_CONFIG[slot].label}</h3>
-                          <p className="text-xs text-muted-foreground">
-                            {SLOT_CONFIG[slot].description}
-                            {!SLOT_CONFIG[slot].required && " · Optional"}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-3">
-                        <input
-                          type="file"
-                          id={`file-${slot}`}
-                          accept=".pdf"
-                          className="hidden"
-                          disabled={!!uploading || useDemo}
-                          onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            if (f) {
-                              setUseDemo(false);
-                              uploadFile(slot, f);
-                            }
-                          }}
-                        />
-                        <label
-                          htmlFor={`file-${slot}`}
-                          className="flex-1 flex items-center gap-3 p-4 rounded-xl border border-primary/50 bg-gradient-to-br from-card to-primary/5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all group"
-                        >
-                          {paths[slot] ? (
-                            <>
-                              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
-                                <CheckCircle2 className="w-6 h-6 text-white" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-semibold truncate">
-                                  {paths[slot]!.split("/").pop() ?? "Document uploaded"}
-                                </p>
-                                <p className="text-xs text-primary font-medium">Ready for analysis</p>
-                              </div>
-                            </>
-                          ) : uploading === slot ? (
-                            <>
-                              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-                                <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                              </div>
-                              <p className="text-sm font-medium text-muted-foreground">Uploading...</p>
-                            </>
-                          ) : (
-                            <>
-                              <div className="w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center shrink-0 transition-colors">
-                                <Upload className="w-6 h-6 text-primary" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="font-medium text-gray-500">Upload PDF</p>
-                                <p className="text-xs text-muted-foreground">
-                                  or drag and drop here
-                                </p>
-                              </div>
-                            </>
-                          )}
-                        </label>
-                        
-                        {recentDocs.length > 0 && !useDemo && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setShowDocPicker(showDocPicker === slot ? null : slot)}
-                            disabled={!!uploading}
-                            className="shrink-0 border-border hover:bg-primary/10"
-                          >
-                            Select Previous
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <AnimatePresence>
-                        {showDocPicker === slot && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="p-4 rounded-xl bg-card/50 border border-border space-y-2 max-h-64 overflow-y-auto"
-                          >
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                              Your Documents
+                  <div
+                    className={`space-y-4 transition-opacity duration-200 ${useDemo ? "pointer-events-none" : ""}`}
+                  >
+                    {(["paystub", "handbook", "rsu"] as Slot[]).map((slot) => (
+                      <div key={slot} className="space-y-3">
+                        <div className="flex items-baseline justify-between">
+                          <div>
+                            <h3 className="font-semibold text-gray-500 text-lg">
+                              {SLOT_CONFIG[slot].label}
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              {SLOT_CONFIG[slot].description}
+                              {!SLOT_CONFIG[slot].required && " · Optional"}
                             </p>
-                            {recentDocs.map((doc) => (
-                              <button
-                                key={doc.path}
-                                type="button"
-                                onClick={() => selectExistingDocument(slot, doc.path)}
-                                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 border border-transparent hover:border-border transition-all text-left group"
-                              >
-                                <FileText className="w-4 h-4 text-primary shrink-0" />
-                                <span className="text-sm font-medium truncate flex-1">{doc.name}</span>
-                                <span className="text-xs text-muted-foreground shrink-0 font-mono">
-                                  {new Date(doc.created_at ?? "").toLocaleDateString()}
-                                </span>
-                                <ChevronRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  ))}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <input
+                            type="file"
+                            id={`file-${slot}`}
+                            accept=".pdf"
+                            className="hidden"
+                            disabled={!!uploading || useDemo}
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) {
+                                setUseDemo(false);
+                                uploadFile(slot, f);
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor={`file-${slot}`}
+                            className="flex-1 flex items-center gap-3 p-4 rounded-xl border border-primary/50 bg-gradient-to-br from-card to-primary/5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all group"
+                          >
+                            {paths[slot] ? (
+                              <>
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
+                                  <CheckCircle2 className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-semibold truncate">
+                                    {paths[slot]!.split("/").pop() ??
+                                      "Document uploaded"}
+                                  </p>
+                                  <p className="text-xs text-primary font-medium">
+                                    Ready for analysis
+                                  </p>
+                                </div>
+                              </>
+                            ) : uploading === slot ? (
+                              <>
+                                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                                </div>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                  Uploading...
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center shrink-0 transition-colors">
+                                  <Upload className="w-6 h-6 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-500">
+                                    Upload PDF
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    or drag and drop here
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </label>
+
+                          {recentDocs.length > 0 && !useDemo && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() =>
+                                setShowDocPicker(
+                                  showDocPicker === slot ? null : slot,
+                                )
+                              }
+                              disabled={!!uploading}
+                              className="shrink-0 border-border hover:bg-primary/10"
+                            >
+                              Select Previous
+                            </Button>
+                          )}
+                        </div>
+
+                        <AnimatePresence>
+                          {showDocPicker === slot && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="p-4 rounded-xl bg-card/50 border border-border space-y-2 max-h-64 overflow-y-auto"
+                            >
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                                Your Documents
+                              </p>
+                              {recentDocs.map((doc) => (
+                                <button
+                                  key={doc.path}
+                                  type="button"
+                                  onClick={() =>
+                                    selectExistingDocument(slot, doc.path)
+                                  }
+                                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 border border-transparent hover:border-border transition-all text-left group"
+                                >
+                                  <FileText className="w-4 h-4 text-primary shrink-0" />
+                                  <span className="text-sm font-medium truncate flex-1">
+                                    {doc.name}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground shrink-0 font-mono">
+                                    {new Date(
+                                      doc.created_at ?? "",
+                                    ).toLocaleDateString()}
+                                  </span>
+                                  <ChevronRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -454,7 +541,9 @@ export default function AnalysePage() {
                           <Loader2 className="w-5 h-5 text-white animate-spin" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-lg">AI Processing Your Data</h3>
+                          <h3 className="font-bold text-lg">
+                            AI Processing Your Data
+                          </h3>
                           <p className="text-sm text-muted-foreground">
                             Multi-agent system analyzing your compensation
                           </p>
@@ -481,7 +570,7 @@ export default function AnalysePage() {
                   <Clock className="w-5 h-5 text-primary" />
                   <h3 className="font-bold text-lg">Recent Analyses</h3>
                 </div>
-                
+
                 {previousAnalyses.length === 0 ? (
                   <div className="py-12 text-center">
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -516,7 +605,7 @@ export default function AnalysePage() {
                             </div>
                             <ChevronRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                           </div>
-                          
+
                           {cost > 0 && (
                             <div className="flex items-baseline gap-2">
                               <DollarSign className="w-5 h-5 text-primary shrink-0" />
@@ -528,14 +617,14 @@ export default function AnalysePage() {
                               </span>
                             </div>
                           )}
-                          
+
                           <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
                             {analysis.recommendation?.slice(0, 50)}...
                           </p>
                         </motion.button>
                       );
                     })}
-                    
+
                     {previousAnalyses.length >= 5 && (
                       <Button
                         variant="ghost"

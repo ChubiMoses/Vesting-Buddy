@@ -16,7 +16,7 @@ export default async function TracesPage() {
     analyses.map(async (analysis) => {
       const traces = await getAnalysisTraces(analysis.id);
       return { analysis, traces };
-    })
+    }),
   );
 
   return <TracesContent analysesWithTraces={analysesWithTraces} />;

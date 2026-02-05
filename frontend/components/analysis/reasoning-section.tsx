@@ -45,7 +45,8 @@ export function ReasoningSection({ data, analysisId }: ReasoningSectionProps) {
         </div>
         <h3 className="text-lg font-bold mb-2">No Reasoning Data Available</h3>
         <p className="text-sm text-muted-foreground max-w-md">
-          The AI reasoning steps were not captured for this analysis. This data is typically available for newer analyses.
+          The AI reasoning steps were not captured for this analysis. This data
+          is typically available for newer analyses.
         </p>
       </motion.div>
     );
@@ -65,7 +66,9 @@ export function ReasoningSection({ data, analysisId }: ReasoningSectionProps) {
           </div>
           <div>
             <h3 className="text-lg font-bold">AI Reasoning</h3>
-            <p className="text-sm text-muted-foreground">Step-by-step analysis logic</p>
+            <p className="text-sm text-muted-foreground">
+              Step-by-step analysis logic
+            </p>
           </div>
         </div>
         {traces.length > 0 && (
@@ -73,7 +76,9 @@ export function ReasoningSection({ data, analysisId }: ReasoningSectionProps) {
             <button
               onClick={() => setShowTraces(false)}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                !showTraces ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                !showTraces
+                  ? "bg-card shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Brain className="w-3.5 h-3.5 inline mr-1" />
@@ -82,7 +87,9 @@ export function ReasoningSection({ data, analysisId }: ReasoningSectionProps) {
             <button
               onClick={() => setShowTraces(true)}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                showTraces ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                showTraces
+                  ? "bg-card shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Activity className="w-3.5 h-3.5 inline mr-1" />
@@ -114,7 +121,9 @@ export function ReasoningSection({ data, analysisId }: ReasoningSectionProps) {
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-sm font-bold text-primary">{index + 1}</span>
+                        <span className="text-sm font-bold text-primary">
+                          {index + 1}
+                        </span>
                       </div>
                       <span className="text-sm font-semibold text-left">
                         {step.assumption || `Step ${index + 1}`}
@@ -168,8 +177,9 @@ export function ReasoningSection({ data, analysisId }: ReasoningSectionProps) {
 
           <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
             <p className="text-xs text-muted-foreground">
-              All calculations are transparent and based on your actual policy documents and paystub data.
-              Powered by Opik for complete observability.
+              All calculations are transparent and based on your actual policy
+              documents and paystub data. Powered by Opik for complete
+              observability.
             </p>
           </div>
         </>

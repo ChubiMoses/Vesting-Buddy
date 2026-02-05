@@ -29,7 +29,7 @@ export default function SignupPage() {
       </CardHeader>
       <CardContent className="space-y-4">
         <GoogleOAuthButton />
-        
+
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <Separator />
@@ -45,7 +45,8 @@ export default function SignupPage() {
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <p className="text-xs text-muted-foreground text-center px-8">
-          By creating an account, you agree to our Terms of Service and Privacy Policy
+          By creating an account, you agree to our Terms of Service and Privacy
+          Policy
         </p>
         <div className="text-sm text-muted-foreground text-center">
           Already have an account?{" "}

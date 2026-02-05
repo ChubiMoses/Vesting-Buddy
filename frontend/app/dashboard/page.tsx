@@ -23,10 +23,5 @@ export default async function DashboardPage() {
     listUserDocuments(),
   ]);
 
-  return (
-    <DashboardContent
-      analyses={analyses}
-      documents={documents}
-    />
-  );
+  return <DashboardContent analyses={analyses} documents={documents} />;
 }

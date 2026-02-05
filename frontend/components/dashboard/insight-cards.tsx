@@ -11,7 +11,7 @@ interface InsightCardsProps {
 const iconMap = {
   "trending-up": TrendingUp,
   "credit-card": CreditCard,
-  "unlock": Unlock,
+  unlock: Unlock,
 };
 
 export function InsightCards({ cards }: InsightCardsProps) {
@@ -31,7 +31,9 @@ export function InsightCards({ cards }: InsightCardsProps) {
               <Icon className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground truncate">{card.title}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {card.title}
+              </p>
               <p className="text-sm font-semibold font-mono text-foreground truncate">
                 {card.value}
               </p>

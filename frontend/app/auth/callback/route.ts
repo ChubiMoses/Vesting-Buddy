@@ -12,8 +12,9 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-    
+    const { error: exchangeError } =
+      await supabase.auth.exchangeCodeForSession(code);
+
     if (exchangeError) {
       return NextResponse.redirect(`${origin}/login?error=auth_failed`);
     }
@@ -30,13 +31,11 @@ export async function GET(request: Request) {
         .maybeSingle();
 
       if (!profile) {
-        await supabase
-          .from("users")
-          .insert({
-            id: user.id,
-            email: user.email,
-            onboarding_complete: false,
-          });
+        await supabase.from("users").insert({
+          id: user.id,
+          email: user.email,
+          onboarding_complete: false,
+        });
         return NextResponse.redirect(`${origin}/dashboard/onboarding`);
       }
 
