@@ -18,7 +18,7 @@ export const metadata = {
 
 export default function SignupPage() {
   return (
-    <Card>
+    <Card className="bg-card/50 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-4">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold tracking-tight">
           Create an account

@@ -68,6 +68,67 @@ export async function extractRsu(
   return fetchBackend("/extract/rsu", { file_url: fileUrl });
 }
 
+/**
+ * Extract paystub data from a Supabase storage path
+ */
+export async function extractPaystubFromPath(
+  storagePath: string
+): Promise<{ data?: Record<string, unknown>; error?: string }> {
+  try {
+    const { createSignedUrl } = await import("@/actions/storage");
+    const { url, error } = await createSignedUrl(storagePath, 3600);
+    if (error || !url) {
+      return { error: error || "Failed to create signed URL" };
+    }
+    const data = await extractPaystub(url);
+    return { data };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { error: msg };
+  }
+}
+
+/**
+ * Extract RSU data from a Supabase storage path
+ */
+export async function extractRsuFromPath(
+  storagePath: string
+): Promise<{ data?: Record<string, unknown>; error?: string }> {
+  try {
+    const { createSignedUrl } = await import("@/actions/storage");
+    const { url, error } = await createSignedUrl(storagePath, 3600);
+    if (error || !url) {
+      return { error: error || "Failed to create signed URL" };
+    }
+    const data = await extractRsu(url);
+    return { data };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { error: msg };
+  }
+}
+
+/**
+ * Extract policy answer from a handbook stored in Supabase
+ */
+export async function extractPolicyFromPath(
+  storagePath: string,
+  question?: string
+): Promise<{ data?: Record<string, unknown>; error?: string }> {
+  try {
+    const { createSignedUrl } = await import("@/actions/storage");
+    const { url, error } = await createSignedUrl(storagePath, 3600);
+    if (error || !url) {
+      return { error: error || "Failed to create signed URL" };
+    }
+    const data = await policyAnswer(url, question);
+    return { data };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { error: msg };
+  }
+}
+
 const DEFAULT_POLICY_QUESTION =
   "Find sections with match formulas, HSA contributions, and vesting schedules.";
 
@@ -109,11 +170,14 @@ export async function sendChatMessage(
 export async function saveAnalysis(
   userId: string,
   result: AnalyzeResult,
-  urls?: { paystub_url?: string; handbook_url?: string; rsu_url?: string }
-): Promise<{ error?: string }> {
+  urls?: { paystub_url?: string; handbook_url?: string; rsu_url?: string },
+  analysisId?: string
+): Promise<{ error?: string; id?: string }> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
-  const { error } = await supabase.from("analyses").insert({
+  
+  const row = {
+    ...(analysisId && { id: analysisId }), // Use stream's ID if provided
     user_id: userId,
     paystub_url: urls?.paystub_url ?? null,
     handbook_url: urls?.handbook_url ?? null,
@@ -124,9 +188,17 @@ export async function saveAnalysis(
     paystub_data: result.paystub,
     policy_answer: result.policy,
     guardrail_status: result.guardrail_status,
-  });
+    status: "completed",
+  };
+  
+  const { data, error } = await supabase
+    .from("analyses")
+    .insert(row)
+    .select("id")
+    .single();
+    
   if (error) return { error: error.message };
-  return {};
+  return { id: data?.id };
 }
 
 export async function getChatContext(): Promise<string> {
@@ -257,4 +329,54 @@ export async function runAnalysisFromUrls(
     handbook_url: handbookUrl,
     rsu_url: rsuUrl && rsuUrl.trim() ? rsuUrl : undefined,
   });
+}
+
+export interface TraceEvent {
+  step: number;
+  name: string;
+  status: "processing" | "completed" | "failed";
+  payload?: Record<string, unknown>;
+  timestamp: string;
+}
+
+// NOTE: SSE streaming moved to client-side lib/analysis-stream.ts
+// Server Actions cannot handle ReadableStream/SSE consumption
+
+export interface AnalysisTrace {
+  id: string;
+  analysis_id: string;
+  step_number: number;
+  step_name: string;
+  step_status: string;
+  payload: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export async function getAnalysisTraces(analysisId: string): Promise<AnalysisTrace[]> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const { data: rows } = await supabase
+    .from("analysis_traces")
+    .select("*")
+    .eq("analysis_id", analysisId)
+    .order("step_number", { ascending: true });
+  return (rows ?? []) as AnalysisTrace[];
+}
+
+export async function saveTraces(
+  analysisId: string,
+  traces: TraceEvent[]
+): Promise<{ error?: string }> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const tracesToSave = traces.map((t) => ({
+    analysis_id: analysisId,
+    step_number: t.step,
+    step_name: t.name,
+    step_status: t.status,
+    payload: t.payload,
+  }));
+  const { error } = await supabase.from("analysis_traces").insert(tracesToSave);
+  if (error) return { error: error.message };
+  return {};
 }

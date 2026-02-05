@@ -13,7 +13,7 @@ export function WealthPulseCard({ data }: WealthPulseProps) {
   const offset = circumference - (data.growthPercentage / 100) * circumference;
 
   return (
-    <div className="relative bg-card/50 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-8 shadow-2xl">
+    <div className="relative bg-card/50 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-8 shadow-lg">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-transparent rounded-3xl" />
       
       <div className="relative">
@@ -49,8 +49,8 @@ export function WealthPulseCard({ data }: WealthPulseProps) {
               />
               <defs>
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="rgb(20, 184, 166)" />
-                  <stop offset="100%" stopColor="rgb(168, 85, 247)" />
+                  <stop offset="0%" stopColor="var(--color-primary)" />
+                  <stop offset="100%" stopColor="var(--color-navy-blue)" />
                 </linearGradient>
               </defs>
             </svg>

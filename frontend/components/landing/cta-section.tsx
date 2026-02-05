@@ -27,7 +27,7 @@ export function CTASection() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-primary/10 to-purple-500/10 border border-border backdrop-blur-xs"
             >
               <Sparkles className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">Ready to optimize?</span>
@@ -35,7 +35,7 @@ export function CTASection() {
             
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
               Start Capturing{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-500">
                 Every Dollar
               </span>
             </h2>

@@ -103,3 +103,38 @@ CREATE POLICY "Users can insert own analyses"
 CREATE POLICY "Users can update own analyses"
   ON analyses FOR UPDATE
   USING (auth.uid() = user_id);
+
+-- Add status column to analyses for tracking processing state
+ALTER TABLE analyses ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending';
+
+-- Analysis traces table for real-time agent step logging
+CREATE TABLE IF NOT EXISTS analysis_traces (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  analysis_id UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+  step_number INT NOT NULL,
+  step_name TEXT NOT NULL,
+  step_status TEXT NOT NULL,
+  payload JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_traces_analysis_id ON analysis_traces(analysis_id);
+CREATE INDEX IF NOT EXISTS idx_traces_created_at ON analysis_traces(created_at DESC);
+
+ALTER TABLE analysis_traces ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read traces for their analyses"
+  ON analysis_traces FOR SELECT
+  USING (
+    analysis_id IN (
+      SELECT id FROM analyses WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can insert traces for their analyses"
+  ON analysis_traces FOR INSERT
+  WITH CHECK (
+    analysis_id IN (
+      SELECT id FROM analyses WHERE user_id = auth.uid()
+    )
+  );

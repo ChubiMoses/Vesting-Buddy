@@ -4,16 +4,20 @@ Run: uvicorn api:app --reload (from backend dir) or uvicorn api:app --reload --a
 Production: set BACKEND_CORS_ORIGINS; frontend uses NEXT_PUBLIC_BACKEND_URL.
 Chat model: set GEMINI_CHAT_MODEL (e.g. gemini-2.0-flash) or falls back to GEMINI_MODEL.
 """
+import asyncio
 import json
 import os
 import ssl
 import urllib.error
 import urllib.request
+import uuid
 from contextlib import asynccontextmanager
-from typing import Any
+from datetime import datetime
+from typing import Any, Callable
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, HttpUrl
 
 from app import configure_opik
@@ -216,6 +220,172 @@ def analyze(body: AnalyzeRequest) -> dict[str, Any]:
                     os.unlink(p)
                 except OSError:
                     pass
+
+
+class TraceEvent:
+    def __init__(self, analysis_id: str, trace_callback: Callable[[dict[str, Any]], None]) -> None:
+        self.analysis_id = analysis_id
+        self.trace_callback = trace_callback
+        self.step = 0
+
+    def log(self, step_name: str, status: str, payload: dict[str, Any] | None = None) -> None:
+        self.step += 1
+        self.trace_callback(
+            {
+                "step": self.step,
+                "name": step_name,
+                "status": status,
+                "payload": payload or {},
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        )
+
+
+async def run_analysis_with_traces(body: AnalyzeRequest, tracer: TraceEvent) -> dict[str, Any]:
+    from agents.extractor_agent import load_extractor_from_env
+    from agents.guardrail_agent import load_guardrail_from_env
+    from agents.policy_scout_agent import load_policy_scout_from_env
+    from agents.strategist_agent import load_strategist_from_env
+    from constants.app_defaults import DEFAULT_POLICY_QUESTION, RSU_SCHEMA_FIELDS
+
+    paystub_path = None
+    handbook_path = None
+    rsu_path = None
+    question = body.policy_question or DEFAULT_POLICY_QUESTION
+
+    try:
+        tracer.log("download_files", "processing")
+        paystub_path = download_url_to_temp(str(body.paystub_url))
+        handbook_path = download_url_to_temp(str(body.handbook_url))
+        if body.rsu_url:
+            rsu_path = download_url_to_temp(str(body.rsu_url))
+        tracer.log("download_files", "completed", {"files": 3 if rsu_path else 2})
+
+        tracer.log("load_agents", "processing")
+        extractor = load_extractor_from_env()
+        policy = load_policy_scout_from_env(handbook_path=handbook_path)
+        strategist = load_strategist_from_env()
+        guardrail = load_guardrail_from_env()
+        tracer.log("load_agents", "completed")
+
+        tracer.log("extract_paystub", "processing")
+        paystub = extractor.extract_from_file(paystub_path)
+        tracer.log("extract_paystub", "completed", {"fields": len(paystub)})
+
+        rsu_data = None
+        if rsu_path:
+            tracer.log("extract_rsu", "processing")
+            rsu_data = extractor.extract_from_file(rsu_path, schema_fields=RSU_SCHEMA_FIELDS)
+            tracer.log("extract_rsu", "completed")
+
+        tracer.log("policy_scout", "processing")
+        policy_answer = policy.answer(question)
+        tracer.log("policy_scout", "completed", {"sources": len(policy_answer.get("sources", []))})
+
+        tracer.log("strategist", "processing")
+        strategist_output = strategist.synthesize(paystub, policy_answer, rsu_data=rsu_data)
+        leaked_val = strategist_output.get("leaked_value") or {}
+        tracer.log(
+            "strategist",
+            "completed",
+            {"annual_opportunity_cost": leaked_val.get("annual_opportunity_cost")},
+        )
+
+        tracer.log("guardrail", "processing")
+        guarded = guardrail.enforce(strategist_output["recommendation"])
+        tracer.log("guardrail", "completed", {"status": guarded["status"]})
+
+        return {
+            "question": question,
+            "paystub": paystub,
+            "policy": policy_answer,
+            "leaked_value": strategist_output.get("leaked_value"),
+            "reasoning": strategist_output.get("reasoning"),
+            "action_plan": strategist_output.get("action_plan"),
+            "recommendation": guarded["content"],
+            "guardrail_status": guarded["status"],
+        }
+    finally:
+        for p in (paystub_path, handbook_path, rsu_path):
+            if p and os.path.isfile(p):
+                try:
+                    os.unlink(p)
+                except OSError:
+                    pass
+
+
+@app.post("/analyze/stream")
+async def analyze_stream(body: AnalyzeRequest) -> StreamingResponse:
+    analysis_id = str(uuid.uuid4())
+
+    async def event_generator():
+        # Use a queue for real-time streaming instead of buffering
+        import asyncio
+        from asyncio import Queue
+        
+        event_queue: Queue = Queue()
+
+        def trace_callback(event: dict[str, Any]) -> None:
+            # Put event in queue immediately (non-blocking)
+            try:
+                event_queue.put_nowait(event)
+            except Exception:
+                pass
+
+        tracer = TraceEvent(analysis_id, trace_callback)
+        yield f"data: {json.dumps({'type': 'start', 'analysis_id': analysis_id})}\n\n"
+
+        # Run analysis in background task
+        async def run_analysis_task():
+            try:
+                result = await run_analysis_with_traces(body, tracer)
+                await event_queue.put({'__type': 'complete', 'result': result})
+            except Exception as e:
+                await event_queue.put({'__type': 'error', 'error': str(e)})
+
+        analysis_task = asyncio.create_task(run_analysis_task())
+
+        # Stream events as they arrive
+        try:
+            done = False
+            while not done:
+                # Wait for next event with timeout to check if task is done
+                try:
+                    event = await asyncio.wait_for(event_queue.get(), timeout=0.5)
+                except asyncio.TimeoutError:
+                    # Check if task completed but queue is empty (shouldn't happen)
+                    if analysis_task.done() and event_queue.empty():
+                        # Task is done but no complete/error event - this is an error
+                        exc = analysis_task.exception()
+                        if exc:
+                            yield f"data: {json.dumps({'type': 'error', 'error': str(exc)})}\n\n"
+                        break
+                    continue
+                
+                if '__type' in event:
+                    if event['__type'] == 'complete':
+                        yield f"data: {json.dumps({'type': 'complete', 'result': event['result']})}\n\n"
+                        done = True
+                    elif event['__type'] == 'error':
+                        yield f"data: {json.dumps({'type': 'error', 'error': event['error']})}\n\n"
+                        done = True
+                else:
+                    # Regular trace event - stream immediately
+                    yield f"data: {json.dumps({'type': 'trace', **event})}\n\n"
+                    
+        except asyncio.CancelledError:
+            analysis_task.cancel()
+            raise
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        },
+    )
 
 
 @app.post("/chat")

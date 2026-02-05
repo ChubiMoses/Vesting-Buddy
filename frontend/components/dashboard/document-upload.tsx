@@ -9,11 +9,10 @@ import { exampleFiles } from "@/lib/data/dashboard";
 
 interface DocumentUploadProps {
   documents: Document[];
-  reasoningTrace: ReasoningStep[];
   onUpload: (files: File[]) => void;
 }
 
-export function DocumentUpload({ documents, reasoningTrace, onUpload }: DocumentUploadProps) {
+export function DocumentUpload({ documents, onUpload }: DocumentUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
@@ -59,7 +58,7 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
 
   return (
     <div className="space-y-6">
-      <div className="bg-card/50 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-8 shadow-xl">
+      <div className="bg-card/50 backdrop-blur-xl rounded-3xl border border-border p-8 ">
         <h3 className="text-xl font-bold mb-6">Document Vault</h3>
 
         {documents.length > 0 && (
@@ -69,7 +68,7 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
               {documents.slice(0, 8).map((doc) => (
                 <li
                   key={doc.id}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-sm"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-border text-sm"
                 >
                   <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
                   <span className="truncate max-w-[180px]">{doc.name}</span>
@@ -92,7 +91,7 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
               <motion.div
                 initial={{ width: "0%" }}
                 animate={{ width: `${uploadProgress}%` }}
-                className="h-full bg-gradient-to-r from-primary to-purple-500"
+                className="h-full bg-linear-to-r from-primary to-purple-500"
               />
             </div>
           </motion.div>
@@ -103,7 +102,7 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300",
+            "relative border border-dashed rounded-2xl p-12 text-center transition-all duration-300",
             isDragging
               ? "border-primary bg-primary/10 scale-105 shadow-2xl shadow-primary/20"
               : "border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10"
@@ -156,7 +155,7 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
                     {...(href
                       ? { href, target: "_blank", rel: "noopener noreferrer" }
                       : {})}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-border hover:bg-primary/20 transition-colors"
                   >
                     <FileText className="w-4 h-4 text-primary shrink-0" />
                     <span className="text-sm font-medium">{file.name}</span>
@@ -172,7 +171,7 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card/50 backdrop-blur-xl rounded-2xl border-2 border-primary/20 p-6"
+          className="bg-card/50 backdrop-blur-xl rounded-2xl border border-border p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -192,7 +191,7 @@ export function DocumentUpload({ documents, reasoningTrace, onUpload }: Document
             <motion.div
               initial={{ width: "0%" }}
               animate={{ width: `${processingDoc.progress}%` }}
-              className="h-full bg-gradient-to-r from-primary to-purple-500"
+              className="h-full bg-linear-to-r from-primary to-purple-500"
             />
           </div>
         </motion.div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Upload, LayoutDashboard, FileText, User, Moon, Sun, Menu, ArrowLeft, GitBranch, MessageCircle, LogOut } from "lucide-react";
+import { Upload, LayoutDashboard, FileText, User, Moon, Sun, Menu, ArrowLeft, GitBranch, Bot, LogOut, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,9 @@ import { signOut } from "@/actions/auth";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: Upload, label: "Upload Docs", href: "/dashboard/upload" },
+  { icon: Zap, label: "Analyse", href: "/dashboard/upload" },
   { icon: GitBranch, label: "Traces", href: "/dashboard/traces" },
-  { icon: MessageCircle, label: "Chat", href: "/dashboard/chat" },
+  { icon: Bot, label: "AI Chat", href: "/dashboard/chat" },
   { icon: FileText, label: "Manage", href: "/dashboard/manage" },
 ];
 
@@ -59,13 +59,13 @@ export function DashboardSidebar() {
     <>
       <aside
         className={cn(
-          "fixed left-0 top-0 h-screen bg-card/50 backdrop-blur-xl border-r border-primary/20 flex flex-col z-40 transition-all duration-300",
+          "fixed left-0 top-0 h-screen bg-card/50 backdrop-blur-xl border-r border-border flex flex-col z-40 transition-all duration-300",
           isCollapsed ? "w-20" : "w-64"
         )}
       >
         <div className="p-6 border-b border-primary/10 flex items-center justify-between gap-2">
           {!isCollapsed && (
-            <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500 whitespace-nowrap">
+            <h2 className="text-xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-500 whitespace-nowrap">
               Vesting Buddy
             </h2>
           )}
@@ -73,7 +73,7 @@ export function DashboardSidebar() {
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="flex-shrink-0"
+            className="shrink-0"
           >
             {isCollapsed ? (
               <Menu className="w-5 h-5" />
@@ -93,17 +93,17 @@ export function DashboardSidebar() {
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative",
                     isActive
-                      ? "bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30 text-primary"
+                      ? "bg-linear-to-r from-primary/20 to-purple-500/20 border border-primary/30 text-primary"
                       : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
                   )}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <Icon className="w-5 h-5 shrink-0" />
                   {!isCollapsed && (
                     <span className="font-medium whitespace-nowrap">{item.label}</span>
                   )}
                   {isCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-card border border-primary/20 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-card border border-border rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
                       {item.label}
                     </div>
                   )}
@@ -122,7 +122,7 @@ export function DashboardSidebar() {
               )}
               title={isCollapsed ? user.email ?? "Profile" : undefined}
             >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-linear-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
                 <User className="w-5 h-5 text-white" />
               </div>
               {!isCollapsed && (
@@ -147,13 +147,17 @@ export function DashboardSidebar() {
             title={isCollapsed ? "Toggle Theme" : undefined}
           >
             {theme === "light" ? (
-              <Moon className="w-5 h-5 flex-shrink-0" />
+              <Moon className="w-5 h-5 shrink-0" />
             ) : (
-              <Sun className="w-5 h-5 flex-shrink-0" />
+              <Sun className="w-5 h-5 shrink-0" />
             )}
             {!isCollapsed && <span>Toggle Theme</span>}
           </Button>
-          <form action={signOut} className="w-full">
+          <form action={()=> {
+            if(window.confirm("Are you sure you want to log out?")) {
+              signOut();
+            }
+          }} className="w-full">
             <Button
               type="submit"
               variant="ghost"
@@ -163,7 +167,7 @@ export function DashboardSidebar() {
               )}
               title={isCollapsed ? "Log out" : undefined}
             >
-              <LogOut className="w-5 h-5 flex-shrink-0" />
+              <LogOut className="w-5 h-5 shrink-0" />
               {!isCollapsed && <span>Log out</span>}
             </Button>
           </form>

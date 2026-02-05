@@ -10,7 +10,7 @@ interface ReasoningTraceProps {
 
 export function ReasoningTrace({ steps }: ReasoningTraceProps) {
   return (
-    <div className="bg-card/50 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-6 shadow-xl">
+    <div className="bg-card/50 backdrop-blur-xl rounded-3xl border border-border p-6 ">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold">Reasoning Trace</h3>
         <button className="text-sm text-primary hover:underline">View Full Trace</button>
@@ -25,9 +25,9 @@ export function ReasoningTrace({ steps }: ReasoningTraceProps) {
             transition={{ delay: index * 0.1 }}
             className="flex items-start gap-4"
           >
-            <div className="flex-shrink-0 mt-1">
+            <div className="shrink-0 mt-1">
               {step.status === "completed" && (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-purple-500 flex items-center justify-center">
                   <CheckCircle2 className="w-5 h-5 text-white" />
                 </div>
               )}
@@ -53,7 +53,7 @@ export function ReasoningTrace({ steps }: ReasoningTraceProps) {
                 <p className="text-xs text-muted-foreground pl-6">{step.file}</p>
               )}
               {step.calculation && (
-                <div className="pl-6 mt-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                <div className="pl-6 mt-2 p-3 rounded-lg bg-primary/10 border border-border">
                   <p className="text-xs font-mono text-primary">{step.calculation}</p>
                 </div>
               )}

@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { Inter, Quicksand } from "next/font/google";
+import { DM_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
+import { Toaster } from "sonner";
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-dm-sans',
+})
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const quicksand = Quicksand({
-  variable: "--font-quicksand",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
 export const metadata: Metadata = {
   title: "Vesting Buddy - Stop Leaving Money on the Table",
@@ -26,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html           className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}    lang="en" suppressHydrationWarning>
       <head>
         <Script id="theme-script" strategy="beforeInteractive">
           {`
@@ -41,9 +43,10 @@ export default function RootLayout({
         </Script>
       </head>
       <body
-        className={`${inter.variable} ${quicksand.variable} font-sans antialiased`}
+          className={`min-h-dvh`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );
