@@ -1,41 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Upload,
-  FileText,
   CheckCircle2,
-  Loader2,
-  TrendingUp,
+  ChevronRight,
   Clock,
   DollarSign,
-  ChevronRight,
+  FileText,
+  Loader2,
   Sparkles,
+  TrendingUp,
+  Upload,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
+  type AnalysisRow,
+  getAnalyses,
   saveAnalysis,
   saveTraces,
-  getAnalyses,
   type TraceEvent,
-  type AnalysisRow,
 } from "@/actions/backend";
-import { consumeAnalysisStream } from "@/lib/analysis-stream";
 import {
-  DEMO_PAYSTUB_PATH,
-  DEMO_HANDBOOK_PATH,
-  DEMO_RSU_PATH,
-} from "@/lib/demo-paths";
-import {
-  listUserDocuments,
   createSignedUrl,
+  listUserDocuments,
   type StoredDocument,
 } from "@/actions/storage";
-import { createClient } from "@/lib/supabase/client";
 import { TraceProgress } from "@/components/dashboard/trace-progress";
-import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { consumeAnalysisStream } from "@/lib/analysis-stream";
+import {
+  DEMO_HANDBOOK_PATH,
+  DEMO_PAYSTUB_PATH,
+  DEMO_RSU_PATH,
+} from "@/lib/demo-paths";
+import { createClient } from "@/lib/supabase/client";
 
 type Slot = "paystub" | "handbook" | "rsu";
 

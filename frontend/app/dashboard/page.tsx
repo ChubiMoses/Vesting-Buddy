@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { getAnalyses } from "@/actions/backend";
 import { listUserDocuments } from "@/actions/storage";
+import { createClient } from "@/lib/supabase/server";
 import { DashboardContent } from "./dashboard-content";
 
 export default async function DashboardPage() {

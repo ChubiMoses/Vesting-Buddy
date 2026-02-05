@@ -1,7 +1,7 @@
 "use client";
 
-import { Target, Zap, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { Clock, Target, Zap } from "lucide-react";
 
 interface ActionItem {
   action?: string;

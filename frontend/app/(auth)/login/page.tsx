@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
 import { GoogleOAuthButton } from "@/components/auth/oauth-button";
-import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
@@ -10,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 export const metadata = {
   title: "Login | Vesting Buddy",

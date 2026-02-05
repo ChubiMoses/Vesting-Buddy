@@ -1,12 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { signInWithEmail } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -15,7 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { type LoginInput, loginSchema } from "@/lib/validations/auth";
 
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null);

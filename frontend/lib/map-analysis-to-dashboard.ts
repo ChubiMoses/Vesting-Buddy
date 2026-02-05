@@ -1,9 +1,9 @@
+import type { AnalysisRow } from "@/actions/backend";
 import type {
-  WealthPulse,
   AgentNudge,
   InsightCard,
+  WealthPulse,
 } from "@/lib/data/dashboard";
-import type { AnalysisRow } from "@/actions/backend";
 
 function toNum(v: unknown): number {
   if (typeof v === "number" && !Number.isNaN(v)) return v;

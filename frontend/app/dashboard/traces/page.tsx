@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { getAnalyses, getAnalysisTraces } from "@/actions/backend";
+import { createClient } from "@/lib/supabase/server";
 import { TracesContent } from "./traces-content";
 
 export default async function TracesPage() {

@@ -1,23 +1,24 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  X,
-  FileText,
-  DollarSign,
   Brain,
+  DollarSign,
+  FileText,
   Target,
   TrendingUp,
+  X,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { AnalysisRow } from "@/actions/backend";
+import type { AnalysisRow, AnalysisTrace } from "@/actions/backend";
+import { getAnalysisTraces } from "@/actions/backend";
+import { ActionPlanSection } from "@/components/analysis/action-plan-section";
+import { LeakedValueSection } from "@/components/analysis/leaked-value-section";
 import { PaystubSection } from "@/components/analysis/paystub-section";
 import { PolicySection } from "@/components/analysis/policy-section";
-import { LeakedValueSection } from "@/components/analysis/leaked-value-section";
 import { ReasoningSection } from "@/components/analysis/reasoning-section";
-import { ActionPlanSection } from "@/components/analysis/action-plan-section";
 
 interface AnalysisSidebarProps {
   analysis: AnalysisRow | null;
@@ -46,12 +47,61 @@ const tabs: {
   { id: "actions", label: "Actions", icon: Target },
 ];
 
+// Convert traces to reasoning steps format
+function convertTracesToReasoningSteps(traces: AnalysisTrace[]): any[] {
+  const steps: any[] = [];
+  
+  // Group traces by agent/task name
+  const groupedTraces = new Map<string, AnalysisTrace[]>();
+  
+  traces.forEach((trace) => {
+    if (!groupedTraces.has(trace.step_name)) {
+      groupedTraces.set(trace.step_name, []);
+    }
+    groupedTraces.get(trace.step_name)!.push(trace);
+  });
+  
+  // Convert each group to a reasoning step
+  groupedTraces.forEach((traceGroup, name) => {
+    const processingTrace = traceGroup.find(t => t.step_status === 'processing');
+    const completedTrace = traceGroup.find(t => t.step_status === 'completed');
+    
+    if (completedTrace) {
+      const payloadInfo = completedTrace.payload 
+        ? Object.entries(completedTrace.payload)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(', ')
+        : 'No additional data';
+      
+      steps.push({
+        assumption: `Agent: ${name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
+        calculation: `Status: ${completedTrace.step_status}`,
+        result: payloadInfo,
+      });
+    }
+  });
+  
+  return steps;
+}
+
 export function AnalysisSidebar({
   analysis,
   isOpen,
   onClose,
 }: AnalysisSidebarProps) {
   const [activeTab, setActiveTab] = useState<TabId>("summary");
+  const [reasoningSteps, setReasoningSteps] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (analysis?.id) {
+      getAnalysisTraces(analysis.id).then((traces) => {
+        if (traces && traces.length > 0) {
+          const steps = convertTracesToReasoningSteps(traces);
+          setReasoningSteps(steps);
+        }
+      });
+    }
+  }, [analysis?.id]);
 
   if (!analysis) return null;
 
@@ -163,11 +213,11 @@ export function AnalysisSidebar({
 
                       {/* Quick Stats */}
                       <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border">
-                        <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20">
+                        <div className="p-4 rounded-xl bg-linear-to-br from-primary/10 to-purple-500/10 border border-primary/20">
                           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                             Opportunity Cost
                           </span>
-                          <p className="text-2xl font-bold font-mono mt-1 bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                          <p className="text-2xl font-bold font-mono mt-1 bg-linear-to-r from-primary to-purple-500 bg-clip-text text-transparent">
                             $
                             {(
                               (analysis.leaked_value as any)
@@ -194,7 +244,7 @@ export function AnalysisSidebar({
                   )}
 
                   {activeTab === "policy" && (
-                    <PolicySection data={(analysis.policy_data ?? {}) as any} />
+                    <PolicySection data={(analysis.policy_answer ?? {}) as any} />
                   )}
 
                   {activeTab === "financial" && (
@@ -204,8 +254,8 @@ export function AnalysisSidebar({
                   )}
 
                   {activeTab === "reasoning" && (
-                    <ReasoningSection
-                      data={((analysis.reasoning ?? []) as any[]) || []}
+                    <ReasoningSection 
+                      data={reasoningSteps} 
                       analysisId={analysis.id}
                     />
                   )}

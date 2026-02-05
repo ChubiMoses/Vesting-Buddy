@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { saveAnalysis, saveTraces, type TraceEvent } from "@/actions/backend";
+import { createSignedUrl } from "@/actions/storage";
+import { TraceProgress } from "@/components/dashboard/trace-progress";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,16 +14,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
-import { saveAnalysis, saveTraces, type TraceEvent } from "@/actions/backend";
 import { consumeAnalysisStream } from "@/lib/analysis-stream";
-import { createSignedUrl } from "@/actions/storage";
 import {
+  DEMO_HANDBOOK_PATH,
   DEMO_PAYSTUB_PATH,
   DEMO_RSU_PATH,
-  DEMO_HANDBOOK_PATH,
 } from "@/lib/demo-paths";
-import { TraceProgress } from "@/components/dashboard/trace-progress";
+import { createClient } from "@/lib/supabase/client";
 
 type Slot = "paystub" | "handbook" | "rsu";
 

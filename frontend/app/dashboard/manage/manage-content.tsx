@@ -1,7 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Archive,
+  BookOpen,
+  FileBarChart,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
+  MoreVertical,
+  Settings,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { AnalysisRow } from "@/actions/backend";
+import {
+  extractPaystubFromPath,
+  extractPolicyFromPath,
+  extractRsuFromPath,
+} from "@/actions/backend";
+import {
+  deleteDocument,
+  listUserDocuments,
+  type StoredDocument,
+} from "@/actions/storage";
+import { ExtractionSidebar } from "@/components/dashboard/extraction-sidebar";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,33 +35,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  FileText,
-  Settings,
-  Archive,
-  Trash2,
-  Loader2,
-  Upload,
-  MoreVertical,
-  FileBarChart,
-  FileSpreadsheet,
-  BookOpen,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  listUserDocuments,
-  deleteDocument,
-  type StoredDocument,
-} from "@/actions/storage";
-import type { AnalysisRow } from "@/actions/backend";
-import {
-  extractPaystubFromPath,
-  extractRsuFromPath,
-  extractPolicyFromPath,
-} from "@/actions/backend";
-import { ExtractionSidebar } from "@/components/dashboard/extraction-sidebar";
 import { createClient } from "@/lib/supabase/client";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface ManageContentProps {

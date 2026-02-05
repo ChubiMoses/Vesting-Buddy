@@ -1,6 +1,11 @@
 "use client";
 
+import { ChevronDown, ChevronRight, Eye, GitBranch } from "lucide-react";
 import { useState } from "react";
+import type { AnalysisRow, AnalysisTrace } from "@/actions/backend";
+import { AnalysisSidebar } from "@/components/dashboard/analysis-sidebar";
+import { TraceProgress } from "@/components/dashboard/trace-progress";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,11 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GitBranch, ChevronDown, ChevronRight, Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { TraceProgress } from "@/components/dashboard/trace-progress";
-import { AnalysisSidebar } from "@/components/dashboard/analysis-sidebar";
-import type { AnalysisRow, AnalysisTrace } from "@/actions/backend";
 
 interface AnalysisWithTraces {
   analysis: AnalysisRow;

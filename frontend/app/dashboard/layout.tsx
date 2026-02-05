@@ -1,7 +1,7 @@
 "use client";
 
-import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { useEffect, useState } from "react";
+import { DashboardSidebar } from "@/components/dashboard/sidebar";
 
 export default function DashboardLayout({
   children,

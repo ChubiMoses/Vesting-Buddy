@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { signInWithGoogle } from "@/actions/auth";
+import { Button } from "@/components/ui/button";
 
 export function GoogleOAuthButton() {
   return (

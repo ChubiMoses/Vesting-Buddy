@@ -1,11 +1,11 @@
 "use client";
 
-import { Brain, ChevronDown, ChevronRight, Activity } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Activity, Brain, ChevronDown, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { TraceEvent } from "@/actions/backend";
-import { TraceProgress } from "@/components/dashboard/trace-progress";
 import { getAnalysisTraces } from "@/actions/backend";
+import { TraceProgress } from "@/components/dashboard/trace-progress";
 
 interface ReasoningStep {
   assumption?: string;

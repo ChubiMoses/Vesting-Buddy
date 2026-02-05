@@ -1,9 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loginSchema, signupSchema } from "@/lib/validations/auth";
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 
 export async function signUpWithEmail(formData: FormData) {
   const email = formData.get("email") as string;

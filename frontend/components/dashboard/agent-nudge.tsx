@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TrendingUp, PiggyBank, ArrowRight } from "lucide-react";
+import { ArrowRight, PiggyBank, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AgentNudge } from "@/lib/data/dashboard";
 

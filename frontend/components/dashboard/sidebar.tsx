@@ -1,26 +1,26 @@
 "use client";
 
 import {
-  Upload,
-  LayoutDashboard,
+  ArrowLeft,
+  Bot,
   FileText,
-  User,
+  GitBranch,
+  LayoutDashboard,
+  LogOut,
+  Menu,
   Moon,
   Sun,
-  Menu,
-  ArrowLeft,
-  GitBranch,
-  Bot,
-  LogOut,
+  Upload,
+  User,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
 import { signOut } from "@/actions/auth";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Bot, Send, Sparkles, Zap, TrendingUp, Target } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { sendChatMessage, getChatContext } from "@/actions/backend";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bot, Send, Sparkles, Target, TrendingUp, Zap } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { getChatContext, sendChatMessage } from "@/actions/backend";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Message = { role: "user" | "assistant"; content: string };
 

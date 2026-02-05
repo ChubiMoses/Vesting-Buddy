@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2, Clock } from "lucide-react";
+import { CheckCircle2, Clock, Loader2 } from "lucide-react";
 import type { ReasoningStep } from "@/lib/data/dashboard";
 
 interface ReasoningTraceProps {

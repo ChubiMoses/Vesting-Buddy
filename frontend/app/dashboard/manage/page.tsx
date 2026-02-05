@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { getAnalyses } from "@/actions/backend";
 import { listUserDocuments } from "@/actions/storage";
+import { createClient } from "@/lib/supabase/server";
 import { ManageContent } from "./manage-content";
 
 export default async function ManagePage() {

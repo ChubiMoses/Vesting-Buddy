@@ -1,7 +1,7 @@
 "use client";
 
-import { FileText, AlertCircle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { AlertCircle, CheckCircle2, FileText } from "lucide-react";
 
 interface PolicyData {
   question?: string;

@@ -1,7 +1,7 @@
 "use client";
 
-import { User, DollarSign, TrendingUp, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
+import { Calendar, DollarSign, TrendingUp, User } from "lucide-react";
 
 interface PaystubData {
   employee_name?: string;

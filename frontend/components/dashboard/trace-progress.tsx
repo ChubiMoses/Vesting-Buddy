@@ -2,15 +2,15 @@
 
 import { motion } from "framer-motion";
 import {
-  CheckCircle2,
-  Loader2,
-  FileDown,
-  Bot,
-  FileText,
   Book,
+  Bot,
   Calculator,
-  Shield,
+  CheckCircle2,
   Dot,
+  FileDown,
+  FileText,
+  Loader2,
+  Shield,
 } from "lucide-react";
 import type { TraceEvent } from "@/actions/backend";
 

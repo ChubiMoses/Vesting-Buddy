@@ -1,9 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { CheckCircle, Lock, Shield, TrendingUp } from "lucide-react";
 import { useRef } from "react";
-import { Shield, Lock, TrendingUp, CheckCircle } from "lucide-react";
 
 const trustPoints = [
   {

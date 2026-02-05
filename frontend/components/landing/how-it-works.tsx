@@ -1,9 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { ArrowRight, Brain, CheckCircle, Upload } from "lucide-react";
 import { useRef } from "react";
-import { Upload, Brain, CheckCircle, ArrowRight } from "lucide-react";
 
 const steps = [
   {

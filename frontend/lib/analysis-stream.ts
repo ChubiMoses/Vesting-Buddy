@@ -1,4 +1,4 @@
-import type { TraceEvent, AnalyzeResult } from "@/actions/backend";
+import type { AnalyzeResult, TraceEvent } from "@/actions/backend";
 
 export interface StreamResult {
   analysisId: string;

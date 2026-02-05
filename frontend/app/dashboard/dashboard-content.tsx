@@ -1,24 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { WealthPulseCard } from "@/components/dashboard/wealth-pulse";
-import { AgentNudgeCard } from "@/components/dashboard/agent-nudge";
-import { InsightCards } from "@/components/dashboard/insight-cards";
-import { AnalysisSidebar } from "@/components/dashboard/analysis-sidebar";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { BarChart3, Eye, TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import type { AnalysisRow } from "@/actions/backend";
+import type { StoredDocument } from "@/actions/storage";
+import { AgentNudgeCard } from "@/components/dashboard/agent-nudge";
+import { AnalysisSidebar } from "@/components/dashboard/analysis-sidebar";
+import { InsightCards } from "@/components/dashboard/insight-cards";
+import { WealthPulseCard } from "@/components/dashboard/wealth-pulse";
+import type { SavedAnalysis, WealthPulse } from "@/lib/data/dashboard";
 import {
-  analysisToWealthPulse,
   analysisToAgentNudges,
   analysisToInsightCards,
   analysisToSavedAnalysis,
+  analysisToWealthPulse,
 } from "@/lib/map-analysis-to-dashboard";
-import type { AnalysisRow } from "@/actions/backend";
-import type { StoredDocument } from "@/actions/storage";
-import type { WealthPulse } from "@/lib/data/dashboard";
-import type { SavedAnalysis } from "@/lib/data/dashboard";
-import { BarChart3, TrendingUp, Eye } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const EMPTY_WEALTH_PULSE: WealthPulse = {
   unlockedThisMonth: 0,

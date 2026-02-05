@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Upload, FileText } from "lucide-react";
+import { FileText, Upload } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import type { Document, ReasoningStep } from "@/lib/data/dashboard";
 import { exampleFiles } from "@/lib/data/dashboard";
+import { cn } from "@/lib/utils";
 
 interface DocumentUploadProps {
   documents: Document[];

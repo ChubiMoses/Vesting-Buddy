@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TrendingUp, CreditCard, Unlock } from "lucide-react";
+import { CreditCard, TrendingUp, Unlock } from "lucide-react";
 import type { InsightCard } from "@/lib/data/dashboard";
 
 interface InsightCardsProps {

@@ -1,16 +1,16 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
 import {
   CheckCircle2,
-  TrendingUp,
-  Zap,
+  Clock,
   DollarSign,
   PiggyBank,
   Shield,
-  Clock,
+  TrendingUp,
+  Zap,
 } from "lucide-react";
+import { useRef } from "react";
 
 const features = [
   {

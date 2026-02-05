@@ -1,13 +1,13 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
-  TrendingUp,
   AlertTriangle,
   CheckCircle2,
-  Percent,
   DollarSign,
+  Percent,
+  TrendingUp,
 } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface LeakedValueData {
   gross_pay?: number;
