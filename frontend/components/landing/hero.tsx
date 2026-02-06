@@ -37,9 +37,9 @@ export function Hero({ user }: HeroProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-primary/10 to-purple-500/10 border border-border backdrop-blur-xs mb-6">
-                <Zap className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-home-green/10 to-purple-500/10 border border-border backdrop-blur-xs mb-6">
+                <Zap className="w-4 h-4 text-home-green" />
+                <span className="text-sm font-medium text-home-green">
                   AI-Powered Financial Optimization
                 </span>
               </div>
@@ -52,7 +52,7 @@ export function Hero({ user }: HeroProps) {
               className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
             >
               Stop Leaving{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-500">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-home-green to-purple-500">
                 Free Money
               </span>{" "}
               on the Table
@@ -82,7 +82,7 @@ export function Hero({ user }: HeroProps) {
                 <Link href="/dashboard" className="group">
                   <Button
                     size="lg"
-                    className="w-full sm:w-auto text-lg px-8 py-4 h-auto rounded-2xl shadow-lg shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 bg-linear-to-r from-primary to-navy-blue hover:from-primary/90 hover:to-navy-blue/90"
+                    className="w-full sm:w-auto text-lg px-8 py-4 h-auto rounded-2xl shadow-lg shadow-home-green/20 hover:shadow-2xl hover:shadow-home-green/30 transition-all duration-300 bg-linear-to-r from-home-green to-navy-blue hover:from-home-green/90 hover:to-navy-blue/90"
                   >
                     <span className="flex items-center gap-3">
                       Go to Dashboard
@@ -95,7 +95,7 @@ export function Hero({ user }: HeroProps) {
                   <Link href="/signup" className="group">
                     <Button
                       size="lg"
-                      className="w-full sm:w-auto text-lg px-8 py-4 h-auto rounded-2xl shadow-lg shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 bg-linear-to-r from-primary to-navy-blue hover:from-primary/90 hover:to-navy-blue/90"
+                      className="w-full sm:w-auto text-lg px-8 py-4 h-auto rounded-2xl shadow-lg shadow-home-green/20 hover:shadow-2xl hover:shadow-home-green/30 transition-all duration-300 bg-linear-to-r from-home-green to-navy-blue hover:from-home-green/90 hover:to-navy-blue/90"
                     >
                       <span className="flex items-center gap-3">
                         Get Started
@@ -135,8 +135,8 @@ export function Hero({ user }: HeroProps) {
                   transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
                   className="flex items-center gap-3"
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <item.icon className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 rounded-full bg-home-green/10 flex items-center justify-center shrink-0">
+                    <item.icon className="w-4 h-4 text-home-green" />
                   </div>
                   <span className="text-sm font-medium text-muted-foreground">
                     {item.text}
@@ -152,7 +152,7 @@ export function Hero({ user }: HeroProps) {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="relative"
           >
-            <div className="absolute inset-0 bg-linear-to-r from-primary to-purple-500 rounded-3xl blur-3xl opacity-20" />
+            <div className="absolute inset-0 bg-linear-to-r from-home-green to-purple-500 rounded-3xl blur-3xl opacity-20" />
 
             <div className="relative bg-card/80 backdrop-blur-xl rounded-3xl border border-border p-8 shadow-2xl">
               <div className="space-y-6">
@@ -161,7 +161,7 @@ export function Hero({ user }: HeroProps) {
                     <div className="text-sm text-muted-foreground mb-1">
                       Average Savings Found
                     </div>
-                    <div className="text-5xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-navy-blue">
+                    <div className="text-5xl font-bold text-transparent bg-clip-text bg-linear-to-r from-home-green to-navy-blue">
                       $3,768
                     </div>
                   </div>
@@ -182,22 +182,22 @@ export function Hero({ user }: HeroProps) {
                     {
                       label: "401(k) Match",
                       value: "$1,336",
-                      color: "from-primary to-primary",
+                      color: "from-home-green to-home-green",
                     },
                     {
                       label: "HSA Savings",
                       value: "$892",
-                      color: "from-purple-500 to-navy-blue",
+                      color: "from-home-green to-home-green",
                     },
                     {
                       label: "Tax Optimization",
                       value: "$1,540",
-                      color: "from-primary to-primary",
+                      color: "from-home-green to-home-green",
                     },
                     {
                       label: "Time Saved",
                       value: "12hrs",
-                      color: "from-purple-500 to-navy-blue",
+                      color: "from-home-green to-home-green",
                     },
                   ].map((stat, index) => (
                     <motion.div
@@ -205,7 +205,7 @@ export function Hero({ user }: HeroProps) {
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
-                      className="bg-card/50 rounded-2xl p-4 border border-primary/10"
+                      className="bg-card/50 rounded-2xl p-4 border border-home-green/10"
                     >
                       <div className="text-xs text-muted-foreground mb-2">
                         {stat.label}

@@ -11,7 +11,7 @@ const steps = [
     description:
       "Drag and drop your paystub, benefits summary, or RSU grant. We support PDF, and all data is 256-bit encrypted.",
     number: "01",
-    color: "from-primary to-navy-blue",
+    color: "from-home-green to-navy-blue",
   },
   {
     icon: Brain,
@@ -19,7 +19,7 @@ const steps = [
     description:
       "Advanced multi-agent AI system scans for missed 401(k) matches, HSA opportunities, RSU optimization, and hidden tax savings in real-time.",
     number: "02",
-    color: "from-primary to-navy-blue",
+    color: "from-home-green to-navy-blue",
   },
   {
     icon: CheckCircle,
@@ -27,7 +27,7 @@ const steps = [
     description:
       "Receive a personalized roadmap with exact steps, dollar amounts, and priority rankings to claim every dollar you're entitled to.",
     number: "03",
-    color: "from-primary to-navy-blue",
+    color: "from-home-green to-navy-blue",
   },
 ];
 
@@ -41,7 +41,7 @@ export function HowItWorks() {
       className="py-24 bg-muted/30 dark:bg-muted/10 relative overflow-hidden"
     >
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-home-green/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-3xl" />
 
       <div className="container px-4 mx-auto max-w-6xl relative z-10">
@@ -95,7 +95,7 @@ export function HowItWorks() {
 
                 {/* Icon */}
                 <div
-                  className={`w-16 h-16 rounded-2xl bg-linear-to-br ${step.color} flex items-center justify-center mb-6 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300`}
+                  className={`w-16 h-16 rounded-2xl bg-linear-to-br ${step.color} flex items-center justify-center mb-6 shadow-lg shadow-home-green/20 group-hover:scale-110 transition-transform duration-300`}
                 >
                   <step.icon className="w-8 h-8 text-white" />
                 </div>
@@ -108,7 +108,7 @@ export function HowItWorks() {
 
                 {/* Hover indicator */}
                 <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ArrowRight className="w-5 h-5 text-primary" />
+                  <ArrowRight className="w-5 h-5 text-home-green" />
                 </div>
               </div>
             </motion.div>

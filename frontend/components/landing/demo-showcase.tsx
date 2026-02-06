@@ -42,12 +42,12 @@ export function DemoShowcase() {
           transition={{ duration: 0.6 }}
           className="text-center space-y-4 mb-16"
         >
-          <div className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+          <div className="inline-block px-4 py-2 rounded-full bg-home-green/10 text-home-green text-sm font-medium mb-4">
             See It In Action
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
             Your Money,{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-500">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-home-green to-purple-500">
               Optimized
             </span>
           </h2>
@@ -93,11 +93,11 @@ export function DemoShowcase() {
                   transition={{ duration: 0.6, delay: 0.5 }}
                   className="relative group"
                 >
-                  <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative bg-slate-800/80 rounded-xl p-6 border border-primary/30 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-linear-to-br from-home-green/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative bg-slate-800/80 rounded-xl p-6 border border-home-green/30 backdrop-blur-sm">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex-1">
-                        <div className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
+                        <div className="text-xs font-semibold uppercase tracking-wider text-home-green mb-2">
                           Wealth Pulse
                         </div>
                         <div className="text-4xl font-bold text-white tabular-nums">
@@ -161,7 +161,7 @@ export function DemoShowcase() {
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="text-center">
-                            <div className="text-lg font-bold text-primary">
+                            <div className="text-lg font-bold text-home-green">
                               68%
                             </div>
                             <div className="text-[9px] text-slate-400 uppercase">
@@ -192,8 +192,8 @@ export function DemoShowcase() {
                     </div>
                     <div className="bg-slate-800/60 rounded-xl p-5 border border-slate-700/50">
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                          <DollarSign className="w-5 h-5 text-primary" />
+                        <div className="w-10 h-10 rounded-lg bg-home-green/20 flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-home-green" />
                         </div>
                         <div className="flex-1">
                           <div className="text-sm text-slate-400">
@@ -205,7 +205,7 @@ export function DemoShowcase() {
                         </div>
                       </div>
                       <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div className="h-full w-2/3 bg-linear-to-r from-primary to-purple-500" />
+                        <div className="h-full w-2/3 bg-linear-to-r from-home-green to-purple-500" />
                       </div>
                       <div className="text-xs text-slate-400 mt-2">
                         Contributing 65% of max match
@@ -297,8 +297,8 @@ export function DemoShowcase() {
                   transition={{ duration: 0.5, delay: 1.0 + index * 0.1 }}
                   className="flex items-center gap-3"
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <feature.icon className="w-5 h-5 text-primary" />
+                  <div className="w-10 h-10 rounded-full bg-home-green/10 flex items-center justify-center shrink-0">
+                    <feature.icon className="w-5 h-5 text-home-green" />
                   </div>
                   <div className="text-sm font-medium">{feature.text}</div>
                 </motion.div>

@@ -60,9 +60,9 @@ export function Trust() {
               transition={{ duration: 0.4, delay: index * 0.1 }}
               className="group"
             >
-              <div className="h-full p-6 rounded-2xl border border-border bg-card/80 backdrop-blur-xs hover:border-primary/40 transition-all duration-300 text-center space-y-4 hover:shadow-lg">
-                <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-primary/10 border border-border mx-auto group-hover:bg-primary/20 transition-colors">
-                  <point.icon className="h-7 w-7 text-primary" />
+              <div className="h-full p-6 rounded-2xl border border-border bg-card/80 backdrop-blur-xs hover:border-home-green/40 transition-all duration-300 text-center space-y-4 hover:shadow-lg">
+                <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-home-green/10 border border-border mx-auto group-hover:bg-home-green/20 transition-colors">
+                    <point.icon className="h-7 w-7 text-home-green" />
                 </div>
                 <h3 className="text-lg font-bold">{point.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -72,22 +72,6 @@ export function Trust() {
             </motion.div>
           ))}
         </div>
-
-        {/* <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-20 text-center"
-        >
-          <div className="inline-block p-8 rounded-3xl bg-card/80 backdrop-blur-xs border border-border">
-            <p className="text-2xl font-bold mb-3 text-primary">
-              Built for Encode AI Agents Hackathon
-            </p>
-            <p className="text-muted-foreground text-lg">
-              Financial Health Track • Powered by Opik for LLM Observability
-            </p>
-          </div>
-        </motion.div> */}
       </div>
     </section>
   );

@@ -1,9 +1,7 @@
-import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import { CTASection } from "@/components/landing/cta-section";
 import { DemoShowcase } from "@/components/landing/demo-showcase";
 import { Hero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
-import { Trust } from "@/components/landing/trust";
 import { WhatWeFind } from "@/components/landing/what-we-find";
 import { createClient } from "@/lib/supabase/server";
 
@@ -15,12 +13,10 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
-      <DarkModeToggle />
       <Hero user={user} />
       <DemoShowcase />
       <HowItWorks />
       <WhatWeFind />
-      <Trust />
       <CTASection />
     </main>
   );
