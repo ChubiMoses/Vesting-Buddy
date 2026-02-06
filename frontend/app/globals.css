@@ -1,114 +1,76 @@
 @import "tailwindcss";
 
 @theme {
-  /* Typography - Professional Financial App */
-  --font-family-sans:
-    var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-family-mono: var(--font-dm-sans), "Monaco", "Courier New", monospace;
-  --color-background: light-dark(oklch(100% 0 0), oklch(15% 0.02 280));
-  --color-foreground: light-dark(oklch(9.61% 0.006 285.75), oklch(98% 0 0));
+  /* Typography - Urbanist (PayU Finance CRM inspired) */
+  --font-family-sans: var(--font-urbanist), system-ui, -apple-system, sans-serif;
+  --font-family-mono: "SF Mono", "Monaco", "Inconsolata", monospace;
 
-  --color-card: light-dark(oklch(100% 0 0), oklch(12% 0.012 285.75));
-  --color-card-foreground: light-dark(oklch(9.61% 0.006 285.75), oklch(98% 0 0));
+  /* ========================================
+     LIGHT MODE PALETTE (PayU inspired)
+     ======================================== */
+  
+  /* Page background - soft gray */
+  --color-background: #F5F7FA;
+  --color-foreground: #1A1D1F;
 
-  --color-popover: light-dark(oklch(100% 0 0), oklch(12% 0.012 285.75));
-  --color-popover-foreground: light-dark(
-    oklch(9.61% 0.006 285.75),
-    oklch(98% 0 0)
-  );
+  /* Cards - pure white */
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1A1D1F;
 
-  --color-primary: oklch(57.66% 0.142 191.79);
-  --color-primary-foreground: oklch(100% 0 0);
+  /* Popover */
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #1A1D1F;
 
-  --color-purple-500: oklch(55% 0.15 300);
-  --color-purple-600: oklch(45% 0.15 300);
+  /* Primary - Mint Teal (PayU accent) */
+  --color-primary: #3ECFB2;
+  --color-primary-foreground: #FFFFFF;
 
-  --color-navy-blue: light-dark(
-    oklch(21.6% 0.15 285.75),
-    oklch(21.6% 0.15 285.75)
-  );
-  --color-navy-blue-foreground: light-dark(oklch(100% 0 0), oklch(100% 0 0));
-  --color-nav-blue-light: light-dark(
-    oklch(80% 0.15 285.75),
-    oklch(80% 0.15 285.75)
-  );
+  /* Sidebar - Dark charcoal */
+  --color-sidebar: #1E1E2D;
+  --color-sidebar-foreground: #9CA3AF;
+  --color-sidebar-accent: #3ECFB2;
+  --color-sidebar-border: rgba(255, 255, 255, 0.1);
 
-  --default-ring-3-width: 3px;
-  --default-ring-3-color: light-dark(
-    var(--color-blue-500),
-    var(--color-blue-500)
-  );
+  /* Secondary - Light gray fills */
+  --color-secondary: #F0F2F5;
+  --color-secondary-foreground: #1A1D1F;
 
-  --color-secondary: light-dark(
-    oklch(96.1% 0.001 286.38),
-    oklch(20% 0.013 285.89)
-  );
-  --color-secondary-foreground: light-dark(
-    oklch(16.87% 0.013 285.89),
-    oklch(98% 0 0)
-  );
+  /* Muted - Subtle backgrounds */
+  --color-muted: #F5F7FA;
+  --color-muted-foreground: #6B7280;
 
-  --color-muted: light-dark(oklch(96.1% 0.001 286.38), oklch(20% 0.013 285.89));
-  --color-muted-foreground: light-dark(
-    oklch(55.35% 0.013 286.04),
-    oklch(65% 0.009 286.32)
-  );
+  /* Accent */
+  --color-accent: #F0F2F5;
+  --color-accent-foreground: #1A1D1F;
 
-  --color-accent: light-dark(oklch(96.1% 0.001 286.38), oklch(20% 0.013 285.89));
-  --color-accent-foreground: light-dark(
-    oklch(16.87% 0.013 285.89),
-    oklch(98% 0 0)
-  );
+  /* Destructive */
+  --color-destructive: #EF4444;
+  --color-destructive-foreground: #FFFFFF;
 
-  --color-destructive: light-dark(
-    oklch(62.8% 0.257 29.23),
-    oklch(52% 0.204 27.33)
-  );
-  --color-destructive-foreground: oklch(98% 0 0);
+  /* Borders - Light and subtle */
+  --color-border: #E5E7EB;
+  --color-input: #E5E7EB;
+  --color-ring: #3ECFB2;
 
-  --color-border: light-dark(
-    oklch(89.84% 0.003 286.32),
-    oklch(30% 0.015 285.89)
-  );
-  --color-input: light-dark(oklch(89.84% 0.003 286.32), oklch(30% 0.015 285.89));
-  --color-ring-3: oklch(57.66% 0.142 191.79);
+  /* Semantic colors for data */
+  --color-success: #22C55E;
+  --color-success-foreground: #FFFFFF;
+  --color-warning: #F59E0B;
+  --color-warning-foreground: #FFFFFF;
 
+  /* Chart colors (gray bars with teal accent like PayU) */
+  --color-chart-1: #E5E7EB;
+  --color-chart-2: #D1D5DB;
+  --color-chart-3: #9CA3AF;
+  --color-chart-4: #6B7280;
+  --color-chart-5: #3ECFB2;
+
+  /* Radius - slightly rounded like PayU */
   --radius: 0.75rem;
 
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-dm-sans);
-
-  --animate-gradient: gradient 8s ease infinite;
-}
-
-@keyframes gradient {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes pulse-glow {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
+  /* Font variables */
+  --font-sans: var(--font-urbanist);
+  --font-heading: var(--font-urbanist);
 }
 
 @layer base {
@@ -117,7 +79,7 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
+    border-color: var(--color-border);
   }
 }
 
@@ -134,7 +96,7 @@
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans), sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 
 h1,
@@ -143,51 +105,33 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading), sans-serif;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: 600;
 }
 
-.bg-grid-pattern {
-  background-image:
-    linear-gradient(
-      to right,
-      light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03)) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03)) 1px,
-      transparent 1px
-    );
-  background-size: 40px 40px;
-}
-
+/* Text utilities */
 .text-balance {
   text-wrap: balance;
 }
 
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient 8s ease infinite;
+/* Financial number formatting */
+.currency {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 4s ease-in-out infinite;
-}
-
-@supports (color-scheme: dark light) {
+/* Light mode only - no dark mode support needed */
+@supports (color-scheme: light) {
   html {
     color-scheme: light;
   }
-
-  html.dark {
-    color-scheme: dark;
-  }
 }
 
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -198,65 +142,72 @@ h6 {
   }
 }
 
+/* Container utility */
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
 }
 
-/* Financial App Utilities */
-.font-mono {
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
+/* Sidebar utilities */
+.sidebar-item {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-colors;
 }
 
-.currency {
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.025em;
+.sidebar-item-active {
+  @apply bg-primary text-white;
 }
 
-.bg-size-200 {
-  background-size: 200% 200%;
+.sidebar-item-inactive {
+  @apply text-sidebar-foreground hover:bg-white/5 hover:text-white;
 }
 
-.bg-position-100 {
-  background-position: 100% 0;
+/* Card shadow - very subtle like PayU */
+.card-shadow {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
 }
 
-/* Enhanced glassmorphism */
-.glass {
-  background: light-dark(rgba(255, 255, 255, 0.8), rgba(20, 20, 30, 0.8));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* Percentage badge styles */
+.badge-success {
+  @apply text-xs px-2 py-0.5 rounded-full bg-success/10 text-success font-medium;
 }
 
-/* Professional card elevation */
-@keyframes card-hover {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  100% {
-    transform: translateY(-2px) scale(1.005);
-  }
+.badge-destructive {
+  @apply text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive font-medium;
 }
 
-.card-hover:hover {
-  animation: card-hover 0.2s ease forwards;
+.badge-muted {
+  @apply text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium;
 }
 
-/* Navy blue theme utilities */
-.bg-navy-blue {
-  background-color: var(--color-navy-blue);
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
-.text-navy-blue {
-  color: light-dark(var(--color-navy-blue), var(--color-navy-blue));
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-.border-navy-blue {
-  border-color: light-dark(var(--color-navy-blue), var(--color-navy-blue));
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
 }
-.bg-nav-blue-light {
-  background-color: var(--color-nav-blue-light);
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
 }
-.text-nav-blue-light {
-  color: var(--color-nav-blue-light);
+
+/* Focus ring */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2;
+}
+
+/* Input focus state */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(62, 207, 178, 0.1);
 }

@@ -17,10 +17,8 @@ export async function consumeAnalysisStream(
   onTrace: (event: TraceEvent) => void,
 ): Promise<StreamResult> {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-  console.log("[SSE] Starting analysis stream to:", backendUrl);
 
   if (!backendUrl) {
-    console.error("[SSE] NEXT_PUBLIC_BACKEND_URL is not configured");
     return {
       analysisId: "",
       error: "NEXT_PUBLIC_BACKEND_URL is not configured",
@@ -32,7 +30,6 @@ export async function consumeAnalysisStream(
     handbook_url: handbookUrl,
     ...(rsuUrl && { rsu_url: rsuUrl }),
   };
-  console.log("[SSE] Request body:", JSON.stringify(body, null, 2));
 
   try {
     const response = await fetch(`${backendUrl}/analyze/stream`, {
@@ -41,7 +38,6 @@ export async function consumeAnalysisStream(
       body: JSON.stringify(body),
     });
 
-    console.log("[SSE] Response status:", response.status, response.statusText);
 
     if (!response.ok) {
       const text = await response.text();
@@ -56,17 +52,10 @@ export async function consumeAnalysisStream(
     let result: AnalyzeResult | undefined;
     let traceCount = 0;
 
-    console.log("[SSE] Starting to read stream...");
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-        console.log(
-          "[SSE] Stream ended. Total traces:",
-          traceCount,
-          "Result:",
-          result ? "✓" : "✗",
-        );
         break;
       }
 
@@ -77,21 +66,14 @@ export async function consumeAnalysisStream(
         if (line.startsWith("data: ")) {
           try {
             const data = JSON.parse(line.slice(6));
-            console.log("[SSE] Received event:", data.type, data);
 
             if (data.type === "start") {
               analysisId = data.analysis_id;
-              console.log("[SSE] Analysis started with ID:", analysisId);
             } else if (data.type === "trace") {
               traceCount++;
-              console.log(`[SSE] Trace ${traceCount}:`, data.name, data.status);
               onTrace(data as TraceEvent);
             } else if (data.type === "complete") {
               result = data.result as AnalyzeResult;
-              console.log(
-                "[SSE] Analysis complete! Result keys:",
-                Object.keys(result || {}),
-              );
             } else if (data.type === "error") {
               console.error("[SSE] Analysis error:", data.error);
               return { analysisId, error: data.error };
@@ -104,21 +86,14 @@ export async function consumeAnalysisStream(
     }
 
     if (!result) {
-      console.error(
-        "[SSE] Stream ended without complete event! Collected",
-        traceCount,
-        "traces",
-      );
       return {
         analysisId,
         error: "Analysis completed but result was not received from server",
       };
     }
 
-    console.log("[SSE] Success! Returning result for analysis:", analysisId);
     return { analysisId, result };
   } catch (err) {
-    console.error("[SSE] Stream error:", err);
     return {
       analysisId: "",
       error: err instanceof Error ? err.message : "Analysis failed",

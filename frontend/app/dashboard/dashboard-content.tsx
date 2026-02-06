@@ -1,15 +1,22 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BarChart3, Eye, TrendingUp } from "lucide-react";
+import {
+  BarChart3,
+  DollarSign,
+  Eye,
+  MoreHorizontal,
+  TrendingUp,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { AnalysisRow } from "@/actions/backend";
 import type { StoredDocument } from "@/actions/storage";
 import { AgentNudgeCard } from "@/components/dashboard/agent-nudge";
 import { AnalysisSidebar } from "@/components/dashboard/analysis-sidebar";
+import { FloatingChat } from "@/components/dashboard/floating-chat";
 import { InsightCards } from "@/components/dashboard/insight-cards";
-import { WealthPulseCard } from "@/components/dashboard/wealth-pulse";
+import { Button } from "@/components/ui/button";
 import type { SavedAnalysis, WealthPulse } from "@/lib/data/dashboard";
 import {
   analysisToAgentNudges,
@@ -17,6 +24,7 @@ import {
   analysisToSavedAnalysis,
   analysisToWealthPulse,
 } from "@/lib/map-analysis-to-dashboard";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const EMPTY_WEALTH_PULSE: WealthPulse = {
@@ -45,18 +53,18 @@ function SavingsChart({ analyses }: { analyses: SavedAnalysis[] }) {
   return (
     <div className="flex gap-6">
       {/* Y-axis */}
-      <div className="flex flex-col justify-between h-28 py-0.5">
+      <div className="flex flex-col justify-between h-32 py-0.5">
         {yAxisValues.reverse().map((value, i) => (
           <div
             key={i}
-            className="text-[10px] text-muted-foreground font-mono tabular-nums"
+            className="text-xs text-muted-foreground tabular-nums"
           >
             ${(value / 1000).toFixed(0)}k
           </div>
         ))}
       </div>
 
-      {/* Chart */}
+      {/* Chart - Gray bars with teal accent for selected (PayU style) */}
       <div className="flex-1 flex gap-3 items-end">
         {ordered.map((a, i) => (
           <div
@@ -70,12 +78,12 @@ function SavingsChart({ analyses }: { analyses: SavedAnalysis[] }) {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute bottom-full mb-2 px-3 py-2 rounded-lg bg-popover border border-border shadow-lg z-10 whitespace-nowrap"
+                className="absolute bottom-full mb-2 px-3 py-2 rounded-lg bg-card border border-border shadow-lg z-10 whitespace-nowrap"
               >
-                <p className="text-xs font-semibold">
+                <p className="text-sm font-semibold">
                   ${a.totalSavings.toLocaleString()}
                 </p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {new Date(a.date).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -85,23 +93,22 @@ function SavingsChart({ analyses }: { analyses: SavedAnalysis[] }) {
               </motion.div>
             )}
 
-            <div className="h-28 w-full flex items-end">
+            <div className="h-32 w-full flex items-end">
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: `${(a.totalSavings / maxSavings) * 100}%` }}
                 transition={{ delay: i * 0.06, duration: 0.4, ease: "easeOut" }}
                 className={cn(
-                  "w-full rounded-t-lg bg-linear-to-t from-primary to-navy-blue transition-all min-h-[4px]",
+                  "w-full rounded-t-lg transition-all min-h-[4px]",
                   hoveredIndex === i
-                    ? "opacity-100 shadow-lg shadow-primary/50"
-                    : "opacity-70",
+                    ? "bg-primary"
+                    : "bg-gray-300",
                 )}
               />
             </div>
-            <span className="text-[10px] text-muted-foreground truncate w-full text-center">
+            <span className="text-xs text-muted-foreground truncate w-full text-center">
               {new Date(a.date).toLocaleDateString("en-US", {
                 month: "short",
-                year: "2-digit",
               })}
             </span>
           </div>
@@ -120,8 +127,12 @@ export function DashboardContent({
     null,
   );
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
 
   const latest = analyses[0] ?? null;
+  const leakedValue = (latest?.leaked_value ?? {}) as Record<string, unknown>;
+  const paystubData = (latest?.paystub_data ?? {}) as Record<string, unknown>;
+  const policyAnswer = (latest?.policy_answer ?? {}) as Record<string, unknown>;
   const wealthPulse = latest
     ? analysisToWealthPulse(latest)
     : EMPTY_WEALTH_PULSE;
@@ -134,6 +145,30 @@ export function DashboardContent({
     setSidebarOpen(true);
   };
 
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      const user = data.user;
+      if (!user) return;
+      const name =
+        (user.user_metadata?.full_name as string | undefined) ||
+        (user.user_metadata?.name as string | undefined) ||
+        user.email ||
+        null;
+      setUserName(name);
+    });
+  }, []);
+
+  const formatPercent = (value: unknown) => {
+    if (typeof value !== "number") return "—";
+    return `${(value * 100).toFixed(1)}%`;
+  };
+
+  const formatCurrency = (value: unknown) => {
+    if (typeof value !== "number") return "—";
+    return `$${Math.round(value).toLocaleString()}`;
+  };
+
   return (
     <>
       <AnalysisSidebar
@@ -142,15 +177,232 @@ export function DashboardContent({
         onClose={() => setSidebarOpen(false)}
       />
 
-      <div className="p-6 md:p-8 min-h-screen">
-        <div className="max-w-6xl mx-auto space-y-8">
-          {/* Hero: single Wealth Pulse card */}
-          <WealthPulseCard data={wealthPulse} />
+      <FloatingChat />
 
-          {/* Recommended actions: nudges in 2 columns */}
+      <div className="p-6 lg:p-8 min-h-screen">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Page Header */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">
+                Dashboard
+              </h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                Dashboard &gt; Overview
+              </p>
+            </div>
+            {analyses &&(
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Welcome back,</p>
+                <p className="text-base font-semibold text-foreground">
+                  {((analyses[0]?.paystub_data as Record<string, unknown>)?.employee_name as string) || userName}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Stats Row - PayU Style */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Total Balance Card */}
+            <div className="p-6 rounded-xl bg-card border border-border/50 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Total Unlocked</span>
+                </div>
+                <div className="relative group">
+                  <button className="text-muted-foreground hover:text-foreground">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                  <span className="pointer-events-none absolute -top-9 right-0 px-2 py-1 rounded-md bg-foreground text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Total unlocked from analyses
+                  </span>
+                </div>
+              </div>
+              <p className="text-3xl font-semibold tabular-nums">
+                $ {wealthPulse.totalUnlocked.toLocaleString()}
+              </p>
+              <div className="flex items-center gap-1 mt-2">
+                <span className={cn(
+                  "text-xs px-2 py-0.5 rounded-full font-medium",
+                  wealthPulse.growthPercentage >= 0 
+                    ? "bg-success/10 text-success" 
+                    : "bg-destructive/10 text-destructive"
+                )}>
+                  {wealthPulse.growthPercentage >= 0 ? "+" : ""}{wealthPulse.growthPercentage}% growth
+                </span>
+              </div>
+            </div>
+
+            {/* This Month Card */}
+            <div className="p-6 rounded-xl bg-card border border-border/50 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">This Month</span>
+                </div>
+                <div className="relative group">
+                  <button className="text-muted-foreground hover:text-foreground">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                  <span className="pointer-events-none absolute -top-9 right-0 px-2 py-1 rounded-md bg-foreground text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Unlocked this month
+                  </span>
+                </div>
+              </div>
+              <p className="text-3xl font-semibold tabular-nums">
+                $ {wealthPulse.unlockedThisMonth.toLocaleString()}
+              </p>
+              <div className="flex items-center gap-1 mt-2">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                  Unlocked this month
+                </span>
+              </div>
+            </div>
+
+            {/* Analyses Count Card */}
+            <div className="p-6 rounded-xl bg-card border border-border/50 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Total Analyses</span>
+                </div>
+                <div className="relative group">
+                  <button className="text-muted-foreground hover:text-foreground">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                  <span className="pointer-events-none absolute -top-9 right-0 px-2 py-1 rounded-md bg-foreground text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Total analyses run
+                  </span>
+                </div>
+              </div>
+              <p className="text-3xl font-semibold tabular-nums">
+                {analyses.length}
+              </p>
+              <div className="flex items-center gap-1 mt-2">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                  Documents analyzed
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Latest Analysis Snapshot */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                  Latest Analysis Snapshot
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Key values from your most recent analysis
+                </p>
+              </div>
+              {latest && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push("/dashboard/traces")}
+                >
+                  View history
+                </Button>
+              )}
+            </div>
+
+            {latest ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200">
+                  <p className="text-xs text-emerald-700 font-semibold uppercase tracking-wide">
+                    Opportunity Cost
+                  </p>
+                  <p className="text-2xl font-semibold text-emerald-900 mt-2 tabular-nums">
+                    {formatCurrency(leakedValue.annual_opportunity_cost)}
+                  </p>
+                  <p className="text-xs text-emerald-700 mt-1">
+                    Annual savings potential
+                  </p>
+                </div> */}
+
+                <div className="p-5 rounded-xl bg-sky-50 border border-sky-200">
+                  <p className="text-xs text-sky-700 font-semibold uppercase tracking-wide">
+                    Employee Profile
+                  </p>
+                  <p className="text-lg font-semibold text-sky-900 mt-2 truncate">
+                    {(leakedValue.employee_name as string) ||
+                      (paystubData.employee_name as string) ||
+                      "—"}
+                  </p>
+                  <p className="text-xs text-sky-700 mt-1">
+                    Gross pay{" "}
+                    {formatCurrency(
+                      leakedValue.gross_pay ?? paystubData.gross_pay,
+                    )}
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-xl bg-amber-50 border border-amber-200">
+                  <p className="text-xs text-amber-700 font-semibold uppercase tracking-wide">
+                    Match Gap
+                  </p>
+                  <p className="text-2xl font-semibold text-amber-900 mt-2 tabular-nums">
+                    {formatPercent(leakedValue.gap_rate)}
+                  </p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    To maximize match
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-xl bg-indigo-50 border border-indigo-200">
+                  <p className="text-xs text-indigo-700 font-semibold uppercase tracking-wide">
+                    Payroll Status
+                  </p>
+                  <p className="text-lg font-semibold text-indigo-900 mt-2 capitalize">
+                    {(leakedValue.paystub_verification as { status?: string })
+                      ?.status || "—"}
+                  </p>
+                  <p className="text-xs text-indigo-700 mt-1">
+                    Calculations verified
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-xl bg-gray-100 border border-gray-200">
+                  <p className="text-xs text-gray-700 font-semibold uppercase tracking-wide">
+                    Policy Check
+                  </p>
+                  <p className="text-lg font-semibold text-gray-900 mt-2">
+                    {typeof leakedValue.policy_missing_match === "boolean"
+                      ? leakedValue.policy_missing_match
+                        ? "Missing Match"
+                        : "Match Found"
+                      : "—"}
+                  </p>
+                  <p className="text-xs text-gray-700 mt-1">
+                    {policyAnswer.question
+                      ? `By HSA contribution & vesting schedule`
+                      : "Policy question not available"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-border bg-card p-8 text-center">
+                <p className="text-muted-foreground">
+                  No analysis data yet. Run your first analysis to populate this
+                  section.
+                </p>
+              </div>
+            )}
+          </section>
+
+          {/* Recommended Actions */}
           <section>
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-              Recommended for you
+              Recommended steps for you
             </h2>
             {nudges.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -171,22 +423,18 @@ export function DashboardContent({
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-border bg-card/50 p-8 text-center">
+              <div className="rounded-xl border border-border bg-card p-8 text-center">
                 <p className="text-muted-foreground mb-4">
                   Run an analysis to unlock personalized recommendations.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => router.push("/dashboard/upload")}
-                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
-                >
+                <Button onClick={() => router.push("/dashboard/upload")}>
                   Start analysis
-                </button>
+                </Button>
               </div>
             )}
           </section>
 
-          {/* Insights: compact single row when we have cards */}
+          {/* Key Metrics */}
           {insightCards.length > 0 && (
             <section>
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
@@ -196,70 +444,78 @@ export function DashboardContent({
             </section>
           )}
 
-          {/* Savings over time + saved analyses */}
-          <section className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-border">
-              <div className="flex items-center gap-3 mb-1">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+          {/* Savings Overview Chart - PayU Style */}
+          <section className="rounded-xl bg-card border border-border/50 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <BarChart3 className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">Savings over time</h3>
+                  <h3 className="font-semibold">Savings Overview</h3>
                   <p className="text-xs text-muted-foreground">
                     Opportunity value from your analyses
                   </p>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-1.5 text-sm rounded-lg bg-muted text-foreground font-medium">
+                  Monthly
+                </button>
+                <button className="px-3 py-1.5 text-sm rounded-lg border border-border text-muted-foreground hover:text-foreground">
+                  Filter
+                </button>
+              </div>
             </div>
             <div className="p-6">
               {savedAnalyses.length > 0 ? (
                 <div className="space-y-6">
-                  <div className="bg-muted/20 dark:bg-muted/10 rounded-xl p-4 border border-border/50">
-                    <SavingsChart analyses={savedAnalyses} />
-                  </div>
+                  <SavingsChart analyses={savedAnalyses} />
+                  
+                  {/* Recent Analyses Table */}
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                       Recent Analyses
                     </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {savedAnalyses.map((analysis, index) => {
+                    <div className="rounded-lg border border-border overflow-hidden">
+                      {/* Table Header */}
+                      <div className="grid grid-cols-4 gap-4 px-4 py-3 bg-muted/50 text-xs font-medium text-muted-foreground border-b border-border">
+                        <span>Date</span>
+                        <span>Savings</span>
+                        <span>Opportunities</span>
+                        <span className="text-right">Action</span>
+                      </div>
+                      {/* Table Rows */}
+                      {savedAnalyses.slice(0, 5).map((analysis) => {
                         const fullAnalysis = analyses.find(
                           (a) => a.id === analysis.id,
                         );
                         return (
-                          <motion.button
+                          <div
                             key={analysis.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 + index * 0.05 }}
-                            onClick={() =>
-                              fullAnalysis && handleViewDetails(fullAnalysis)
-                            }
-                            className="relative rounded-xl border border-border bg-card hover:bg-accent transition-all text-left group overflow-hidden"
+                            className="grid grid-cols-4 gap-4 px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                           >
-                            <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="relative p-4 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(analysis.date).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                    },
-                                  )}
-                                </span>
-                                <Eye className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                              <p className="text-xl font-bold font-mono text-foreground">
-                                ${analysis.totalSavings.toLocaleString()}
-                              </p>
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                {analysis.opportunities} opportunities
-                              </div>
+                            <span className="text-sm font-medium">
+                              {new Date(analysis.date).toLocaleDateString(
+                                "en-US",
+                                { month: "short", day: "numeric", year: "numeric" },
+                              )}
+                            </span>
+                            <span className="text-sm font-semibold tabular-nums">
+                              ${analysis.totalSavings.toLocaleString()}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {analysis.opportunities} found
+                            </span>
+                            <div className="text-right">
+                              <button
+                                onClick={() => fullAnalysis && handleViewDetails(fullAnalysis)}
+                                className="text-sm text-primary hover:underline"
+                              >
+                                View
+                              </button>
                             </div>
-                          </motion.button>
+                          </div>
                         );
                       })}
                     </div>
@@ -267,8 +523,8 @@ export function DashboardContent({
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-muted/50 dark:bg-muted/20 flex items-center justify-center mb-4">
-                    <TrendingUp className="w-8 h-8 text-muted-foreground/50" />
+                  <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                    <TrendingUp className="w-8 h-8 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold mb-2">
                     No analyses yet
@@ -277,13 +533,9 @@ export function DashboardContent({
                     Upload your documents and run your first analysis to see
                     insights here.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => router.push("/dashboard/upload")}
-                    className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-                  >
+                  <Button onClick={() => router.push("/dashboard/upload")}>
                     Get Started
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { WalkthroughOverlay } from "@/components/dashboard/walkthrough";
 
 export default function DashboardLayout({
   children,
@@ -38,6 +39,7 @@ export default function DashboardLayout({
       >
         {children}
       </main>
+      <WalkthroughOverlay />
     </div>
   );
 }

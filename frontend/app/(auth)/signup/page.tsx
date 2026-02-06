@@ -18,11 +18,12 @@ export const metadata = {
 
 export default function SignupPage() {
   return (
-    <Card className="bg-card/50 backdrop-blur-xl rounded-3xl border-2 border-primary/20 p-4">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Create an account
-        </CardTitle>
+    <Card className="rounded-2xl bg-card border border-border/50 shadow-sm">
+      <CardHeader className="space-y-2 text-center">
+        <div className="mx-auto w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white font-semibold">
+          VB
+        </div>
+        <CardTitle className="text-2xl font-semibold">Create an account</CardTitle>
         <CardDescription>
           Start optimizing your employee benefits today
         </CardDescription>

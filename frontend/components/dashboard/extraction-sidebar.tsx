@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Copy, Download, FileText, X } from "lucide-react";
+import { Copy, Download, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -68,7 +68,7 @@ export function ExtractionSidebar({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/40 z-40"
           />
 
           {/* Sidebar */}
@@ -77,13 +77,13 @@ export function ExtractionSidebar({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 h-full w-full max-w-[640px] bg-background border-l border-border shadow-2xl z-50 flex flex-col"
+            className="fixed right-0 top-0 h-full w-full max-w-[640px] bg-background border-l border-border shadow-xl z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="flex-none p-6 border-b border-border bg-card/50">
+            <div className="flex-none p-6 border-b border-border bg-card">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold mb-1">
+                  <h2 className="text-xl font-semibold mb-1">
                     {typeLabels[type]}
                   </h2>
                   <p className="text-sm text-muted-foreground">
@@ -92,7 +92,7 @@ export function ExtractionSidebar({
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 rounded-xl hover:bg-muted flex items-center justify-center transition-colors shrink-0"
+                  className="w-9 h-9 rounded-lg hover:bg-muted flex items-center justify-center transition-colors shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -122,19 +122,19 @@ export function ExtractionSidebar({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-3">
                 {Object.entries(data).map(([key, value], index) => (
                   <motion.div
                     key={key}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    className="p-4 rounded-xl border border-border bg-card hover:bg-card/80 transition-colors"
+                    transition={{ delay: index * 0.02 }}
+                    className="p-4 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold text-muted-foreground mb-1 uppercase tracking-wide">
+                        <h4 className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">
                           {key.replace(/_/g, " ")}
                         </h4>
                         {typeof value === "object" &&
@@ -151,7 +151,7 @@ export function ExtractionSidebar({
                                 <span className="text-xs text-muted-foreground">
                                   {subKey.replace(/_/g, " ")}
                                 </span>
-                                <span className="text-sm font-mono font-semibold">
+                                <span className="text-sm font-medium tabular-nums">
                                   {renderValue(subValue)}
                                 </span>
                               </div>
@@ -169,7 +169,7 @@ export function ExtractionSidebar({
                             ))}
                           </div>
                         ) : (
-                          <p className="text-base font-semibold font-mono">
+                          <p className="text-base font-medium tabular-nums">
                             {renderValue(value)}
                           </p>
                         )}
@@ -181,12 +181,12 @@ export function ExtractionSidebar({
 
               {/* Confidence Score */}
               {data._extraction_confidence !== undefined && (
-                <div className="mt-6 p-4 rounded-xl bg-primary/10 border border-primary/20">
+                <div className="mt-6 p-4 rounded-lg bg-primary/10 border border-primary/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">
+                    <span className="text-sm font-medium">
                       Extraction Confidence
                     </span>
-                    <span className="text-lg font-bold text-primary font-mono">
+                    <span className="text-lg font-semibold text-primary tabular-nums">
                       {((data._extraction_confidence as number) * 100).toFixed(
                         0,
                       )}

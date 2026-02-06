@@ -19,6 +19,7 @@ import { LeakedValueSection } from "@/components/analysis/leaked-value-section";
 import { PaystubSection } from "@/components/analysis/paystub-section";
 import { PolicySection } from "@/components/analysis/policy-section";
 import { ReasoningSection } from "@/components/analysis/reasoning-section";
+import { cn } from "@/lib/utils";
 
 interface AnalysisSidebarProps {
   analysis: AnalysisRow | null;
@@ -63,9 +64,6 @@ function convertTracesToReasoningSteps(traces: AnalysisTrace[]): any[] {
 
   // Convert each group to a reasoning step
   groupedTraces.forEach((traceGroup, name) => {
-    const processingTrace = traceGroup.find(
-      (t) => t.step_status === "processing",
-    );
     const completedTrace = traceGroup.find(
       (t) => t.step_status === "completed",
     );
@@ -122,7 +120,6 @@ export function AnalysisSidebar({
       return iso;
     }
   };
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -133,7 +130,7 @@ export function AnalysisSidebar({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/40 z-40"
           />
 
           {/* Sidebar */}
@@ -142,20 +139,20 @@ export function AnalysisSidebar({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 h-full w-full max-w-[640px] bg-background border-l border-border shadow-2xl z-50 flex flex-col"
+            className="fixed right-0 top-0 h-full w-full max-w-[640px] bg-background border-l border-border shadow-xl z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="flex-none p-6 border-b border-border bg-card/50">
+            <div className="flex-none p-6 border-b border-border bg-card">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold mb-1">Analysis Details</h2>
+                  <h2 className="text-xl font-semibold mb-1">Analysis Details</h2>
                   <p className="text-sm text-muted-foreground">
                     {formatDate(analysis.created_at)}
                   </p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 rounded-xl hover:bg-muted flex items-center justify-center transition-colors shrink-0"
+                  className="w-9 h-9 rounded-lg hover:bg-muted flex items-center justify-center transition-colors shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -163,7 +160,7 @@ export function AnalysisSidebar({
             </div>
 
             {/* Tabs */}
-            <div className="flex-none border-b border-border bg-card/30 overflow-x-auto">
+            <div className="flex-none border-b border-border bg-card overflow-x-auto">
               <div className="flex gap-1 px-6 py-2">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
@@ -172,11 +169,12 @@ export function AnalysisSidebar({
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2",
                         isActive
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                          ? "bg-primary text-white"
                           : "hover:bg-muted text-muted-foreground"
-                      }`}
+                      )}
                     >
                       <Icon className="w-4 h-4" />
                       {tab.label}
@@ -187,23 +185,23 @@ export function AnalysisSidebar({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="flex-1 overflow-y-auto p-6">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15 }}
                 >
                   {activeTab === "summary" && (
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-lg font-bold mb-4">
+                        <h3 className="text-lg font-semibold mb-4">
                           Executive Summary
                         </h3>
                         {analysis.recommendation ? (
-                          <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-bold prose-p:text-muted-foreground prose-strong:text-foreground prose-ul:text-muted-foreground">
+                          <div className="prose prose-sm max-w-none prose-headings:font-semibold prose-p:text-muted-foreground prose-strong:text-foreground prose-ul:text-muted-foreground prose-li:text-muted-foreground whitespace-pre-wrap">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {analysis.recommendation}
                             </ReactMarkdown>
@@ -217,11 +215,11 @@ export function AnalysisSidebar({
 
                       {/* Quick Stats */}
                       <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border">
-                        <div className="p-4 rounded-xl bg-linear-to-br from-primary/10 to-purple-500/10 border border-primary/20">
-                          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
+                          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                             Opportunity Cost
                           </span>
-                          <p className="text-2xl font-bold font-mono mt-1 bg-linear-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                          <p className="text-2xl font-semibold text-primary mt-1 tabular-nums">
                             $
                             {(
                               (analysis.leaked_value as any)
@@ -230,10 +228,10 @@ export function AnalysisSidebar({
                           </p>
                         </div>
                         <div className="p-4 rounded-xl bg-card border border-border">
-                          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                             Action Items
                           </span>
-                          <p className="text-2xl font-bold font-mono mt-1">
+                          <p className="text-2xl font-semibold mt-1 tabular-nums">
                             {((analysis.action_plan as any[]) ?? []).length}
                           </p>
                         </div>

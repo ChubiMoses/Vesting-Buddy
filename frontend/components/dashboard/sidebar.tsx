@@ -8,8 +8,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  Moon,
-  Sun,
   Upload,
   User,
   Zap,
@@ -25,14 +23,13 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: Zap, label: "Analyse", href: "/dashboard/upload" },
-  { icon: GitBranch, label: "Traces", href: "/dashboard/traces" },
+  { icon: GitBranch, label: "History", href: "/dashboard/traces" },
   { icon: Bot, label: "AI Chat", href: "/dashboard/chat" },
   { icon: FileText, label: "Manage", href: "/dashboard/manage" },
 ];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState<{
     email?: string;
@@ -55,21 +52,11 @@ export function DashboardSidebar() {
   }, []);
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? "dark" : "light");
-
     const saved = localStorage.getItem("sidebar-collapsed");
     if (saved !== null) {
       setIsCollapsed(saved === "true");
     }
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    document.documentElement.classList.toggle("dark");
-    localStorage.setItem("theme", newTheme);
-  };
 
   const toggleSidebar = () => {
     const newState = !isCollapsed;
@@ -82,15 +69,17 @@ export function DashboardSidebar() {
 
   return (
     <>
+      {/* Dark Sidebar - PayU Style */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-screen bg-card/50 backdrop-blur-xl border-r border-border flex flex-col z-40 transition-all duration-300",
+          "fixed left-0 top-0 h-screen bg-sidebar flex flex-col z-40 transition-all duration-300",
           isCollapsed ? "w-20" : "w-64",
         )}
       >
-        <div className="p-6 border-b border-primary/10 flex items-center justify-between gap-2">
+        {/* Logo Area */}
+        <div className="p-6 border-b border-sidebar-border flex items-center justify-between gap-2">
           {!isCollapsed && (
-            <h2 className="text-xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-500 whitespace-nowrap">
+            <h2 className="text-xl font-bold text-white whitespace-nowrap">
               Vesting Buddy
             </h2>
           )}
@@ -98,7 +87,7 @@ export function DashboardSidebar() {
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="shrink-0"
+            className="shrink-0 text-sidebar-foreground hover:text-white hover:bg-white/10"
           >
             {isCollapsed ? (
               <Menu className="w-5 h-5" />
@@ -108,7 +97,8 @@ export function DashboardSidebar() {
           </Button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden">
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -116,10 +106,10 @@ export function DashboardSidebar() {
               <Link key={item.href} href={item.href}>
                 <div
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative",
+                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative",
                     isActive
-                      ? "bg-linear-to-r from-primary/20 to-purple-500/20 border border-primary/30 text-primary"
-                      : "text-muted-foreground hover:bg-primary/10 hover:text-foreground",
+                      ? "bg-primary text-white"
+                      : "text-sidebar-foreground hover:bg-white/5 hover:text-white",
                   )}
                   title={isCollapsed ? item.label : undefined}
                 >
@@ -130,7 +120,7 @@ export function DashboardSidebar() {
                     </span>
                   )}
                   {isCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-card border border-border rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                    <div className="absolute left-full ml-2 px-3 py-2 bg-sidebar border border-sidebar-border rounded-lg text-sm font-medium text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
                       {item.label}
                     </div>
                   )}
@@ -140,46 +130,31 @@ export function DashboardSidebar() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-primary/10 space-y-2">
+        {/* User Profile & Actions */}
+        <div className="p-4 border-t border-sidebar-border space-y-2">
           {user && (
             <div
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/10",
+                "flex items-center gap-3 px-4 py-3 rounded-lg",
                 isCollapsed ? "justify-center px-3" : "justify-start",
               )}
               title={isCollapsed ? (user.email ?? "Profile") : undefined}
             >
-              <div className="w-9 h-9 rounded-full bg-linear-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
-                <User className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <User className="w-5 h-5 text-primary" />
               </div>
               {!isCollapsed && (
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">
+                  <p className="text-sm font-medium text-white truncate">
                     {user.full_name || "Profile"}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-xs text-sidebar-foreground truncate">
                     {user.email ?? ""}
                   </p>
                 </div>
               )}
             </div>
           )}
-          <Button
-            variant="ghost"
-            onClick={toggleTheme}
-            className={cn(
-              "w-full gap-3 text-muted-foreground hover:text-foreground",
-              isCollapsed ? "justify-center" : "justify-start",
-            )}
-            title={isCollapsed ? "Toggle Theme" : undefined}
-          >
-            {theme === "light" ? (
-              <Moon className="w-5 h-5 shrink-0" />
-            ) : (
-              <Sun className="w-5 h-5 shrink-0" />
-            )}
-            {!isCollapsed && <span>Toggle Theme</span>}
-          </Button>
           <form
             action={() => {
               if (window.confirm("Are you sure you want to log out?")) {
@@ -192,7 +167,7 @@ export function DashboardSidebar() {
               type="submit"
               variant="ghost"
               className={cn(
-                "w-full gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+                "w-full gap-3 text-sidebar-foreground hover:text-white hover:bg-white/5",
                 isCollapsed ? "justify-center" : "justify-start",
               )}
               title={isCollapsed ? "Log out" : undefined}
@@ -203,6 +178,8 @@ export function DashboardSidebar() {
           </form>
         </div>
       </aside>
+      
+      {/* Spacer for main content */}
       <div
         className={cn(
           "fixed left-0 top-0 h-screen transition-all duration-300 pointer-events-none",

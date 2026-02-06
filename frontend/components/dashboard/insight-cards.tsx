@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { CreditCard, TrendingUp, Unlock } from "lucide-react";
 import type { InsightCard } from "@/lib/data/dashboard";
 
@@ -17,28 +16,27 @@ const iconMap = {
 export function InsightCards({ cards }: InsightCardsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {cards.map((card, index) => {
+      {cards.map((card) => {
         const Icon = iconMap[card.icon as keyof typeof iconMap] || TrendingUp;
         return (
-          <motion.div
+          <div
             key={card.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="rounded-xl border border-border bg-card/50 px-4 py-3 flex items-center gap-3 hover:bg-card/80 transition-colors"
+            className="p-4 rounded-xl bg-card border border-border/50 shadow-sm"
           >
-            <div className="w-9 h-9 rounded-lg bg-muted-foreground/10 flex items-center justify-center shrink-0">
-              <Icon className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="w-5 h-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground truncate">
+                  {card.title}
+                </p>
+                <p className="text-lg font-semibold tabular-nums text-foreground truncate">
+                  {card.value}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground truncate">
-                {card.title}
-              </p>
-              <p className="text-sm font-semibold font-mono text-foreground truncate">
-                {card.value}
-              </p>
-            </div>
-          </motion.div>
+          </div>
         );
       })}
     </div>

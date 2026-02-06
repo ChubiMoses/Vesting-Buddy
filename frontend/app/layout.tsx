@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
-import { DM_Sans, Inter } from "next/font/google";
+import { Urbanist } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
 import { Toaster } from "sonner";
 
-const dmSans = DM_Sans({
+const urbanist = Urbanist({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-dm-sans",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
+  variable: "--font-urbanist",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -37,24 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}
+      className={`${urbanist.variable} font-sans antialiased`}
       lang="en"
       suppressHydrationWarning
     >
-      <head>
-        <Script id="theme-script" strategy="beforeInteractive">
-          {`
-            (function() {
-              const theme = localStorage.getItem('theme') || 
-                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-              if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-              }
-            })();
-          `}
-        </Script>
-      </head>
-      <body className={`min-h-dvh`}>
+      <body className="min-h-dvh bg-background text-foreground">
         {children}
         <Toaster />
       </body>

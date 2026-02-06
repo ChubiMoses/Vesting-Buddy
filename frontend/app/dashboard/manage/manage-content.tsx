@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
   Archive,
   BookOpen,
@@ -9,7 +8,6 @@ import {
   FileText,
   Loader2,
   MoreVertical,
-  Settings,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -23,18 +21,10 @@ import {
 } from "@/actions/backend";
 import {
   deleteDocument,
-  listUserDocuments,
   type StoredDocument,
 } from "@/actions/storage";
 import { ExtractionSidebar } from "@/components/dashboard/extraction-sidebar";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -166,39 +156,44 @@ export function ManageContent({ documents, analyses }: ManageContentProps) {
         }}
       />
 
-      <div className="p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <div className="p-6 lg:p-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
           <div>
-            <h1 className="text-4xl font-bold mb-2">Manage</h1>
+            <h1 className="text-2xl font-semibold">Manage</h1>
             <p className="text-muted-foreground">
-              Manage your documents, settings, and preferences
+              Manage your documents and view past analyses
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card className="bg-card/50 backdrop-blur-xl border border-border md:col-span-2">
-              <CardHeader className="flex flex-row gap-4 items-center">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-primary" />
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Document Management Card */}
+            <div className="rounded-xl bg-card border border-border/50 shadow-sm">
+              <div className="p-6 border-b border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold">Documents</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Upload and manage your files
+                    </p>
+                  </div>
                 </div>
-                <div className=" flex flex-col justify-center gap-1">
-                  <CardTitle>Document Management</CardTitle>
-                  <CardDescription>
-                    Upload, view, and delete your documents
-                  </CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Quick Upload Zone */}
+              </div>
+
+              <div className="p-6 space-y-4">
+                {/* Upload Zone */}
                 <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   className={cn(
-                    "relative border border-dashed rounded-xl p-8 text-center transition-all duration-300",
+                    "relative border-2 border-dashed rounded-xl p-6 text-center transition-colors",
                     isDragging
-                      ? "border-primary bg-primary/10 scale-105"
-                      : "border-primary/30 bg-primary/5 hover:border-primary/50",
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50",
                   )}
                 >
                   <input
@@ -214,164 +209,149 @@ export function ManageContent({ documents, analyses }: ManageContentProps) {
                     disabled={uploading}
                   />
                   <label htmlFor="quick-upload" className="cursor-pointer">
-                    <motion.div
-                      animate={isDragging ? { scale: 1.05 } : { scale: 1 }}
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-linear-to-br from-primary to-purple-500 flex items-center justify-center mx-auto mb-3">
-                        {uploading ? (
-                          <Loader2 className="w-6 h-6 text-white animate-spin" />
-                        ) : (
-                          <Upload className="w-6 h-6 text-white" />
-                        )}
-                      </div>
-                      <p className="font-semibold mb-1">
-                        {uploading ? "Uploading..." : "Quick Upload"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Drag & drop or{" "}
-                        <span className="text-primary font-medium">browse</span>{" "}
-                        PDFs
-                      </p>
-                    </motion.div>
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                      {uploading ? (
+                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                      ) : (
+                        <Upload className="w-5 h-5 text-primary" />
+                      )}
+                    </div>
+                    <p className="font-medium text-sm">
+                      {uploading ? "Uploading..." : "Upload Documents"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Drag & drop or click to browse
+                    </p>
                   </label>
                 </div>
+
+                {/* Document List */}
                 {documents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No documents uploaded yet.
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No documents uploaded yet
                   </p>
                 ) : (
-                  <ul className="space-y-3 max-h-96 overflow-y-auto">
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
                     {documents.map((doc) => (
-                      <li
+                      <div
                         key={doc.path}
-                        className="relative p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all group"
+                        className="relative flex items-center justify-between gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                              <FileText className="w-5 h-5 text-primary" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold truncate">
-                                {doc.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground font-mono">
-                                {new Date(
-                                  doc.created_at ?? "",
-                                ).toLocaleDateString()}
-                              </p>
-                            </div>
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <FileText className="w-4 h-4 text-muted-foreground" />
                           </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            {/* Extract Actions Dropdown */}
-                            <div className="relative">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  setShowActionsMenu(
-                                    showActionsMenu === doc.path
-                                      ? null
-                                      : doc.path,
-                                  )
-                                }
-                                disabled={extracting === doc.path}
-                                className="text-primary hover:bg-primary/10"
-                              >
-                                {extracting === doc.path ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <MoreVertical className="w-4 h-4" />
-                                )}
-                              </Button>
-
-                              {showActionsMenu === doc.path && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: -10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  className="absolute right-0 top-full mt-1 w-56 p-2 rounded-xl bg-card border-2 border-border shadow-2xl z-10"
-                                >
-                                  <div className="space-y-1">
-                                    <button
-                                      onClick={() =>
-                                        handleExtract(doc.path, "paystub")
-                                      }
-                                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 text-left transition-colors"
-                                    >
-                                      <FileBarChart className="w-4 h-4 text-primary" />
-                                      <span className="text-sm font-medium">
-                                        Extract Paystub
-                                      </span>
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleExtract(doc.path, "rsu")
-                                      }
-                                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 text-left transition-colors"
-                                    >
-                                      <FileSpreadsheet className="w-4 h-4 text-primary" />
-                                      <span className="text-sm font-medium">
-                                        Extract RSU Grant
-                                      </span>
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleExtract(doc.path, "policy")
-                                      }
-                                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 text-left transition-colors"
-                                    >
-                                      <BookOpen className="w-4 h-4 text-primary" />
-                                      <span className="text-sm font-medium">
-                                        Extract Policy
-                                      </span>
-                                    </button>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </div>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                              disabled={deleting === doc.path}
-                              onClick={() => handleDelete(doc.path)}
-                            >
-                              {deleting === doc.path ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </Button>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">
+                              {doc.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(doc.created_at ?? "")}
+                            </p>
                           </div>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
 
-            <Card className="bg-card/50 backdrop-blur-xl border border-border md:col-span-3">
-              <CardHeader className="flex flex-row gap-4 items-center">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Archive className="w-6 h-6 text-primary" />
+                        <div className="flex items-center gap-1 shrink-0">
+                          {/* Extract Actions Dropdown */}
+                          <div className="relative">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowActionsMenu(
+                                  showActionsMenu === doc.path
+                                    ? null
+                                    : doc.path,
+                                );
+                              }}
+                              disabled={extracting === doc.path}
+                            >
+                              {extracting === doc.path ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <MoreVertical className="w-4 h-4" />
+                              )}
+                            </Button>
+
+                            {showActionsMenu === doc.path && (
+                              <div className="absolute right-0 top-full mt-1 w-48 p-1 rounded-lg bg-card border border-border shadow-lg z-10">
+                                <button
+                                  onClick={() =>
+                                    handleExtract(doc.path, "paystub")
+                                  }
+                                  className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted text-left text-sm"
+                                >
+                                  <FileBarChart className="w-4 h-4 text-primary" />
+                                  Extract Paystub
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleExtract(doc.path, "rsu")
+                                  }
+                                  className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted text-left text-sm"
+                                >
+                                  <FileSpreadsheet className="w-4 h-4 text-primary" />
+                                  Extract RSU Grant
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleExtract(doc.path, "policy")
+                                  }
+                                  className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted text-left text-sm"
+                                >
+                                  <BookOpen className="w-4 h-4 text-primary" />
+                                  Extract Policy
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            disabled={deleting === doc.path}
+                            onClick={() => handleDelete(doc.path)}
+                          >
+                            {deleting === doc.path ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Previous Analyses Card */}
+            <div className="rounded-xl bg-card border border-border/50 shadow-sm">
+              <div className="p-6 border-b border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Archive className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold">Previous Analyses</h2>
+                    <p className="text-sm text-muted-foreground">
+                      View your past reports
+                    </p>
+                  </div>
                 </div>
-                <div className=" flex flex-col justify-center gap-1">
-                  <CardTitle>Previous Analyses</CardTitle>
-                  <CardDescription>
-                    View your past analyses and saved reports
-                  </CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+
+              <div className="p-6">
                 {analyses.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No analyses yet.
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No analyses yet
                   </p>
                 ) : (
-                  <ul className="space-y-3 max-h-96 overflow-y-auto">
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
                     {analyses.map((a) => {
                       const lv = (a.leaked_value ?? {}) as Record<
                         string,
@@ -383,29 +363,31 @@ export function ManageContent({ documents, analyses }: ManageContentProps) {
                           : 0;
                       const plan = (a.action_plan ?? []) as unknown[];
                       return (
-                        <li
+                        <div
                           key={a.id}
-                          className="p-4 rounded-xl border border-border bg-linear-to-br from-primary/5 to-purple-500/5"
+                          className="p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors"
                         >
-                          <p className="text-sm text-muted-foreground mb-1">
-                            {formatDate(a.created_at)}
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-muted-foreground">
+                              {formatDate(a.created_at)}
+                            </span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                              {plan.length} actions
+                            </span>
+                          </div>
+                          <p className="text-lg font-semibold text-primary">
+                            ${Math.round(Number(cost)).toLocaleString()}
                           </p>
-                          <p className="text-lg font-bold text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-500">
-                            ${Math.round(Number(cost)).toLocaleString()}{" "}
-                            opportunity
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {a.recommendation}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {plan.length} action items ·{" "}
-                            {(a.recommendation ?? "").slice(0, 120)}
-                            {(a.recommendation?.length ?? 0) > 120 ? "…" : ""}
-                          </p>
-                        </li>
+                        </div>
                       );
                     })}
-                  </ul>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>

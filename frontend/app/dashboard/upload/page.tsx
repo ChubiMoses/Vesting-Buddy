@@ -28,7 +28,6 @@ import {
 } from "@/actions/storage";
 import { TraceProgress } from "@/components/dashboard/trace-progress";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { consumeAnalysisStream } from "@/lib/analysis-stream";
 import {
   DEMO_HANDBOOK_PATH,
@@ -179,7 +178,6 @@ export default function AnalysePage() {
     }
 
     const collectedTraces: TraceEvent[] = [];
-    console.log("[Upload] Starting analysis stream...");
     const result = await consumeAnalysisStream(
       paystubUrl,
       handbookUrl,
@@ -191,29 +189,18 @@ export default function AnalysePage() {
     );
 
     setIsAnalyzing(false);
-    console.log("[Upload] Stream finished. Result:", result);
 
     if (result.error) {
-      console.error("[Upload] Analysis error:", result.error);
       setError(result.error);
       return;
     }
 
     if (!result.result) {
-      console.error("[Upload] No result received from analysis");
       setError("Analysis completed but no result was received");
       return;
     }
 
     if (result.analysisId) {
-      console.log(
-        "[Upload] Saving analysis with stream ID:",
-        result.analysisId,
-        "with",
-        collectedTraces.length,
-        "traces",
-      );
-
       const saveResult = await saveAnalysis(
         user.id,
         result.result,
@@ -221,37 +208,20 @@ export default function AnalysePage() {
         result.analysisId,
       );
       if (saveResult.error) {
-        console.error("[Upload] Failed to save analysis:", saveResult.error);
         setError(`Analysis completed but failed to save: ${saveResult.error}`);
         return;
       }
-      console.log(
-        "[Upload] Analysis saved successfully with ID:",
-        saveResult.id,
-      );
 
       if (collectedTraces.length > 0) {
-        console.log(
-          "[Upload] Saving",
-          collectedTraces.length,
-          "traces for analysis ID:",
-          result.analysisId,
-        );
         const traceResult = await saveTraces(
           result.analysisId,
           collectedTraces,
         );
         if (traceResult.error) {
-          console.error("[Upload] Failed to save traces:", traceResult.error);
           setError(`Analysis saved but traces failed: ${traceResult.error}`);
-        } else {
-          console.log("[Upload] Traces saved successfully!");
         }
-      } else {
-        console.warn("[Upload] No traces to save!");
       }
 
-      // Refresh analyses list
       getAnalyses(5).then(setPreviousAnalyses);
     }
 
@@ -287,36 +257,27 @@ export default function AnalysePage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-background via-background/95 to-primary/5 p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-2"
-        >
-          <h1 className="text-3xl font-bold tracking-tight">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">
             Financial Analysis
           </h1>
-          <p className="text-xl text-muted-foreground font-light">
-            Uncover hidden value in your compensation package
+          <p className="text-muted-foreground">
+            Upload documents to analyze your compensation package
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Analysis Section */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-2 space-y-6"
-          >
-            {/* Document Upload Section */}
-            <Card className="bg-card/80 backdrop-blur-2xl border border-border shadow-2xl shadow-primary/10">
-              <div className="p-8 space-y-6">
+          {/* Main Upload Section */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Document Upload Card */}
+            <div className="rounded-xl bg-card border border-border/50 shadow-sm">
+              <div className="p-6 border-b border-border">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold">Upload Documents</h2>
+                    <h2 className="text-lg font-semibold">Upload Documents</h2>
                     <p className="text-sm text-muted-foreground mt-1">
                       Your Personal CFO analyzes these to find unclaimed wealth
                     </p>
@@ -325,17 +286,15 @@ export default function AnalysePage() {
                     variant={useDemo ? "default" : "outline"}
                     size="sm"
                     onClick={toggleDemo}
-                    className={
-                      useDemo
-                        ? "bg-navy-blue text-white hover:opacity-90"
-                        : "border-border"
-                    }
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {useDemo ? "Switch to upload" : "Try Demo"}
+                    {useDemo ? "Using Demo" : "Try Demo"}
                   </Button>
                 </div>
+              </div>
 
+              <div className="p-6 space-y-6">
+                {/* Demo Banner */}
                 <AnimatePresence mode="wait">
                   {useDemo && (
                     <motion.div
@@ -343,32 +302,26 @@ export default function AnalysePage() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
-                      className="p-4 rounded-xl bg-primary/10 dark:bg-primary/20 border border-primary/30 dark:border-primary/40"
+                      className="p-4 rounded-lg bg-primary/10 border border-primary/20"
                     >
                       <p className="text-sm font-medium text-primary">
-                        ✓ Demo files loaded — Click "Run Analysis" below
+                        Demo files loaded — Click "Run Analysis" below
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
+                {/* Upload Slots */}
                 <div className="relative">
-                  {/* Gray overlay when demo is on: works in light and dark */}
                   {useDemo && (
-                    <div
-                      className="absolute inset-0 z-10 rounded-xl bg-muted/50 dark:bg-background/60 pointer-events-auto transition-opacity duration-200"
-                      aria-hidden
-                    />
+                    <div className="absolute inset-0 z-10 rounded-lg bg-muted/50 pointer-events-auto" />
                   )}
-                  <div
-                    className={`space-y-4 transition-opacity duration-200 ${useDemo ? "pointer-events-none" : ""}`}
-                  >
+                  <div className={`space-y-4 ${useDemo ? "pointer-events-none" : ""}`}>
                     {(["paystub", "handbook", "rsu"] as Slot[]).map((slot) => (
-                      <div key={slot} className="space-y-3">
+                      <div key={slot} className="space-y-2">
                         <div className="flex items-baseline justify-between">
                           <div>
-                            <h3 className="font-semibold text-gray-500 text-lg">
+                            <h3 className="font-medium text-foreground">
                               {SLOT_CONFIG[slot].label}
                             </h3>
                             <p className="text-xs text-muted-foreground">
@@ -395,43 +348,40 @@ export default function AnalysePage() {
                           />
                           <label
                             htmlFor={`file-${slot}`}
-                            className="flex-1 flex items-center gap-3 p-4 rounded-xl border border-primary/50 bg-gradient-to-br from-card to-primary/5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 cursor-pointer transition-all group"
+                            className="flex-1 flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 cursor-pointer transition-colors"
                           >
                             {paths[slot] ? (
                               <>
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
-                                  <CheckCircle2 className="w-6 h-6 text-white" />
+                                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                                  <CheckCircle2 className="w-5 h-5 text-success" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-semibold truncate">
-                                    {paths[slot]!.split("/").pop() ??
-                                      "Document uploaded"}
+                                  <p className="font-medium truncate text-sm">
+                                    {paths[slot]!.split("/").pop() ?? "Document uploaded"}
                                   </p>
-                                  <p className="text-xs text-primary font-medium">
+                                  <p className="text-xs text-success">
                                     Ready for analysis
                                   </p>
                                 </div>
                               </>
                             ) : uploading === slot ? (
                               <>
-                                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-                                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
                                 </div>
-                                <p className="text-sm font-medium text-muted-foreground">
+                                <p className="text-sm text-muted-foreground">
                                   Uploading...
                                 </p>
                               </>
                             ) : (
                               <>
-                                <div className="w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center shrink-0 transition-colors">
-                                  <Upload className="w-6 h-6 text-primary" />
+                                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                                  <Upload className="w-5 h-5 text-muted-foreground" />
                                 </div>
                                 <div className="flex-1">
-                                  <p className="font-medium text-gray-500">
-                                    Upload PDF
-                                  </p>
+                                  <p className="font-medium text-sm">Upload PDF</p>
                                   <p className="text-xs text-muted-foreground">
-                                    or drag and drop here
+                                    or drag and drop
                                   </p>
                                 </div>
                               </>
@@ -442,51 +392,51 @@ export default function AnalysePage() {
                             <Button
                               type="button"
                               variant="outline"
+                              size="sm"
                               onClick={() =>
-                                setShowDocPicker(
-                                  showDocPicker === slot ? null : slot,
-                                )
+                                setShowDocPicker(showDocPicker === slot ? null : slot)
                               }
                               disabled={!!uploading}
-                              className="shrink-0 border-border hover:bg-primary/10"
+                              className="shrink-0 h-auto py-4"
                             >
-                              Select Previous
+                              Library
                             </Button>
                           )}
                         </div>
 
+                        {/* Document Picker Dropdown */}
                         <AnimatePresence>
                           {showDocPicker === slot && (
                             <motion.div
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="p-4 rounded-xl bg-card/50 border border-border space-y-2 max-h-64 overflow-y-auto"
+                              className="rounded-lg border border-border bg-card overflow-hidden"
                             >
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                                Your Documents
-                              </p>
-                              {recentDocs.map((doc) => (
-                                <button
-                                  key={doc.path}
-                                  type="button"
-                                  onClick={() =>
-                                    selectExistingDocument(slot, doc.path)
-                                  }
-                                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 border border-transparent hover:border-border transition-all text-left group"
-                                >
-                                  <FileText className="w-4 h-4 text-primary shrink-0" />
-                                  <span className="text-sm font-medium truncate flex-1">
-                                    {doc.name}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground shrink-0 font-mono">
-                                    {new Date(
-                                      doc.created_at ?? "",
-                                    ).toLocaleDateString()}
-                                  </span>
-                                  <ChevronRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                </button>
-                              ))}
+                              <div className="p-3 bg-muted/50 border-b border-border">
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                  Your Documents
+                                </p>
+                              </div>
+                              <div className="max-h-48 overflow-y-auto">
+                                {recentDocs.map((doc) => (
+                                  <button
+                                    key={doc.path}
+                                    type="button"
+                                    onClick={() => selectExistingDocument(slot, doc.path)}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 border-b border-border last:border-0 transition-colors text-left"
+                                  >
+                                    <FileText className="w-4 h-4 text-primary shrink-0" />
+                                    <span className="text-sm font-medium truncate flex-1">
+                                      {doc.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground shrink-0">
+                                      {new Date(doc.created_at ?? "").toLocaleDateString()}
+                                    </span>
+                                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                                  </button>
+                                ))}
+                              </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -495,133 +445,110 @@ export default function AnalysePage() {
                   </div>
                 </div>
 
+                {/* Error Message */}
                 {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm"
-                  >
+                  <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
                     {error}
-                  </motion.div>
+                  </div>
                 )}
 
+                {/* Run Analysis Button */}
                 <Button
                   onClick={handleRunAnalysis}
                   disabled={!canRunAnalysis || isAnalyzing}
                   size="lg"
-                  className="w-full bg-primary text-primary-foreground font-semibold py-6 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12"
                 >
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Analyzing…
+                      Analyzing...
                     </>
                   ) : (
                     <>
                       <TrendingUp className="w-5 h-5 mr-2" />
-                      Run analysis
+                      Run Analysis
                     </>
                   )}
                 </Button>
               </div>
-            </Card>
+            </div>
 
-            {/* Real-time Trace Display */}
+            {/* Trace Progress */}
             <AnimatePresence>
               {showTraces && traces.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
+                  className="rounded-xl bg-card border border-border/50 shadow-sm"
                 >
-                  <Card className="bg-card/80 backdrop-blur-2xl border border-border ">
-                    <div className="p-6 space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center">
-                          <Loader2 className="w-5 h-5 text-white animate-spin" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-lg">
-                            AI Processing Your Data
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            Multi-agent system analyzing your compensation
-                          </p>
-                        </div>
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
                       </div>
-                      <TraceProgress traces={traces} />
+                      <div>
+                        <h3 className="font-semibold">AI Processing Your Data</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Multi-agent system analyzing your compensation
+                        </p>
+                      </div>
                     </div>
-                  </Card>
+                    <TraceProgress traces={traces} />
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
-          {/* Previous Analyses Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-6"
-          >
-            <Card className="bg-card/80 backdrop-blur-2xl border border-border ">
-              <div className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-primary" />
-                  <h3 className="font-bold text-lg">Recent Analyses</h3>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Recent Analyses */}
+            <div className="rounded-xl bg-card border border-border/50 shadow-sm">
+              <div className="p-4 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold">Recent Analyses</h3>
                 </div>
-
+              </div>
+              <div className="p-4">
                 {previousAnalyses.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <TrendingUp className="w-8 h-8 text-primary/50" />
+                  <div className="py-8 text-center">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                      <TrendingUp className="w-6 h-6 text-muted-foreground" />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      No analyses yet
-                    </p>
+                    <p className="text-sm text-muted-foreground">No analyses yet</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Run your first analysis to start saving
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {previousAnalyses.map((analysis, idx) => {
+                  <div className="space-y-2">
+                    {previousAnalyses.map((analysis) => {
                       const cost = getOpportunityCost(analysis);
                       return (
-                        <motion.button
+                        <button
                           key={analysis.id}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
                           onClick={() => router.push("/dashboard/traces")}
-                          className="w-full p-4 rounded-xl bg-gradient-to-br from-primary/5 to-purple-500/5 border border-border hover:border-primary/40 hover:shadow-lg transition-all text-left group"
+                          className="w-full p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/30 transition-all text-left"
                         >
-                          <div className="flex items-start justify-between gap-3 mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                              <span className="text-xs font-mono text-muted-foreground">
-                                {formatDate(analysis.created_at)}
-                              </span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-muted-foreground">
+                              {formatDate(analysis.created_at)}
+                            </span>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
                           </div>
-
                           {cost > 0 && (
-                            <div className="flex items-baseline gap-2">
-                              <DollarSign className="w-5 h-5 text-primary shrink-0" />
-                              <span className="text-2xl font-bold bg-linear-to-r from-primary to-navy-blue bg-clip-text text-transparent">
+                            <div className="flex items-baseline gap-1">
+                              <DollarSign className="w-4 h-4 text-primary" />
+                              <span className="text-xl font-semibold tabular-nums">
                                 {cost.toLocaleString()}
                               </span>
-                              <span className="text-xs text-muted-foreground font-medium">
-                                /year unclaimed
-                              </span>
+                              <span className="text-xs text-muted-foreground">/year</span>
                             </div>
                           )}
-
-                          <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                            {analysis.recommendation?.slice(0, 50)}...
-                          </p>
-                        </motion.button>
+                        </button>
                       );
                     })}
 
@@ -630,46 +557,50 @@ export default function AnalysePage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => router.push("/dashboard/manage")}
-                        className="w-full text-primary hover:bg-primary/10"
+                        className="w-full"
                       >
-                        View All Analyses
+                        View All
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Button>
                     )}
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
 
-            {/* Info Card */}
-            <Card className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-border shadow-lg">
-              <div className="p-6 space-y-3">
-                <h4 className="font-bold text-sm uppercase tracking-wide text-primary">
-                  How It Works
-                </h4>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
-                      1
-                    </div>
-                    <p>Upload your documents or try demo files</p>
+            {/* How It Works */}
+            <div className="rounded-xl bg-card border border-border/50 shadow-sm p-6">
+              <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-4">
+                How It Works
+              </h4>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
+                    1
                   </div>
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
-                      2
-                    </div>
-                    <p>AI agents extract and analyze your benefits</p>
+                  <p className="text-sm text-muted-foreground">
+                    Upload your documents or try demo files
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
+                    2
                   </div>
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
-                      3
-                    </div>
-                    <p>Receive personalized action plan to save money</p>
+                  <p className="text-sm text-muted-foreground">
+                    AI agents extract and analyze your benefits
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
+                    3
                   </div>
+                  <p className="text-sm text-muted-foreground">
+                    Receive personalized action plan to save money
+                  </p>
                 </div>
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

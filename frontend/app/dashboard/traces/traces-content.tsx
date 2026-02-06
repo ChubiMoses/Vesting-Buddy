@@ -1,18 +1,10 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Eye, GitBranch } from "lucide-react";
+import { ChevronRight, Eye, GitBranch, Info } from "lucide-react";
 import { useState } from "react";
 import type { AnalysisRow, AnalysisTrace } from "@/actions/backend";
 import { AnalysisSidebar } from "@/components/dashboard/analysis-sidebar";
-import { TraceProgress } from "@/components/dashboard/trace-progress";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 interface AnalysisWithTraces {
   analysis: AnalysisRow;
@@ -24,9 +16,6 @@ interface TracesContentProps {
 }
 
 export function TracesContent({ analysesWithTraces }: TracesContentProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(
-    analysesWithTraces[0]?.analysis.id ?? null,
-  );
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisRow | null>(
     null,
   );
@@ -43,11 +32,20 @@ export function TracesContent({ analysesWithTraces }: TracesContentProps) {
         year: "numeric",
         month: "short",
         day: "numeric",
+      });
+    } catch {
+      return iso;
+    }
+  };
+
+  const formatTime = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleTimeString(undefined, {
         hour: "2-digit",
         minute: "2-digit",
       });
     } catch {
-      return iso;
+      return "";
     }
   };
 
@@ -59,118 +57,104 @@ export function TracesContent({ analysesWithTraces }: TracesContentProps) {
         onClose={() => setSidebarOpen(false)}
       />
 
-      <div className="p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-              <GitBranch className="w-8 h-8 text-primary" />
-              Reasoning Traces
-            </h1>
-            <p className="text-muted-foreground">
-              View the complete AI reasoning process for your financial analyses
-            </p>
+      <div className="p-6 lg:p-8">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold flex items-center gap-3">
+                <GitBranch className="w-6 h-6 text-primary" />
+                Analysis History
+              </h1>
+              <p className="text-muted-foreground">
+                View the AI reasoning process for your analyses
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                Last 7 Days
+              </Button>
+              <Button variant="outline" size="sm">
+                Filter
+              </Button>
+            </div>
           </div>
 
           {analysesWithTraces.length === 0 ? (
-            <Card className="bg-card/50 backdrop-blur-xl border border-border">
-              <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">
-                  No analyses yet. Run an analysis to see traces here.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="rounded-xl bg-card border border-border/50 shadow-sm p-12 text-center">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <GitBranch className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground">
+                No analyses yet. Run an analysis to see your history here.
+              </p>
+            </div>
           ) : (
-            <div className="space-y-4">
-              {analysesWithTraces.map(({ analysis, traces }) => {
-                const isExpanded = expandedId === analysis.id;
-                const traceEvents = traces.map((t) => ({
-                  step: t.step_number,
-                  name: t.step_name,
-                  status: t.step_status as
-                    | "processing"
-                    | "completed"
-                    | "failed",
-                  payload: (t.payload ?? {}) as Record<string, unknown>,
-                  timestamp: t.created_at,
-                }));
+            /* Table Card - PayU Style */
+            <div className="rounded-xl bg-card border border-border/50 shadow-sm overflow-hidden">
+              {/* Table Header */}
+              <div className="grid grid-cols-5 gap-4 px-6 py-3 bg-muted/50 text-xs font-medium text-muted-foreground border-b border-border uppercase tracking-wide">
+                <span>Date</span>
+                <span>Time</span>
+                <span>Steps</span>
+                <span>Summary</span>
+                <span className="text-right">Action</span>
+              </div>
 
-                return (
-                  <Card
-                    key={analysis.id}
-                    className="bg-card/50 backdrop-blur-xl border border-border"
-                  >
-                    <CardHeader>
-                      <div
-                        onClick={() =>
-                          setExpandedId(isExpanded ? null : analysis.id)
-                        }
-                        className="w-full text-left flex items-start justify-between gap-4"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="flex items-center gap-2 mb-2">
-                            {isExpanded ? (
-                              <ChevronDown className="w-5 h-5 text-primary shrink-0" />
-                            ) : (
-                              <ChevronRight className="w-5 h-5 text-primary shrink-0" />
-                            )}
-                            <span className="text-lg font-bold">
-                              Analysis from {formatDate(analysis.created_at)}
-                            </span>
-                          </CardTitle>
-                          <CardDescription className="truncate">
-                            {analysis.recommendation?.slice(0, 120)}
-                            {(analysis.recommendation?.length ?? 0) > 120
-                              ? "…"
-                              : ""}
-                          </CardDescription>
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewDetails(analysis);
-                            }}
-                            className="text-primary hover:bg-primary/10"
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            View Details
-                          </Button>
-                          <div className="text-right">
-                            <div className="text-sm text-muted-foreground">
-                              Steps
-                            </div>
-                            <div className="text-2xl font-bold text-primary">
-                              {traces.length}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    {isExpanded && (
-                      <CardContent>
-                        <TraceProgress traces={traceEvents} />
-                      </CardContent>
-                    )}
-                  </Card>
-                );
-              })}
+              {/* Table Rows */}
+              {analysesWithTraces.map(({ analysis, traces }) => (
+                <div
+                  key={analysis.id}
+                  className="grid grid-cols-5 gap-4 px-6 py-4 border-b border-border last:border-0 hover:bg-muted/30 transition-colors items-center"
+                >
+                  <span className="font-medium text-sm">
+                    {formatDate(analysis.created_at)}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {formatTime(analysis.created_at)}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-primary">
+                      {traces.length}
+                    </span>
+                    <span className="text-xs text-muted-foreground">steps</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground truncate">
+                    {analysis.recommendation?.slice(0, 50)}...
+                  </span>
+                  <div className="text-right">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleViewDetails(analysis)}
+                      className="text-primary hover:bg-primary/10"
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      View
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
-          <Card className="bg-card/50 backdrop-blur-xl border border-border">
-            <CardHeader>
-              <CardTitle className="text-lg">About Traces</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Reasoning traces show you exactly how our AI analyzes your
-                documents, making every recommendation transparent and
-                trustworthy. Powered by Opik for complete observability.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Info Card */}
+          <div className="rounded-xl bg-card border border-border/50 shadow-sm p-6">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Info className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">About Analysis History</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Your analysis history shows you exactly how our AI analyzes your
+                  documents, making every recommendation transparent and
+                  trustworthy. Powered by Opik for complete observability.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>
