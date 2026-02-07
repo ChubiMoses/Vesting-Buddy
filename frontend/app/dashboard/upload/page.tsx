@@ -252,9 +252,6 @@ export default function AnalysePage() {
             <h1 className="text-2xl font-semibold text-foreground">
               Financial Analysis
             </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Dashboard &gt; Analyze
-            </p>
             <p className="text-muted-foreground mt-1">
               Upload documents to analyze your compensation package
             </p>
