@@ -1,11 +1,16 @@
 "use client";
 
-import { CheckCircle2, FileText, Loader2, Sparkles, Upload } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader2, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { saveAnalysis, saveTraces, type TraceEvent } from "@/actions/backend";
 import { createSignedUrl } from "@/actions/storage";
 import { TraceProgress } from "@/components/dashboard/trace-progress";
+import {
+  UploadSlotCard,
+  type UploadSlotId,
+} from "@/components/dashboard/upload-slot-card";
 import { Button } from "@/components/ui/button";
 import { consumeAnalysisStream } from "@/lib/analysis-stream";
 import {
@@ -15,25 +20,7 @@ import {
 } from "@/lib/demo-paths";
 import { createClient } from "@/lib/supabase/client";
 
-type Slot = "paystub" | "handbook" | "rsu";
-
-const SLOT_CONFIG: Record<Slot, { label: string; description: string; required: boolean }> = {
-  paystub: {
-    label: "Monthly Paystub",
-    description: "PDF, DOC up to 10MB",
-    required: true,
-  },
-  handbook: {
-    label: "Benefits Handbook",
-    description: "PDF, DOC up to 10MB",
-    required: true,
-  },
-  rsu: {
-    label: "RSU / Equity Grant",
-    description: "PDF, DOC up to 10MB (optional)",
-    required: false,
-  },
-};
+type Slot = UploadSlotId;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -219,124 +206,123 @@ export default function OnboardingPage() {
     router.refresh();
   };
 
+  const showUploadArea = !showTraces;
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-md">
-        {/* Clean Centered Card - PayU Login Style */}
+      <div className="w-full max-w-4xl">
         <div className="rounded-2xl bg-card border border-border/50 shadow-sm p-8">
-          {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-              <Upload className="w-6 h-6 text-white" />
+          {/* Logo + Title */}
+          <div className="flex justify-center mb-2">
+            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg">
+              VB
             </div>
           </div>
-
           <h1 className="text-2xl font-semibold text-center">
             Welcome to Vesting Buddy
           </h1>
-          <p className="text-muted-foreground text-center mt-2 mb-8">
-            Upload your documents to get started
+          <p className="text-muted-foreground text-center mt-1 mb-6">
+            Upload your documents so we can find your missing benefits
           </p>
 
-          {/* Demo Toggle */}
-          <div className="mb-6">
-            <Button
-              type="button"
-              variant={useDemo ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setUseDemo(!useDemo);
-                if (!useDemo) {
-                  setPaths({ paystub: null, handbook: null, rsu: null });
-                }
-              }}
-              className="w-full"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {useDemo ? "Using Demo Files" : "Try with Demo Files"}
-            </Button>
-            {useDemo && (
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Demo files loaded - click "Get Started" below
-              </p>
-            )}
-          </div>
+          {/* Demo Toggle - only when showing upload area */}
+          {showUploadArea && (
+            <div className="mb-6">
+              <Button
+                type="button"
+                variant={useDemo ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setUseDemo(!useDemo);
+                  if (!useDemo) {
+                    setPaths({ paystub: null, handbook: null, rsu: null });
+                  }
+                }}
+                className="w-full rounded-xl"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {useDemo ? "Using Demo Files" : "Try with Demo Files"}
+              </Button>
+              {useDemo && (
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Demo files loaded — click &quot;Get Started&quot; below
+                </p>
+              )}
+            </div>
+          )}
 
-          {/* Upload Slots */}
-          <div className="space-y-4">
-            {(["paystub", "handbook", "rsu"] as Slot[]).map((slot) => (
-              <div key={slot}>
-                <input
-                  type="file"
-                  id={`file-${slot}`}
-                  accept=".pdf"
-                  className="hidden"
-                  disabled={!!uploading || useDemo}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) {
-                      setUseDemo(false);
-                      uploadFile(slot, f);
-                    }
-                  }}
-                />
-                <label
-                  htmlFor={`file-${slot}`}
-                  className={`block border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors ${
-                    paths[slot]
-                      ? "border-success bg-success/5"
-                      : useDemo
-                        ? "border-border bg-muted/30 opacity-50"
-                        : "border-border hover:border-primary/50"
-                  }`}
+          {/* Upload cards OR Traces (traces replace upload when analyzing) */}
+          <div className="rounded-2xl bg-indigo-50/60 border border-indigo-100 p-6">
+            <AnimatePresence mode="wait">
+              {showUploadArea ? (
+                <motion.div
+                  key="upload"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="relative"
                 >
-                  {paths[slot] ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-success" />
-                      <span className="font-medium text-sm truncate">
-                        {paths[slot]!.split("/").pop()}
-                      </span>
-                    </div>
-                  ) : uploading === slot ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                      <span className="text-sm text-muted-foreground">Uploading...</span>
-                    </div>
-                  ) : (
-                    <>
-                      <FileText className="w-6 h-6 mx-auto text-muted-foreground mb-2" />
-                      <p className="font-medium text-sm">{SLOT_CONFIG[slot].label}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {SLOT_CONFIG[slot].description}
-                      </p>
-                    </>
+                  {useDemo && (
+                    <div className="absolute inset-0 z-10 rounded-2xl bg-white/60 pointer-events-auto" />
                   )}
-                </label>
-              </div>
-            ))}
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-3 gap-4 ${
+                      useDemo ? "pointer-events-none select-none" : ""
+                    }`}
+                  >
+                    {(["paystub", "handbook", "rsu"] as Slot[]).map((slot) => (
+                      <UploadSlotCard
+                        key={slot}
+                        slot={slot}
+                        path={paths[slot]}
+                        uploading={uploading === slot}
+                        disabled={useDemo}
+                        onSelectFile={(file) => {
+                          setUseDemo(false);
+                          uploadFile(slot, file);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="traces"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">
+                        AI processing your data
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Watch the analysis steps below
+                      </p>
+                    </div>
+                  </div>
+                  <TraceProgress traces={traces} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div className="mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            <div className="mt-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               {error}
             </div>
           )}
 
-          {/* Trace Progress */}
-          {showTraces && traces.length > 0 && (
-            <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30">
-              <p className="text-sm font-medium mb-3">Analysis Progress</p>
-              <TraceProgress traces={traces} />
-            </div>
-          )}
-
-          {/* Action Buttons */}
           <div className="mt-6 space-y-3">
             <Button
               onClick={handleAnalyzeAndContinue}
               disabled={!canAnalyze || isAnalyzing}
-              className="w-full h-12"
+              className="w-full h-12 rounded-xl"
             >
               {isAnalyzing ? (
                 <>
@@ -350,7 +336,7 @@ export default function OnboardingPage() {
             <Button
               onClick={skipOnboarding}
               variant="ghost"
-              className="w-full"
+              className="w-full rounded-xl"
               disabled={!!uploading || isAnalyzing}
             >
               Skip for now

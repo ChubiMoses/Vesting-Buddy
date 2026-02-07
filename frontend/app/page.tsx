@@ -15,8 +15,8 @@ export default async function Home() {
     <main className="min-h-screen">
       <Hero user={user} />
       <DemoShowcase />
-      <HowItWorks />
       <WhatWeFind />
+      <HowItWorks />
       <CTASection />
     </main>
   );

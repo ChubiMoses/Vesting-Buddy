@@ -15,7 +15,7 @@ const steps = [
   },
   {
     icon: Brain,
-    title: "AI Analyzes Everything",
+    title: "Vesting Buddy Analyzes Everything",
     description:
       "Advanced multi-agent AI system scans for missed 401(k) matches, HSA opportunities, RSU optimization, and hidden tax savings in real-time.",
     number: "02",

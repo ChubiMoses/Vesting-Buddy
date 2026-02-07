@@ -21,14 +21,14 @@
   --color-popover: #FFFFFF;
   --color-popover-foreground: #1A1D1F;
 
-  /* Primary - Mint Teal (PayU accent) */
-  --color-primary: #3ECFB2;
+  /* Primary - Medium Teal */
+  --color-primary: #0D9488;
   --color-primary-foreground: #FFFFFF;
 
   /* Sidebar - Dark charcoal */
   --color-sidebar: #1E1E2D;
   --color-sidebar-foreground: #9CA3AF;
-  --color-sidebar-accent: #3ECFB2;
+  --color-sidebar-accent: #0D9488;
   --color-sidebar-border: rgba(255, 255, 255, 0.1);
 
   --color-navy-blue: #1E1E2D;
@@ -52,7 +52,7 @@
   /* Borders - Light and subtle */
   --color-border: #E5E7EB;
   --color-input: #E5E7EB;
-  --color-ring: #3ECFB2;
+  --color-ring: #0D9488;
 
   /* Semantic colors for data */
   --color-success: #22C55E;
@@ -65,7 +65,7 @@
   --color-chart-2: #D1D5DB;
   --color-chart-3: #9CA3AF;
   --color-chart-4: #6B7280;
-  --color-chart-5: #3ECFB2;
+  --color-chart-5: #0D9488;
 
   /* Radius - slightly rounded like PayU */
   --radius: 0.75rem;
@@ -211,5 +211,5 @@ textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(62, 207, 178, 0.1);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }

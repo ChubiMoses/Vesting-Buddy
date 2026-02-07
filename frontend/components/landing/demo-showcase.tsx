@@ -46,7 +46,7 @@ export function DemoShowcase() {
             See It In Action
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-            Your Money,{" "}
+            Your Employer Benefits,{" "}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-home-green to-purple-500">
               Optimized
             </span>

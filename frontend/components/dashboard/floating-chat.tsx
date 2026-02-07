@@ -99,7 +99,7 @@ export function FloatingChat() {
                     <Bot className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold">AI Assistant</h3>
+                    <h3 className="text-sm font-semibold">VB Assist</h3>
                     <p className="text-xs text-muted-foreground">
                       Ask me anything
                     </p>

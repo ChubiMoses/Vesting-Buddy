@@ -25,30 +25,32 @@ export function Hero({ user }: HeroProps) {
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[128px]" />
 
       <div className="container px-4 py-20 mx-auto max-w-7xl relative z-10">
+        {/* Vesting Buddy logo / brand */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="absolute top-10 left-2 md:left-6 flex items-center gap-2"
+        >
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/20">
+            VB
+          </div>
+          <span className="text-xl font-bold tracking-tight text-foreground">
+            Vesting Buddy
+          </span>
+        </motion.div>
+
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-left space-y-8"
+            className="text-left space-y-2"
           >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-home-green/10 to-purple-500/10 border border-border backdrop-blur-xs mb-6">
-                <Zap className="w-4 h-4 text-home-green" />
-                <span className="text-sm font-medium text-home-green">
-                  AI-Powered Financial Optimization
-                </span>
-              </div>
-            </motion.div>
-
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
             >
               Stop Leaving{" "}
@@ -62,13 +64,13 @@ export function Hero({ user }: HeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-xl text-muted-foreground leading-relaxed"
+              className="text-xl text-muted-foreground leading-relaxed my-3"
             >
               Most employees lose{" "}
               <span className="text-foreground font-semibold">
                 $3,000+ every year
               </span>{" "}
-              in unclaimed employer matches and underutilized benefits. Let AI
+              in unclaimed employer matches and underutilized benefits. Let Vesting Buddy
               find every dollar you're missing.
             </motion.p>
 

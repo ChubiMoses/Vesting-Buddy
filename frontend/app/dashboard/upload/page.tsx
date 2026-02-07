@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  CheckCircle2,
   ChevronRight,
   Clock,
   DollarSign,
@@ -10,7 +9,6 @@ import {
   Loader2,
   Sparkles,
   TrendingUp,
-  Upload,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -36,25 +34,12 @@ import {
 } from "@/lib/demo-paths";
 import { createClient } from "@/lib/supabase/client";
 
-type Slot = "paystub" | "handbook" | "rsu";
+import {
+  UploadSlotCard,
+  type UploadSlotId,
+} from "@/components/dashboard/upload-slot-card";
 
-const SLOT_CONFIG = {
-  paystub: {
-    label: "Monthly Paystub",
-    description: "Recent pay statement with deductions",
-    required: true,
-  },
-  handbook: {
-    label: "Benefits Handbook",
-    description: "Company policy document (401k, HSA, etc.)",
-    required: true,
-  },
-  rsu: {
-    label: "Equity/RSU Grant",
-    description: "Stock compensation details (optional)",
-    required: false,
-  },
-};
+type Slot = UploadSlotId;
 
 export default function AnalysePage() {
   const router = useRouter();
@@ -256,182 +241,106 @@ export default function AnalysePage() {
     }
   };
 
+  const showUploadArea = !showTraces;
+
   return (
-    <div className="min-h-screen p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen p-6 lg:p-8 bg-background">
+      <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">
-            Financial Analysis
-          </h1>
-          <p className="text-muted-foreground">
-            Upload documents to analyze your compensation package
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">
+              Financial Analysis
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Dashboard &gt; Analyze
+            </p>
+            <p className="text-muted-foreground mt-1">
+              Upload documents to analyze your compensation package
+            </p>
+          </div>
+          <Button
+            variant={useDemo ? "default" : "outline"}
+            size="sm"
+            onClick={toggleDemo}
+            className="shrink-0 rounded-xl"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {useDemo ? "Using Demo" : "Try Demo"}
+          </Button>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Upload Section */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Document Upload Card */}
-            <div className="rounded-xl bg-card border border-border/50 shadow-sm">
-              <div className="p-6 border-b border-border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold">Upload Documents</h2>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Your Personal CFO analyzes these to find unclaimed wealth
-                    </p>
-                  </div>
-                  <Button
-                    variant={useDemo ? "default" : "outline"}
-                    size="sm"
-                    onClick={toggleDemo}
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {useDemo ? "Using Demo" : "Try Demo"}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-6">
-                {/* Demo Banner */}
-                <AnimatePresence mode="wait">
-                  {useDemo && (
-                    <motion.div
-                      key="demo-banner"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="p-4 rounded-lg bg-primary/10 border border-primary/20"
-                    >
-                      <p className="text-sm font-medium text-primary">
-                        Demo files loaded — Click "Run Analysis" below
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Upload Slots */}
+        {/* Main content: Upload cards OR Traces (traces replace upload when analyzing) */}
+        <div className="rounded-2xl bg-indigo-50/60 border border-indigo-100 p-6 lg:p-8">
+          <AnimatePresence mode="wait">
+            {showUploadArea ? (
+              <motion.div
+                key="upload"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-6"
+              >
+                <p className="text-sm font-medium text-muted-foreground">
+                  Upload your documents — we use these to find unclaimed benefits and match gaps
+                </p>
                 <div className="relative">
                   {useDemo && (
-                    <div className="absolute inset-0 z-10 rounded-lg bg-muted/50 pointer-events-auto" />
+                    <div className="absolute inset-0 z-10 rounded-2xl bg-white/60 pointer-events-auto" />
                   )}
-                  <div className={`space-y-4 ${useDemo ? "pointer-events-none" : ""}`}>
+                  <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 ${useDemo ? "pointer-events-none select-none" : ""}`}>
                     {(["paystub", "handbook", "rsu"] as Slot[]).map((slot) => (
-                      <div key={slot} className="space-y-2">
-                        <div className="flex items-baseline justify-between">
-                          <div>
-                            <h3 className="font-medium text-foreground">
-                              {SLOT_CONFIG[slot].label}
-                            </h3>
-                            <p className="text-xs text-muted-foreground">
-                              {SLOT_CONFIG[slot].description}
-                              {!SLOT_CONFIG[slot].required && " · Optional"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-3">
-                          <input
-                            type="file"
-                            id={`file-${slot}`}
-                            accept=".pdf"
-                            className="hidden"
-                            disabled={!!uploading || useDemo}
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              if (f) {
-                                setUseDemo(false);
-                                uploadFile(slot, f);
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`file-${slot}`}
-                            className="flex-1 flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 cursor-pointer transition-colors"
-                          >
-                            {paths[slot] ? (
-                              <>
-                                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
-                                  <CheckCircle2 className="w-5 h-5 text-success" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium truncate text-sm">
-                                    {paths[slot]!.split("/").pop() ?? "Document uploaded"}
-                                  </p>
-                                  <p className="text-xs text-success">
-                                    Ready for analysis
-                                  </p>
-                                </div>
-                              </>
-                            ) : uploading === slot ? (
-                              <>
-                                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                  Uploading...
-                                </p>
-                              </>
-                            ) : (
-                              <>
-                                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                                  <Upload className="w-5 h-5 text-muted-foreground" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="font-medium text-sm">Upload PDF</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    or drag and drop
-                                  </p>
-                                </div>
-                              </>
-                            )}
-                          </label>
-
-                          {recentDocs.length > 0 && !useDemo && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                setShowDocPicker(showDocPicker === slot ? null : slot)
-                              }
-                              disabled={!!uploading}
-                              className="shrink-0 h-auto py-4"
-                            >
-                              Library
-                            </Button>
-                          )}
-                        </div>
-
-                        {/* Document Picker Dropdown */}
+                      <div key={slot} className="relative">
+                        <UploadSlotCard
+                          slot={slot}
+                          path={paths[slot]}
+                          uploading={uploading === slot}
+                          disabled={useDemo}
+                          onSelectFile={(file) => {
+                            setUseDemo(false);
+                            uploadFile(slot, file);
+                          }}
+                          extraAction={
+                            recentDocs.length > 0 && !useDemo ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowDocPicker(showDocPicker === slot ? null : slot);
+                                }}
+                                disabled={!!uploading}
+                              >
+                                From library
+                              </Button>
+                            ) : undefined
+                          }
+                        />
                         <AnimatePresence>
                           {showDocPicker === slot && (
                             <motion.div
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="rounded-lg border border-border bg-card overflow-hidden"
+                              className="mt-2 rounded-xl border border-border bg-card overflow-hidden shadow-sm"
                             >
-                              <div className="p-3 bg-muted/50 border-b border-border">
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                  Your Documents
+                              <div className="p-2 bg-muted/50 border-b border-border">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                  Your documents
                                 </p>
                               </div>
-                              <div className="max-h-48 overflow-y-auto">
+                              <div className="max-h-40 overflow-y-auto">
                                 {recentDocs.map((doc) => (
                                   <button
                                     key={doc.path}
                                     type="button"
                                     onClick={() => selectExistingDocument(slot, doc.path)}
-                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 border-b border-border last:border-0 transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 border-b border-border last:border-0 transition-colors text-left text-sm"
                                   >
-                                    <FileText className="w-4 h-4 text-primary shrink-0" />
-                                    <span className="text-sm font-medium truncate flex-1">
+                                    <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
+                                    <span className="font-medium truncate flex-1">
                                       {doc.name}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground shrink-0">
-                                      {new Date(doc.created_at ?? "").toLocaleDateString()}
                                     </span>
                                     <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                                   </button>
@@ -445,19 +354,19 @@ export default function AnalysePage() {
                   </div>
                 </div>
 
-                {/* Error Message */}
-                {error && (
-                  <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-                    {error}
+                {useDemo && (
+                  <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
+                    <p className="text-sm font-medium text-primary">
+                      Demo files loaded — Click &quot;Run Analysis&quot; below
+                    </p>
                   </div>
                 )}
 
-                {/* Run Analysis Button */}
                 <Button
                   onClick={handleRunAnalysis}
                   disabled={!canRunAnalysis || isAnalyzing}
                   size="lg"
-                  className="w-full h-12"
+                  className="w-full h-12 rounded-xl"
                 >
                   {isAnalyzing ? (
                     <>
@@ -471,133 +380,127 @@ export default function AnalysePage() {
                     </>
                   )}
                 </Button>
-              </div>
-            </div>
-
-            {/* Trace Progress */}
-            <AnimatePresence>
-              {showTraces && traces.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="rounded-xl bg-card border border-border/50 shadow-sm"
-                >
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">AI Processing Your Data</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Multi-agent system analyzing your compensation
-                        </p>
-                      </div>
-                    </div>
-                    <TraceProgress traces={traces} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="traces"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Recent Analyses */}
-            <div className="rounded-xl bg-card border border-border/50 shadow-sm">
-              <div className="p-4 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-primary" />
-                  <h3 className="font-semibold">Recent Analyses</h3>
-                </div>
-              </div>
-              <div className="p-4">
-                {previousAnalyses.length === 0 ? (
-                  <div className="py-8 text-center">
-                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                      <TrendingUp className="w-6 h-6 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">No analyses yet</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Run your first analysis to start saving
+                  <div>
+                    <h3 className="font-semibold text-foreground">AI processing your data</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Multi-agent system analyzing your compensation — watch the steps below
                     </p>
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    {previousAnalyses.map((analysis) => {
-                      const cost = getOpportunityCost(analysis);
-                      return (
-                        <button
-                          key={analysis.id}
-                          onClick={() => router.push("/dashboard/traces")}
-                          className="w-full p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/30 transition-all text-left"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-muted-foreground">
-                              {formatDate(analysis.created_at)}
-                            </span>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                          </div>
-                          {cost > 0 && (
-                            <div className="flex items-baseline gap-1">
-                              <DollarSign className="w-4 h-4 text-primary" />
-                              <span className="text-xl font-semibold tabular-nums">
-                                {cost.toLocaleString()}
-                              </span>
-                              <span className="text-xs text-muted-foreground">/year</span>
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
+                </div>
+                <TraceProgress traces={traces} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-                    {previousAnalyses.length >= 5 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push("/dashboard/manage")}
-                        className="w-full"
-                      >
-                        View All
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    )}
-                  </div>
-                )}
+        {error && (
+          <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Bottom: Recent Analyses + How It Works */}
+        <div className="grid sm:grid-cols-2 gap-6 pt-4 border-t border-border">
+          <div className="rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-indigo-600" />
+                <h3 className="font-semibold">Recent Analyses</h3>
               </div>
             </div>
+            <div className="p-4">
+              {previousAnalyses.length === 0 ? (
+                <div className="py-6 text-center">
+                  <p className="text-sm text-muted-foreground">No analyses yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Run your first analysis to start saving
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {previousAnalyses.slice(0, 3).map((analysis) => {
+                    const cost = getOpportunityCost(analysis);
+                    return (
+                      <button
+                        key={analysis.id}
+                        onClick={() => router.push("/dashboard/traces")}
+                        className="w-full p-3 rounded-xl border border-border hover:border-indigo-200 hover:bg-indigo-50/50 transition-all text-left"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(analysis.created_at)}
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        {cost > 0 && (
+                          <div className="flex items-baseline gap-1">
+                            <DollarSign className="w-4 h-4 text-indigo-600" />
+                            <span className="text-lg font-semibold tabular-nums text-foreground">
+                              {cost.toLocaleString()}
+                            </span>
+                            <span className="text-xs text-muted-foreground">/year</span>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                  {previousAnalyses.length > 3 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push("/dashboard/manage")}
+                      className="w-full mt-2 rounded-xl"
+                    >
+                      View All
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
-            {/* How It Works */}
-            <div className="rounded-xl bg-card border border-border/50 shadow-sm p-6">
-              <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-4">
-                How It Works
-              </h4>
-              <div className="space-y-3">
-                <div className="flex gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
-                    1
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Upload your documents or try demo files
-                  </p>
+          <div className="rounded-2xl bg-card border border-border/50 shadow-sm p-6">
+            <h4 className="font-semibold text-sm uppercase tracking-wide text-indigo-600 mb-4">
+              How it works
+            </h4>
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 text-xs font-semibold text-indigo-600">
+                  1
                 </div>
-                <div className="flex gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
-                    2
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    AI agents extract and analyze your benefits
-                  </p>
+                <p className="text-sm text-muted-foreground">
+                  Upload your documents or try demo files
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 text-xs font-semibold text-indigo-600">
+                  2
                 </div>
-                <div className="flex gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
-                    3
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Receive personalized action plan to save money
-                  </p>
+                <p className="text-sm text-muted-foreground">
+                  AI agents extract and analyze your benefits
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 text-xs font-semibold text-indigo-600">
+                  3
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  Receive a personalized action plan to save money
+                </p>
               </div>
             </div>
           </div>
