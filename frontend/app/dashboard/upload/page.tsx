@@ -320,26 +320,32 @@ export default function AnalysePage() {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="mt-2 rounded-xl border border-border bg-card overflow-hidden shadow-sm"
+                              transition={{ duration: 0.2 }}
+                              className="relative z-10 mt-3 rounded-xl border-2 border-indigo-200 bg-white shadow-lg overflow-hidden"
                             >
-                              <div className="p-2 bg-muted/50 border-b border-border">
-                                <p className="text-xs font-medium text-muted-foreground">
+                              <div className="px-4 py-3 border-b border-indigo-100 bg-indigo-50/80">
+                                <p className="text-sm font-semibold text-foreground">
                                   Your documents
                                 </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {recentDocs.length} file{recentDocs.length !== 1 ? "s" : ""} in library
+                                </p>
                               </div>
-                              <div className="max-h-40 overflow-y-auto">
+                              <div className="max-h-52 overflow-y-auto py-1">
                                 {recentDocs.map((doc) => (
                                   <button
                                     key={doc.path}
                                     type="button"
                                     onClick={() => selectExistingDocument(slot, doc.path)}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 border-b border-border last:border-0 transition-colors text-left text-sm"
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-indigo-50/70 border-b border-border/60 last:border-0 transition-colors text-left"
                                   >
-                                    <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
-                                    <span className="font-medium truncate flex-1">
+                                    <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                      <FileText className="w-4 h-4 text-indigo-600" />
+                                    </div>
+                                    <span className="text-sm font-medium text-foreground flex-1 min-w-0 break-all line-clamp-2">
                                       {doc.name}
                                     </span>
-                                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                                    <ChevronRight className="w-4 h-4 text-indigo-500 shrink-0" />
                                   </button>
                                 ))}
                               </div>
