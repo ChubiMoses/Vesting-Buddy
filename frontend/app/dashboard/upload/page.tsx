@@ -213,7 +213,6 @@ export default function AnalysePage() {
     }
 
     router.push("/dashboard");
-    router.refresh();
   };
 
   const formatDate = (iso: string) => {
