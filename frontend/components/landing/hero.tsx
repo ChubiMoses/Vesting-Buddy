@@ -24,34 +24,34 @@ export function Hero({ user }: HeroProps) {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[128px]" />
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[128px]" />
 
-      <div className="container px-4 py-20 mx-auto max-w-7xl relative z-10">
+      <div className="container px-6 sm:px-8 py-24 mx-auto max-w-7xl relative z-10">
         {/* Vesting Buddy logo / brand */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="absolute top-8 left-2 md:left-6 flex items-center gap-2"
+          className="absolute top-10 md:top-24 left-6 md:left-8 flex items-center gap-2"
         >
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/20">
             VB
           </div>
-          <span className="text-xl font-bold tracking-tight text-foreground">
+          <span className="text-xl font-bold tracking-tight text-gray-700">
             Vesting Buddy
           </span>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-left space-y-2"
+            className="space-y-6 text-left mt-14"
           >
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
             >
               Stop Leaving{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-home-green to-purple-500">
@@ -64,7 +64,7 @@ export function Hero({ user }: HeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-xl text-muted-foreground leading-relaxed my-3"
+              className="text-lg sm:text-lg text-muted-foreground  max-w-xl"
             >
               Most employees lose{" "}
               <span className="text-foreground font-semibold">
@@ -78,7 +78,7 @@ export function Hero({ user }: HeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 my-4"
+              className="flex flex-col sm:flex-row gap-4"
             >
               {user ? (
                 <Link href="/dashboard" className="group">
@@ -123,11 +123,11 @@ export function Hero({ user }: HeroProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex flex-col gap-3 mt-8"
+              className="flex flex-col gap-4"
             >
               {[
                 { icon: CheckCircle, text: "2-minute setup, zero risk" },
-                { icon: Shield, text: "Bank-level security & privacy" },
+                { icon: Shield, text: "Secured and private" },
                 { icon: Zap, text: "Instant AI-powered insights" },
               ].map((item, index) => (
                 <motion.div
