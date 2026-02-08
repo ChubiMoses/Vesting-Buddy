@@ -38,6 +38,7 @@ import {
   UploadSlotCard,
   type UploadSlotId,
 } from "@/components/dashboard/upload-slot-card";
+import { useAnalysisTraces } from "@/hooks/use-analysis-traces";
 
 type Slot = UploadSlotId;
 
@@ -53,7 +54,7 @@ export default function AnalysePage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recentDocs, setRecentDocs] = useState<StoredDocument[]>([]);
-  const [traces, setTraces] = useState<TraceEvent[]>([]);
+  const { traces, addTrace, startPlaceholder, reset: resetTraces } = useAnalysisTraces();
   const [showTraces, setShowTraces] = useState(false);
   const [showDocPicker, setShowDocPicker] = useState<Slot | null>(null);
   const [previousAnalyses, setPreviousAnalyses] = useState<AnalysisRow[]>([]);
@@ -101,7 +102,8 @@ export default function AnalysePage() {
     if (!canRunAnalysis) return;
     setError(null);
     setIsAnalyzing(true);
-    setTraces([]);
+    resetTraces();
+    startPlaceholder();
     setShowTraces(true);
 
     const supabase = createClient();
@@ -169,7 +171,7 @@ export default function AnalysePage() {
       rsuUrl,
       (trace) => {
         collectedTraces.push(trace);
-        setTraces((prev) => [...prev, trace]);
+        addTrace(trace);
       },
     );
 
@@ -309,7 +311,7 @@ export default function AnalysePage() {
                                 }}
                                 disabled={!!uploading}
                               >
-                                From library
+                                Upload from library
                               </Button>
                             ) : undefined
                           }
@@ -420,7 +422,7 @@ export default function AnalysePage() {
           <div className="rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-border bg-muted/30">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-indigo-600" />
+                <Clock className="w-4 h-4 text-primary" />
                 <h3 className="font-semibold">Recent Analyses</h3>
               </div>
             </div>
@@ -450,7 +452,7 @@ export default function AnalysePage() {
                         </div>
                         {cost > 0 && (
                           <div className="flex items-baseline gap-1">
-                            <DollarSign className="w-4 h-4 text-indigo-600" />
+                            <DollarSign className="w-4 h-4 text-primary" />
                             <span className="text-lg font-semibold tabular-nums text-foreground">
                               {cost.toLocaleString()}
                             </span>
@@ -477,12 +479,12 @@ export default function AnalysePage() {
           </div>
 
           <div className="rounded-2xl bg-card border border-border/50 shadow-sm p-6">
-            <h4 className="font-semibold text-sm uppercase tracking-wide text-indigo-600 mb-4">
+            <h4 className="font-semibold text-sm uppercase tracking-wide text-primary mb-4">
               How it works
             </h4>
             <div className="space-y-3">
               <div className="flex gap-3">
-                <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 text-xs font-semibold text-indigo-600">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
                   1
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -490,7 +492,7 @@ export default function AnalysePage() {
                 </p>
               </div>
               <div className="flex gap-3">
-                <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 text-xs font-semibold text-indigo-600">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
                   2
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -498,7 +500,7 @@ export default function AnalysePage() {
                 </p>
               </div>
               <div className="flex gap-3">
-                <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 text-xs font-semibold text-indigo-600">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
                   3
                 </div>
                 <p className="text-sm text-muted-foreground">

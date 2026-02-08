@@ -45,8 +45,7 @@ export function CTASection() {
             </h2>
 
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Join thousands of employees who've discovered hidden money in
-              their benefits. Takes 2 minutes.
+            Making sure the money you earned actually makes it into your pocket.
             </p>
           </div>
 

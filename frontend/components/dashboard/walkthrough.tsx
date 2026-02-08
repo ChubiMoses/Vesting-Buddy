@@ -72,9 +72,14 @@ export function WalkthroughOverlay() {
   }, []);
 
   useEffect(() => {
-    if (!active) return;
-    const index = steps.findIndex((step) =>
-      pathname?.startsWith(step.path),
+    if (!active || !pathname) return;
+    const index = steps.reduce(
+      (best, step, i) =>
+        pathname.startsWith(step.path) &&
+        (best === -1 || step.path.length > steps[best].path.length)
+          ? i
+          : best,
+      -1,
     );
     if (index >= 0) setStepIndex(index);
   }, [pathname, active]);
@@ -91,11 +96,13 @@ export function WalkthroughOverlay() {
       finishWalkthrough();
       return;
     }
+    setStepIndex(stepIndex + 1);
     router.push(steps[stepIndex + 1].path);
   };
 
   const goBack = () => {
     if (stepIndex <= 0) return;
+    setStepIndex(stepIndex - 1);
     router.push(steps[stepIndex - 1].path);
   };
 

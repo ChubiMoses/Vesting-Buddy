@@ -185,11 +185,11 @@ export function DemoShowcase() {
                     className="relative"
                   >
                     {/* Blur overlay for curiosity */}
-                    <div className="absolute inset-0 backdrop-blur-[2px] bg-slate-900/40 z-10 rounded-xl flex items-center justify-center">
+                    {/* <div className="absolute inset-0 backdrop-blur-[2px] bg-slate-900/40 z-10 rounded-xl flex items-center justify-center">
                       <div className="text-xs text-slate-300 font-medium px-3 py-1.5 rounded-lg bg-slate-800/90 border border-slate-700">
                         Sign up to unlock
                       </div>
-                    </div>
+                    </div> */}
                     <div className="bg-slate-800/60 rounded-xl p-5 border border-slate-700/50">
                       <div className="flex items-start gap-3 mb-3">
                         <div className="w-10 h-10 rounded-lg bg-home-green/20 flex items-center justify-center">

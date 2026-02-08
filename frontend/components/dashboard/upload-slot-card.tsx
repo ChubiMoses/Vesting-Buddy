@@ -53,7 +53,7 @@ export function UploadSlotCard({
 
   return (
     <div
-      className={`h-full flex flex-col rounded-2xl border-2 border-dashed overflow-hidden transition-all duration-200 ${
+      className={`flex flex-col rounded-2xl border-2 border-dashed overflow-hidden transition-all duration-200 ${
         isIndigo
           ? "border-indigo-200 bg-indigo-50/50 hover:border-indigo-300 hover:shadow-md"
           : "border-border bg-card hover:border-primary/40 hover:shadow-md"

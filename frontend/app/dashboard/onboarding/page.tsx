@@ -12,6 +12,7 @@ import {
   type UploadSlotId,
 } from "@/components/dashboard/upload-slot-card";
 import { Button } from "@/components/ui/button";
+import { useAnalysisTraces } from "@/hooks/use-analysis-traces";
 import { consumeAnalysisStream } from "@/lib/analysis-stream";
 import {
   DEMO_HANDBOOK_PATH,
@@ -33,7 +34,7 @@ export default function OnboardingPage() {
   const [uploading, setUploading] = useState<Slot | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [traces, setTraces] = useState<TraceEvent[]>([]);
+  const { traces, addTrace, startPlaceholder, reset: resetTraces } = useAnalysisTraces();
   const [showTraces, setShowTraces] = useState(false);
 
   const uploadFile = async (slot: Slot, file: File) => {
@@ -67,7 +68,8 @@ export default function OnboardingPage() {
     if (!canAnalyze) return;
     setError(null);
     setIsAnalyzing(true);
-    setTraces([]);
+    resetTraces();
+    startPlaceholder();
     setShowTraces(true);
 
     const supabase = createClient();
@@ -135,7 +137,7 @@ export default function OnboardingPage() {
       rsuUrl,
       (trace) => {
         collectedTraces.push(trace);
-        setTraces((prev) => [...prev, trace]);
+        addTrace(trace);
       },
     );
 

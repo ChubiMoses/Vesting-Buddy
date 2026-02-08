@@ -255,34 +255,45 @@ async def run_analysis_with_traces(body: AnalyzeRequest, tracer: TraceEvent) -> 
 
     try:
         tracer.log("download_files", "processing")
+        await asyncio.sleep(0)
         paystub_path = download_url_to_temp(str(body.paystub_url))
         handbook_path = download_url_to_temp(str(body.handbook_url))
         if body.rsu_url:
             rsu_path = download_url_to_temp(str(body.rsu_url))
         tracer.log("download_files", "completed", {"files": 3 if rsu_path else 2})
+        await asyncio.sleep(0)
 
         tracer.log("load_agents", "processing")
+        await asyncio.sleep(0)
         extractor = load_extractor_from_env()
         policy = load_policy_scout_from_env(handbook_path=handbook_path)
         strategist = load_strategist_from_env()
         guardrail = load_guardrail_from_env()
         tracer.log("load_agents", "completed")
+        await asyncio.sleep(0)
 
         tracer.log("extract_paystub", "processing")
+        await asyncio.sleep(0)
         paystub = extractor.extract_from_file(paystub_path)
         tracer.log("extract_paystub", "completed", {"fields": len(paystub)})
+        await asyncio.sleep(0)
 
         rsu_data = None
         if rsu_path:
             tracer.log("extract_rsu", "processing")
+            await asyncio.sleep(0)
             rsu_data = extractor.extract_from_file(rsu_path, schema_fields=RSU_SCHEMA_FIELDS)
             tracer.log("extract_rsu", "completed")
+            await asyncio.sleep(0)
 
         tracer.log("policy_scout", "processing")
+        await asyncio.sleep(0)
         policy_answer = policy.answer(question)
         tracer.log("policy_scout", "completed", {"sources": len(policy_answer.get("sources", []))})
+        await asyncio.sleep(0)
 
         tracer.log("strategist", "processing")
+        await asyncio.sleep(0)
         strategist_output = strategist.synthesize(paystub, policy_answer, rsu_data=rsu_data)
         leaked_val = strategist_output.get("leaked_value") or {}
         tracer.log(
@@ -290,10 +301,13 @@ async def run_analysis_with_traces(body: AnalyzeRequest, tracer: TraceEvent) -> 
             "completed",
             {"annual_opportunity_cost": leaked_val.get("annual_opportunity_cost")},
         )
+        await asyncio.sleep(0)
 
         tracer.log("guardrail", "processing")
+        await asyncio.sleep(0)
         guarded = guardrail.enforce(strategist_output["recommendation"])
         tracer.log("guardrail", "completed", {"status": guarded["status"]})
+        await asyncio.sleep(0)
 
         return {
             "question": question,

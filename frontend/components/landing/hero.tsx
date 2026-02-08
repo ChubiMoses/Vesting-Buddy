@@ -30,7 +30,7 @@ export function Hero({ user }: HeroProps) {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="absolute top-10 left-2 md:left-6 flex items-center gap-2"
+          className="absolute top-8 left-2 md:left-6 flex items-center gap-2"
         >
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/20">
             VB
@@ -78,7 +78,7 @@ export function Hero({ user }: HeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4"
+              className="flex flex-col sm:flex-row gap-4 my-4"
             >
               {user ? (
                 <Link href="/dashboard" className="group">
@@ -123,7 +123,7 @@ export function Hero({ user }: HeroProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex flex-col gap-3"
+              className="flex flex-col gap-3 mt-8"
             >
               {[
                 { icon: CheckCircle, text: "2-minute setup, zero risk" },
