@@ -245,11 +245,42 @@ export default function OnboardingPage() {
                 <Sparkles className="w-4 h-4 mr-2" />
                 {useDemo ? "Using Demo Files" : "Try with Demo Files"}
               </Button>
-              {useDemo && (
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  Demo files loaded — click &quot;Get Started&quot; below
+              <div className="mt-2 space-y-0.5 text-center">
+                {useDemo && (
+                  <p className="text-xs text-muted-foreground">
+                    Demo files loaded — click &quot;Get Started&quot; below
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {useDemo ? "View sample documents: " : "See what's needed: "}
+                  <a
+                    href={DEMO_PAYSTUB_PATH}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:no-underline"
+                  >
+                    Paystub
+                  </a>
+                  {" · "}
+                  <a
+                    href={DEMO_HANDBOOK_PATH}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:no-underline"
+                  >
+                    Handbook
+                  </a>
+                  {" · "}
+                  <a
+                    href={DEMO_RSU_PATH}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:no-underline"
+                  >
+                    RSU
+                  </a>
                 </p>
-              )}
+              </div>
             </div>
           )}
 

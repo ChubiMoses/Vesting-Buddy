@@ -257,15 +257,46 @@ export default function AnalysePage() {
               Upload documents to analyze your compensation package
             </p>
           </div>
-          <Button
-            variant={useDemo ? "default" : "outline"}
-            size="sm"
-            onClick={toggleDemo}
-            className="shrink-0 rounded-xl"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {useDemo ? "Using Demo" : "Try Demo"}
-          </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <Button
+              variant={useDemo ? "default" : "outline"}
+              size="sm"
+              onClick={toggleDemo}
+              className="shrink-0 rounded-xl"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {useDemo ? "Using Demo" : "Try Demo"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              See what's needed:{" "}
+              <a
+                href={DEMO_PAYSTUB_PATH}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline hover:no-underline"
+              >
+                Paystub
+              </a>
+              {" · "}
+              <a
+                href={DEMO_HANDBOOK_PATH}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline hover:no-underline"
+              >
+                Handbook
+              </a>
+              {" · "}
+              <a
+                href={DEMO_RSU_PATH}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline hover:no-underline"
+              >
+                RSU
+              </a>
+            </p>
+          </div>
         </div>
 
         {/* Main content: Upload cards OR Traces (traces replace upload when analyzing) */}

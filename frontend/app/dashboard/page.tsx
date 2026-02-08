@@ -16,7 +16,7 @@ export default async function DashboardPage() {
     .select("onboarding_complete")
     .eq("id", user.id)
     .single();
-  if (!profile?.onboarding_complete) redirect("/onboarding");
+  if (!profile?.onboarding_complete) redirect("/dashboard/onboarding");
 
   const [analyses, documents] = await Promise.all([
     getAnalyses(20),
