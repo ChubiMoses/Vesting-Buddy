@@ -73,6 +73,7 @@ Opik is integrated as a **core evaluation and observability layer**, not just lo
 - LLM-as-judge scoring for recommendation quality
 - Experiment tracking across prompt and agent versions
 - Dashboards showing improvement over iterations
+- Optimizing the agent for better results
 
 This allows us to **prove** that our system improves — not just claim it.
 
